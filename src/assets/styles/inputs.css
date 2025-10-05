@@ -16,9 +16,9 @@
 
 .input-field {
   width: 100%;
-  max-width: 259px;
+  max-width: 350px;
   height: 35px;
-  padding: 12px 16px;
+  padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   font-family: var(--font-regular);
@@ -54,9 +54,9 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 259px;
+  max-width: 350px;
   height: 35px;
-  padding: 12px 16px;
+  padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   font-family: var(--font-regular);
@@ -69,4 +69,28 @@
 .file-upload-label:hover {
   border-color: var(--primary-color);
   background-color: rgba(0, 0, 140, 0.02);
+}
+
+.input-field-with-button {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  max-width: 350px;
+  font-family: var(--font-regular);
+  font-size: 16px;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.input-field-with-button::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-field-with-button:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 0, 140, 0.1);
+}
+
+.input-field-with-button:hover {
+  border-color: #999;
 }
