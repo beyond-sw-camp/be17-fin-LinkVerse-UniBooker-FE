@@ -1,0 +1,50 @@
+/* 공통 버튼 스타일 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-lg);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-semibold);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-white);
+  padding: 12px 32px;
+  font-size: 16px;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 140, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-small {
+  height: 40px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-family: var(--font-bold);
+}
+
+.btn-middle {
+  width: 100%;
+  max-width: 320px;
+  height: 40px;
+  font-size: 16px;
+}
+
+.btn-large {
+  width: 100%;
+  max-width: 538px;
+  height: 40px;
+  font-size: 16px;
+}
