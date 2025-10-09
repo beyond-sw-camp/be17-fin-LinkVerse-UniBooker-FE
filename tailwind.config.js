@@ -7,11 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#00008C',
+        primary: {
+          DEFAULT: '#000070',
+          hover: '#00008C',
+        },
       },
       fontFamily: {
         montserrat: ['Montserrat', 'sans-serif'],
-        sans: ['Noto Sans KR', 'sans-serif']
+        sans: ['Noto Sans KR', 'sans-serif'],
+      },
+      borderRadius: {
+        lg: '8px',
       },
     },
   },
