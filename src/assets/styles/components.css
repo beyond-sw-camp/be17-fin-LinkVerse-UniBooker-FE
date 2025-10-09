@@ -178,7 +178,7 @@
         @apply text-gray-600 text-sm text-center leading-relaxed;
     }
 
-    /* ========== Navbar 컴포넌트 ========== */
+    /* ========== Admin Navbar 컴포넌트 ========== */
 
     .components-navbar {
         @apply w-full bg-white shadow-md rounded-[25px];
@@ -198,5 +198,41 @@
 
     .components-navbar-link {
         @apply text-gray-700 hover:text-primary font-normal hover:font-medium duration-300 cursor-pointer;
+    }
+
+    /* ========== User Header 컴포넌트 ========== */
+
+    .components-header {
+        @apply w-full bg-white border-b border-gray-200 shadow-sm;
+    }
+
+    .components-header-container {
+        @apply max-w-7xl mx-auto px-6 py-4 flex items-center justify-between;
+    }
+
+    /* 로고 영역 */
+    .components-header-logo {
+        @apply flex items-center gap-3;
+    }
+
+    .components-header-logo-img {
+        @apply h-8 w-auto;
+    }
+
+    .components-header-logo-text {
+        @apply text-xl font-bold text-gray-800;
+    }
+
+    /* 네비게이션 메뉴 */
+    .components-header-nav {
+        @apply flex items-center gap-8;
+    }
+
+    .components-header-nav-item {
+        @apply text-base font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer;
+    }
+
+    .components-header-logout {
+        @apply bg-transparent border-none;
     }
 }
