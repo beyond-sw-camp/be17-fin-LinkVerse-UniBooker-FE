@@ -1,9 +1,6 @@
-/* 전체 CSS import */
-@import './variables.css';
-@import './buttons.css';
-@import './inputs.css';
-@import './cards.css';
-@import './navbar.css';
+/* Tailwind 및 전역 스타일 import */
+@import './base.css';
+@import './components.css';
 
 /* 전역 스타일 */
 * {
@@ -12,14 +9,7 @@
   padding: 0;
 }
 
-body {
-  font-family: var(--font-regular);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  line-height: 1.5;
-}
-
-/* 스크롤바 스타일 (선택사항) */
+/* 스크롤바 스타일 */
 ::-webkit-scrollbar {
   width: 8px;
 }
