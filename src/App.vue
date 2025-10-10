@@ -1,11 +1,12 @@
 <script setup>
-import Button from './components/Button.vue';
-import Input from '@/components/Input.vue';
+// App.vue는 최상위 컴포넌트
+// 라우터 뷰만 렌더링
 </script>
+
 <template>
-  <main class="min-h-screen bg-gray-100">
-    <Button>확인</Button>
-    <div></div>
-    <Input placeholder="placeholder"/>
-  </main>
+  <RouterView />
 </template>
+
+<style>
+/* 전역 스타일은 assets/styles/index.css에서 관리 */
+</style>
