@@ -1,19 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { useAuthStore } from '@/stores/UserStore'
 
-// 로그인 상태 (실제로는 Pinia store에서 관리)
-const isLoggedIn = ref(true)
+const authStore = useAuthStore()
 
 const handleLogout = () => {
-  // 로그아웃 로직
-  console.log('로그아웃 처리')
+  authStore.logout()
 }
 </script>
 
 <template>
   <header class="components-header">
     <div class="components-header-container">
-      <!-- 로고 영역 -->
       <div class="components-header-logo">
         <img
           src="@/assets/icons/admin_logo.png"
@@ -22,8 +19,7 @@ const handleLogout = () => {
         />
       </div>
 
-      <!-- 로그인 후 네비게이션 메뉴 -->
-      <nav v-if="isLoggedIn" class="components-header-nav">
+      <nav v-if="authStore.isLoggedIn" class="components-header-nav">
         <a href="/service" class="components-header-nav-item">서비스 목록</a>
         <a href="/reservation" class="components-header-nav-item">예약 내역</a>
         <a href="/mypage" class="components-header-nav-item">마이페이지</a>
