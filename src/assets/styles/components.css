@@ -63,6 +63,23 @@
         @apply transition-all duration-300 cursor-pointer;
     }
 
+    /* ========== 회원가입/로그인 버튼 ========== */
+    
+    .components-sq-btn {
+        @apply w-full py-[6px] text-base font-semibold rounded-md;
+        @apply transition-all duration-300;
+        @apply bg-primary;
+        color: white;
+    }
+    
+    .components-sq-btn:hover {
+        @apply bg-primary-hover;
+    }
+    
+    .components-sq-btn:active {
+        @apply transform scale-[0.98];
+    }
+
     /* ========== 입력 컴포넌트 ========== */
 
     .components-input-wrapper {
@@ -74,7 +91,7 @@
     }
 
     .components-input-field {
-        @apply w-full max-w-[350px] h-9 px-[10px] py-[10px];
+        @apply w-full max-w-[350px] h-[40px] px-[10px] py-[7px];
         @apply border border-[#cbcbcb] rounded-[3px];
         @apply font-normal text-base text-gray-700;
         @apply transition-all duration-300;
@@ -99,7 +116,7 @@
     }
 
     .components-input-with-button {
-        @apply w-full h-9 px-3 py-1.5;
+        @apply w-full px-3 py-2;
         @apply border border-[#cbcbcb] rounded-[3px];
         @apply font-normal text-base text-gray-700;
         @apply transition-all duration-300;
@@ -148,7 +165,7 @@
     }
 
     .components-file-upload-label {
-        @apply flex items-center w-full max-w-[350px] h-[35px] px-[10px] py-[10px];
+        @apply flex items-center w-full max-w-[350px] h-[40px] px-[10px] py-[10px];
         @apply border border-[#cbcbcb] rounded-[3px];
         @apply font-normal text-base text-[#cbcbcb] cursor-pointer;
         @apply bg-gray-100;
@@ -207,7 +224,7 @@
     }
 
     .components-header-container {
-        @apply max-w-7xl mx-auto px-6 py-4 flex items-center justify-between;
+        @apply max-w-7xl mx-auto px-6 py-2 flex items-center justify-between;
     }
 
     /* 로고 영역 */
@@ -219,21 +236,18 @@
         @apply h-8 w-auto;
     }
 
-    .components-header-logo-text {
-        @apply text-xl font-bold text-gray-800;
-    }
 
     /* 네비게이션 메뉴 */
     .components-header-nav {
-        @apply flex items-center gap-8;
+        @apply flex items-center justify-center gap-14;
     }
 
     .components-header-nav-item {
-        @apply text-base font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer;
+        @apply px-5 text-base font-medium text-gray-500 hover:text-primary hover:font-medium transition-colors cursor-pointer;
     }
 
     .components-header-logout {
-        @apply bg-transparent border-none;
+        @apply text-base text-[15px] font-medium text-gray-500 hover:text-primary hover:font-semibold bg-transparent border-none transition-colors cursor-pointer;
     }
 
     /* ========== Footer 컴포넌트 ========== */
@@ -242,70 +256,69 @@
         @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
     }
   
-  .components-footer-container {
-    @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
-  }
+    .components-footer-container {
+        @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
+    }
   
-  /* 네비게이션 링크 */
-  .components-footer-nav {
-    @apply flex items-center gap-4;
-  }
+    /* 네비게이션 링크 */
+    .components-footer-nav {
+        @apply flex items-center gap-4;
+    }
   
-  .components-footer-nav-item {
-    @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
-  }
+    .components-footer-nav-item {
+        @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
+    }
   
-  .components-footer-divider {
-    @apply text-gray-400 text-sm;
-  }
+    .components-footer-divider {
+        @apply text-gray-400 text-sm;
+    }
   
-  /* 저작권 정보 */
-  .components-footer-copyright {
-    @apply text-center;
-  }
+    /* 저작권 정보 */
+    .components-footer-copyright {
+        @apply text-center;
+    }
   
-  .components-footer-copyright-text {
-    @apply text-xs text-gray-500 flex items-center gap-1;
-  }
+    .components-footer-copyright-text {
+        @apply text-xs text-gray-500 flex items-center gap-1;
+    }
   
-  /* 풋터 로고 */
-  .components-footer-logo {
-    @apply h-4 w-auto inline-block;
-  }
+    /* 풋터 로고 */
 
-  .components-footer {
-      @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
-  }
+    .components-footer {
+        @apply w-full h-[30px] border-t border-gray-200 mt-auto;
+    }
 
-  .components-footer-container {
-      @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
-  }
+    .components-footer-container {
+        @apply max-w-7xl mx-auto px-6 py-1 flex flex-col justify-between;
+        min-height: 30px;
+    }
 
-  /* 네비게이션 링크 */
-  .components-footer-nav {
-      @apply flex items-center gap-4;
-  }
+    /* 네비게이션 링크 */
+    .components-footer-nav {
+        @apply flex items-center gap-[40px] mt-2;
+    }
 
-  .components-footer-nav-item {
-      @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
-  }
+    .components-footer-nav-item {
+        @apply text-[12px] font-medium text-gray-400 hover:text-primary transition-colors;
+    }
 
-  .components-footer-divider {
-      @apply text-gray-400 text-sm;
-  }
+    .components-footer-divider {
+        @apply text-gray-400 text-sm;
+    }
 
-  /* 저작권 정보 */
-  .components-footer-copyright {
-      @apply text-center;
-  }
+    /* 저작권 정보 */
+    .components-footer-copyright {
+        @apply text-center;
+    }
 
-  .components-footer-copyright-text {
-      @apply text-xs text-gray-500 flex items-center gap-1;
-  }
+    .components-footer-copyright-text {
+        @apply text-[10px] text-gray-500 flex items-center gap-2;
+    }
 
-  /* 풋터 로고 */
-  .components-footer-logo {
-      @apply h-4 w-auto inline-block;
-  }
+    /* 풋터 로고 */
+    .components-footer-logo {
+        @apply h-4 w-auto inline-block opacity-50;
+        filter: grayscale(100%);
+    }
 
 }
