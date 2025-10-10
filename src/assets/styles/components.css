@@ -63,7 +63,7 @@
         @apply transition-all duration-300 cursor-pointer;
     }
 
-    /* ========== 회원가입/로그인 버튼 ========== */
+    /* ========== 일반회원 버튼 ========== */
     
     .components-sq-btn {
         @apply w-full py-[6px] text-base font-semibold rounded-md;
@@ -79,6 +79,20 @@
     .components-sq-btn:active {
         @apply transform scale-[0.98];
     }
+
+        .components-sq-wh-btn {
+            @apply w-full py-[6px] text-base font-semibold rounded-md;
+            @apply transition-all duration-300;
+            @apply bg-white text-primary border border-primary;
+        }
+    
+        .components-sq-wh-btn:hover {
+            @apply bg-primary/5;
+        }
+    
+        .components-sq-wh-btn:active {
+            @apply transform scale-[0.98];
+        }
 
     /* ========== 입력 컴포넌트 ========== */
 
