@@ -26,27 +26,28 @@ const goToLogin = () => {
 </script>
 
 <template>
-  <nav class="navbar w-full max-w-[1194px]">
-    <!-- 로고 -->
-    <img
-      src="@/assets/icons/unibooker_logo.svg"
-      alt="UniBooker Logo"
-      class="navbar-logo cursor-pointer"
-      @click="goToHome"
-    />
+  <nav class="components-navbar">
+    <!-- 포지셔닝은 템플릿에서 Tailwind로 직접 -->
+    <div class="components-navbar-container flex items-center justify-between px-5">
+      <img
+        src="@/assets/icons/unibooker_logo.svg"
+        alt="UniBooker Logo"
+        class="components-navbar-logo pl-2"
+        @click="goToHome"
+      />
 
-    <!-- 메뉴 -->
-    <div class="navbar-menu">
-      <a class="navbar-link" @click="goToServiceIntro">서비스 소개</a>
-      <a class="navbar-link" @click="goToInquiry">문의하기</a>
-      <a class="navbar-link" @click="goToSignup">사용 신청하기</a>
+      <!-- 메뉴도 flex items-center 추가 -->
+      <div class="components-navbar-menu items-center pr-20">
+        <a class="components-navbar-link" @click="goToServiceIntro">서비스 소개</a>
+        <a class="components-navbar-link" @click="goToInquiry">사용 신청하기</a>
+        <a class="components-navbar-link" @click="goToSignup">문의하기</a>
+      </div>
+
+      <button class="components-btn-small rounded-[20px]" @click="goToLogin">로그인</button>
     </div>
-
-    <!-- 로그인 버튼 -->
-    <button class="btn btn-primary btn-small" @click="goToLogin">로그인 / 회원가입</button>
   </nav>
 </template>
 
 <style scoped>
-/* 컴포넌트별 추가 스타일이 필요한 경우 여기에 작성 */
+/* 이 컴포넌트만의 추가 스타일이 필요한 경우 여기에 작성 */
 </style>
