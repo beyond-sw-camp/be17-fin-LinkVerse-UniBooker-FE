@@ -1,0 +1,34 @@
+/* CSS 변수 정의 */
+:root {
+  /* Primary Colors */
+  --primary-color: #00008c;
+  --primary-hover: #000070;
+  
+  /* Text Colors */
+  --text-primary: #000000;
+  --text-secondary: #cbcbcb;
+  --text-white: #ffffff;
+  
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #eeeeee;
+  --bg-overlay: rgba(255, 255, 255, 0.43);
+  
+  /* Border */
+  --border-color: #cbcbcb;
+  --border-radius-sm: 3px;
+  --border-radius-md: 25px;
+  --border-radius-lg: 50px;
+  
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  
+  /* Font Family */
+  --font-regular: "Montserrat-Regular", sans-serif;
+  --font-medium: "Montserrat-Medium", sans-serif;
+  --font-semibold: "Montserrat-SemiBold", sans-serif;
+  --font-bold: "Montserrat-Bold", sans-serif;
+}
