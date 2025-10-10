@@ -1,5 +1,5 @@
 @layer components {
-    .input-base { @apply 
+    .components-input-base { @apply 
         px-2.5 py-2.5 rounded font-mont
         placeholder-gray-400
         outline-none border-b-2
