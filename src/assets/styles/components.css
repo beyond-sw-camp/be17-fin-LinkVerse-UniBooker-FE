@@ -235,4 +235,77 @@
     .components-header-logout {
         @apply bg-transparent border-none;
     }
+
+    /* ========== Footer 컴포넌트 ========== */
+
+    .components-footer {
+        @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
+    }
+  
+  .components-footer-container {
+    @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
+  }
+  
+  /* 네비게이션 링크 */
+  .components-footer-nav {
+    @apply flex items-center gap-4;
+  }
+  
+  .components-footer-nav-item {
+    @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
+  }
+  
+  .components-footer-divider {
+    @apply text-gray-400 text-sm;
+  }
+  
+  /* 저작권 정보 */
+  .components-footer-copyright {
+    @apply text-center;
+  }
+  
+  .components-footer-copyright-text {
+    @apply text-xs text-gray-500 flex items-center gap-1;
+  }
+  
+  /* 풋터 로고 */
+  .components-footer-logo {
+    @apply h-4 w-auto inline-block;
+  }
+
+  .components-footer {
+      @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
+  }
+
+  .components-footer-container {
+      @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
+  }
+
+  /* 네비게이션 링크 */
+  .components-footer-nav {
+      @apply flex items-center gap-4;
+  }
+
+  .components-footer-nav-item {
+      @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
+  }
+
+  .components-footer-divider {
+      @apply text-gray-400 text-sm;
+  }
+
+  /* 저작권 정보 */
+  .components-footer-copyright {
+      @apply text-center;
+  }
+
+  .components-footer-copyright-text {
+      @apply text-xs text-gray-500 flex items-center gap-1;
+  }
+
+  /* 풋터 로고 */
+  .components-footer-logo {
+      @apply h-4 w-auto inline-block;
+  }
+
 }
