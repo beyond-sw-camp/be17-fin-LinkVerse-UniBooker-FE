@@ -6,11 +6,17 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        primary: '#000070',           
+        'primary-hover': '#00008C',   
+      },
       fontFamily: {
-        // 한글용
-        noto: ['Noto Sans KR'],
-        // 영문용
-        mont: ['Montserrat'],
+        mont: ['Montserrat', 'sans-serif'],        
+        montserrat: ['Montserrat', 'sans-serif'],
+        sans: ['Noto Sans KR', 'sans-serif'],
+      },
+      borderRadius: {
+        lg: '8px',
       },
     },
   },
