@@ -44,10 +44,10 @@ const goToSignup = () => {
             <label class="min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px]">
               이메일
             </label>
-            <input
+            <Input
               v-model="loginForm.email"
               type="email"
-              class="components-input-field flex-1 w-[300px]"
+              class="flex-1 w-[300px]"
               placeholder="이메일을 입력해주세요."
             />
           </div>
@@ -57,22 +57,22 @@ const goToSignup = () => {
             <label class="min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px]">
               비밀번호
             </label>
-            <input
+            <Input
               v-model="loginForm.password"
               type="password"
-              class="components-input-field flex-1 w-[300px]"
+              class="flex-1 w-[300px]"
               placeholder="비밀번호를 입력해주세요."
             />
           </div>
         </div>
 
         <!-- 로그인 버튼 -->
-        <button
+        <Button
           type="submit"
           class="components-btn-primary components-btn-middle mb-[22px] rounded-[20px]"
         >
           로그인
-        </button>
+        </Button>
 
         <!-- 회원가입 안내 -->
         <div class="text-[14px] text-gray-500 mb-[70px]">
@@ -86,4 +86,10 @@ const goToSignup = () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.components-card {
+        @apply bg-white rounded-[25px] shadow-md p-10;
+    }
+
+
+</style>

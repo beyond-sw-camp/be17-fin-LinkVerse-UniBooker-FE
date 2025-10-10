@@ -26,28 +26,46 @@ const goToLogin = () => {
 </script>
 
 <template>
-  <nav class="components-navbar">
+  <nav class="navbar">
     <!-- 포지셔닝은 템플릿에서 Tailwind로 직접 -->
-    <div class="components-navbar-container flex items-center justify-between px-5">
+    <div class="navbar-container flex items-center justify-between px-5">
       <img
-        src="@/assets/icons/unibooker_logo.svg"
+        src="/public/assets/images/unibooker_logo.svg"
         alt="UniBooker Logo"
-        class="components-navbar-logo pl-2"
+        class="navbar-logo pl-2"
         @click="goToHome"
       />
 
       <!-- 메뉴도 flex items-center 추가 -->
-      <div class="components-navbar-menu items-center pr-20">
-        <a class="components-navbar-link" @click="goToServiceIntro">서비스 소개</a>
-        <a class="components-navbar-link" @click="goToInquiry">사용 신청하기</a>
-        <a class="components-navbar-link" @click="goToSignup">문의하기</a>
+      <div class="navbar-menu items-center pr-20">
+        <a class="navbar-link" @click="goToServiceIntro">서비스 소개</a>
+        <a class="navbar-link" @click="goToInquiry">사용 신청하기</a>
+        <a class="navbar-link" @click="goToSignup">문의하기</a>
       </div>
 
-      <button class="components-btn-small rounded-[20px]" @click="goToLogin">로그인</button>
+      <Button class="btn-small rounded-[20px]" @click="goToLogin">로그인</Button>
     </div>
   </nav>
 </template>
 
 <style scoped>
-/* 이 컴포넌트만의 추가 스타일이 필요한 경우 여기에 작성 */
+.navbar {
+  @apply w-full bg-white shadow-md rounded-[25px];
+}
+
+.navbar-container {
+  @apply h-[50px] max-w-7xl mx-auto;
+}
+
+.navbar-logo {
+  @apply h-[20px] w-auto cursor-pointer transition-all duration-300;
+}
+
+.navbar-menu {
+  @apply flex gap-[100px];
+}
+
+.navbar-link {
+  @apply text-gray-700 hover:text-primary font-normal hover:font-medium duration-300 cursor-pointer;
+}
 </style>

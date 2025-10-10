@@ -103,26 +103,25 @@ const handleSubmit = () => {
         <div class="flex items-center w-full max-w-[450px] mb-[10px] mr-[30px]">
           <label class="components-form-label text-gray-600 text-[16px] mr-5">기업명</label>
           <div class="components-input-with-button-wrapper flex-1">
-            <input
+            <Input
               v-model="formData.companyName"
               type="text"
-              class="components-input-with-button"
               placeholder="기업명을 입력해주세요."
               @input="resetCompanyNameCheck"
             />
-            <button type="button" @click="checkCompanyName" class="components-btn-check-inside">
+            <Button type="button" @click="checkCompanyName">
               중복확인
-            </button>
+            </Button>
           </div>
         </div>
 
         <!-- 이름 -->
         <div class="flex items-center w-full max-w-[500px] mb-[10px] ml-[20px]">
           <label class="components-form-label text-gray-600 text-[16px] mr-5">이름</label>
-          <input
+          <Input
             v-model="formData.name"
             type="text"
-            class="components-input-field flex-1"
+            class="flex-1"
             placeholder="이름을 입력해주세요."
           />
         </div>
@@ -131,26 +130,25 @@ const handleSubmit = () => {
         <div class="flex items-center w-full max-w-[450px] mb-[10px] mr-[30px]">
           <label class="components-form-label text-gray-600 text-[16px] mr-5">이메일</label>
           <div class="components-input-with-button-wrapper flex-1">
-            <input
+            <Input
               v-model="formData.email"
               type="email"
-              class="components-input-with-button"
               placeholder="이메일을 입력해주세요."
               @input="resetEmailCheck"
             />
-            <button type="button" @click="checkEmail" class="components-btn-check-inside">
+            <Button type="button" @click="checkEmail">
               중복확인
-            </button>
+            </Button>
           </div>
         </div>
 
         <!-- 연락처 -->
         <div class="flex items-center w-full max-w-[500px] mb-[10px] ml-[20px]">
           <label class="components-form-label text-gray-600 text-[16px] mr-5">연락처</label>
-          <input
+          <Input
             v-model="formData.phone"
             type="tel"
-            class="components-input-field flex-1"
+            class="flex-1"
             placeholder="연락처를 입력해주세요."
           />
         </div>
@@ -159,10 +157,9 @@ const handleSubmit = () => {
         <div class="flex items-center w-full max-w-[500px] mb-[55px] ml-[20px]">
           <label class="components-form-label text-gray-600 text-[16px] mr-5">기업로고</label>
           <div class="components-file-upload-wrapper flex-1">
-            <input
+            <Input
               id="logo-upload"
               type="file"
-              class="components-file-upload-input"
               accept="image/*"
               @change="handleFileUpload"
             />
@@ -173,14 +170,53 @@ const handleSubmit = () => {
         </div>
 
         <!-- 제출 버튼 -->
-        <button type="submit" class="components-btn-large rounded-[20px] mb-[27px]">
+        <Button type="submit" class="rounded-[20px] mb-[27px]">
           사용 신청하기
-        </button>
+        </Button>
       </form>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* 컴포넌트별 추가 스타일이 필요한 경우에만 사용 */
+.components-card {
+  @apply bg-white rounded-[25px] shadow-md p-10;
+}
+
+.components-card-title {
+  @apply text-gray-800 font-semibold text-xl text-center mb-4;
+}
+
+.components-card-subtitle {
+  @apply text-gray-700 font-normal text-sm text-center leading-relaxed;
+}
+
+.components-form-label {
+        @apply text-gray-700 font-medium text-[15px] text-center min-w-[80px];
+    }
+
+    .components-input-with-button-wrapper {
+        @apply relative w-full;
+    }
+
+    .components-file-upload-wrapper {
+        @apply relative;
+    }
+
+    .components-file-upload-input {
+        @apply hidden;
+    }
+
+    .components-file-upload-label {
+        @apply flex items-center w-full max-w-[350px] h-[35px] px-[10px] py-[10px];
+        @apply border border-[#cbcbcb] rounded-[3px];
+        @apply font-normal text-base text-[#cbcbcb] cursor-pointer;
+        @apply bg-gray-100;
+        @apply transition-all duration-300;
+    }
+
+    .components-file-upload-label:hover {
+        @apply border-primary bg-primary/[0.02];
+        @apply bg-gray-100;
+    }
 </style>
