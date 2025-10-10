@@ -83,7 +83,7 @@ const goToSignup = () => {
 
 <style scoped>
 .components-card {
-  @apply bg-white rounded-[25px] shadow-md p-10;
+  @apply bg-white rounded-[20px] p-10;
 }
 
 .input-style {
