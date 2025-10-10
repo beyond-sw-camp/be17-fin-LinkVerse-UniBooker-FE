@@ -1,0 +1,33 @@
+@layer components {
+    /* 기본 */
+    .components-checkbox-base { @apply
+        appearance-none /* 기본 브라우저 체크박스 스타일 제거 */
+        w-5 h-5
+        rounded-sm
+        shadow-sm
+        bg-white
+        border border-gray-300
+        cursor-pointer
+        transition-all duration-200;
+    }
+
+    /* 체크 상태일 때 */
+    .components-checkbox-base:checked {
+        border-color: #00008C;
+        box-shadow: 0 0 3px rgba(0, 0, 140, 0.5);
+        position: relative;
+    }
+
+    /* 체크 마크 */
+    .components-checkbox-base:checked::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 6px;
+        width: 5px;
+        height: 10px;
+        border-right: 2px solid #00008C;
+        border-bottom: 2px solid #00008C;
+        transform: rotate(45deg); 
+    }
+}
