@@ -3,10 +3,6 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-// 전역 스타일
-import './app.css'
-// 버튼 컴포넌트 전역 등록
-import Button from './components/Button.vue'
 
 // 전역 스타일
 import './app.css'
