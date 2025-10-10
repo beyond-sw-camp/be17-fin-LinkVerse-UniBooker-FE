@@ -18,6 +18,10 @@ export default {
         'gray-line': '#EEEEEE',
         'gray-deep': '#DDDDDD',
         'gray-dark': '#555555',
+
+        // 기본 컬러
+        black: '#000000',
+        white: '#FFFFFF'
       },
       fontFamily: {
         'mont-noto': ['Montserrat', 'Noto Sans KR', 'sans-serif'],

@@ -43,14 +43,15 @@ const goToLogin = () => {
         <a class="navbar-link" @click="goToSignup">문의하기</a>
       </div>
 
-      <Button class="btn-small rounded-[20px]" @click="goToLogin">로그인</Button>
+      <Button class="rounded-[50px] px-8 text-sm font-normal" @click="goToLogin">로그인</Button>
     </div>
   </nav>
 </template>
 
 <style scoped>
 .navbar {
-  @apply w-full bg-white shadow-md rounded-[25px];
+  @apply w-full rounded-[25px];
+  background-color: #F5F5F5;
 }
 
 .navbar-container {
@@ -66,6 +67,6 @@ const goToLogin = () => {
 }
 
 .navbar-link {
-  @apply text-gray-700 hover:text-primary font-normal hover:font-medium duration-300 cursor-pointer;
+  @apply text-gray-700 hover:text-black text-sm font-normal hover:font-medium duration-300 cursor-pointer;
 }
 </style>
