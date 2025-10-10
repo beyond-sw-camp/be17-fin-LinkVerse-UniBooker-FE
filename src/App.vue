@@ -1,10 +1,12 @@
+<script setup>
+// App.vue는 최상위 컴포넌트
+// 라우터 뷰만 렌더링
+</script>
+
 <template>
-  <main class="min-h-screen bg-gray-100">
-    <Button>확인</Button>
-    <div></div>
-    <Input placeholder="placeholder"/>
-    <div></div>
-    <input type="checkbox" class="components-checkbox-base" />
-    <div></div>
-  </main>
+  <RouterView />
 </template>
+
+<style>
+/* 전역 스타일은 assets/styles/index.css에서 관리 */
+</style>

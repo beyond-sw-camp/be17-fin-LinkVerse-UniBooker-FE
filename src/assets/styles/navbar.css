@@ -1,0 +1,41 @@
+/* 네비게이션 바 스타일 */
+.navbar {
+  background: var(--bg-overlay);
+  backdrop-filter: blur(10px);
+  border-radius: var(--border-radius-md);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-logo {
+  height: 22px;
+  width: auto;
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+}
+
+.navbar-link {
+  color: var(--text-primary);
+  font-family: var(--font-medium);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.navbar-link:hover {
+  color: var(--primary-color);
+}
+
+.navbar-link:active {
+  transform: scale(0.98);
+}
