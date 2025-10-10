@@ -1,0 +1,202 @@
+@layer components {
+    /* ========== 버튼 컴포넌트 ========== */
+
+    .components-btn-base {
+        @apply inline-flex items-center justify-center rounded-lg font-semibold;
+        @apply transition-all duration-300 ease-in-out cursor-pointer border-0;
+    }
+
+    .components-btn-primary {
+        @apply components-btn-base bg-primary text-white px-8 py-3 text-base;
+    }
+
+    .components-btn-primary:hover {
+        @apply bg-primary-hover;
+    }
+
+    .components-btn-primary:active {
+        @apply translate-y-0;
+    }
+
+    .components-btn-small {
+        @apply components-btn-base h-9 px-5 py-3 text-sm font-bold;
+        @apply bg-primary text-white;
+    }
+
+    .components-btn-small:hover {
+        @apply bg-primary-hover;
+    }
+
+    .components-btn-small:active {
+        @apply translate-y-0;
+    }
+
+    .components-btn-middle {
+        @apply components-btn-base w-full max-w-[320px] h-10 text-base;
+        @apply bg-primary text-white px-8 py-3;
+    }
+
+    .components-btn-middle:hover {
+        @apply bg-primary-hover;
+    }
+
+    .components-btn-middle:active {
+        @apply translate-y-0;
+    }
+
+    .components-btn-large {
+        @apply components-btn-base w-full max-w-[538px] h-10 text-base;
+        @apply bg-primary text-white px-8 py-3;
+    }
+
+    .components-btn-large:hover {
+        @apply bg-primary-hover;
+    }
+
+    .components-btn-large:active {
+        @apply translate-y-0;
+    }
+
+    .components-btn-check {
+        @apply px-3 py-1 text-sm font-semibold;
+        @apply bg-transparent text-primary border border-primary rounded-md;
+        @apply transition-all duration-300 cursor-pointer;
+    }
+
+    /* ========== 입력 컴포넌트 ========== */
+
+    .components-input-wrapper {
+        @apply flex items-center gap-4;
+    }
+
+    .components-input-label {
+        @apply text-gray-700 font-medium text-base min-w-[68px] text-center;
+    }
+
+    .components-input-field {
+        @apply w-full max-w-[350px] h-9 px-[10px] py-[10px];
+        @apply border border-[#cbcbcb] rounded-[3px];
+        @apply font-normal text-base text-gray-700;
+        @apply transition-all duration-300;
+    }
+
+    .components-input-field::placeholder {
+        @apply text-[#cbcbcb];
+    }
+
+    .components-input-field:focus {
+        @apply border-primary outline-none;
+        box-shadow: 0 0 0 3px rgba(0, 0, 140, 0.1);
+    }
+
+    .components-input-field:hover {
+        @apply border-[#999];
+    }
+
+    /* 입력 필드 + 버튼 조합 (회원가입 중복확인용) */
+    .components-input-with-button-wrapper {
+        @apply relative w-full;
+    }
+
+    .components-input-with-button {
+        @apply w-full h-9 px-3 py-1.5;
+        @apply border border-[#cbcbcb] rounded-[3px];
+        @apply font-normal text-base text-gray-700;
+        @apply transition-all duration-300;
+    }
+
+    .components-input-with-button::placeholder {
+        @apply text-[#cbcbcb];
+    }
+
+    .components-input-with-button:focus {
+        @apply border-primary outline-none;
+        box-shadow: 0 0 0 3px rgba(0, 0, 140, 0.1);
+    }
+
+    .components-input-with-button:hover {
+        @apply border-[#999];
+    }
+
+    /* 입력 필드 내부에 위치하는 버튼 */
+    .components-btn-check-inside {
+        @apply absolute right-2 top-1/2 -translate-y-1/2 z-10;
+        @apply px-2 py-0.5 text-sm font-medium whitespace-nowrap;
+        @apply bg-transparent text-gray-400 bg-gray-200 border border-gray-400 rounded-md;
+        @apply transition-all duration-300 cursor-pointer;
+    }
+
+    .components-btn-check-inside:active {
+        @apply font-semibold;
+        @apply text-primary bg-white border border-primary rounded-md;
+    }
+
+    /* ========== 폼 라벨 ========== */
+
+    .components-form-label {
+        @apply text-gray-700 font-medium text-[15px] text-center min-w-[80px];
+    }
+
+    /* ========== 파일 업로드 컴포넌트 ========== */
+
+    .components-file-upload-wrapper {
+        @apply relative;
+    }
+
+    .components-file-upload-input {
+        @apply hidden;
+    }
+
+    .components-file-upload-label {
+        @apply flex items-center w-full max-w-[350px] h-[35px] px-[10px] py-[10px];
+        @apply border border-[#cbcbcb] rounded-[3px];
+        @apply font-normal text-base text-[#cbcbcb] cursor-pointer;
+        @apply bg-gray-100;
+        @apply transition-all duration-300;
+    }
+
+    .components-file-upload-label:hover {
+        @apply border-primary bg-primary/[0.02];
+        @apply bg-gray-100;
+    }
+
+    /* ========== 카드 컴포넌트 ========== */
+
+    .components-card {
+        @apply bg-white rounded-[25px] shadow-md p-10;
+    }
+
+    .components-card-title {
+        @apply text-gray-800 font-semibold text-xl text-center mb-4;
+    }
+
+    .components-card-subtitle {
+        @apply text-gray-700 font-normal text-sm text-center leading-relaxed;
+    }
+
+    .components-card-description {
+        @apply text-gray-600 text-sm text-center leading-relaxed;
+    }
+
+    /* ========== Navbar 컴포넌트 ========== */
+
+    .components-navbar {
+        @apply w-full bg-white shadow-md rounded-[25px];
+    }
+
+    .components-navbar-container {
+        @apply h-[50px] max-w-7xl mx-auto;
+    }
+
+    .components-navbar-logo {
+        @apply h-[20px] w-auto cursor-pointer transition-all duration-300;
+    }
+
+    .components-navbar-menu {
+        @apply flex gap-[100px];
+    }
+
+    .components-navbar-link {
+        @apply text-gray-700 hover:text-primary font-normal hover:font-medium duration-300 cursor-pointer;
+    }
+}

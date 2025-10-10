@@ -9,7 +9,6 @@ import './app.css'
 import Button from './components/Button.vue'
 
 // CSS imports
-import './assets/styles/tailwind.css'
 import './assets/styles/index.css'
 
 const app = createApp(App)
