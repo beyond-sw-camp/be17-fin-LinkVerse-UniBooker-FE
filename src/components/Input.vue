@@ -11,5 +11,5 @@ const baseClasses = `
 
 <template>
   <!-- <input :class="[baseClasses]"/> -->
-  <input class="components-input-base"/>
+  <input class="input-base"/>
 </template>
