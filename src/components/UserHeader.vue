@@ -16,11 +16,10 @@ const handleLogout = () => {
       <!-- 로고 영역 -->
       <div class="components-header-logo">
         <img
-          src="/assets/icons/admin-logo.png"
+          src="@/assets/icons/admin_logo.png"
           alt="한화시스템 로고"
           class="components-header-logo-img"
         />
-        <span class="components-header-logo-text">한화시스템</span>
       </div>
 
       <!-- 로그인 후 네비게이션 메뉴 -->
