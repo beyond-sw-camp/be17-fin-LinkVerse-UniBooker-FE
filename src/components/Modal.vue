@@ -25,3 +25,13 @@ function handleOverlayClick(e) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.components-modal-overlay {
+  @apply fixed inset-0 flex items-center justify-center bg-black/30 z-50;
+}
+
+.components-modal-contents {
+  @apply bg-white shadow-md p-6 rounded-md max-w-[600px] min-w-[300px] z-50;
+}
+</style>
