@@ -1,7 +1,5 @@
 <script setup>
 import { ref, computed } from 'vue'
-import leftArrow from '@/assets/icons/ic-left-arrow.png' 
-import rightArrow from '@/assets/icons/ic-right-arrow.png' 
 
 /* 상수 */
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -58,13 +56,13 @@ function isToday(day) {
     <!-- 헤더 -->
     <div class="calendar-header">
       <button @click="prevMonth">
-        <img :src="leftArrow" alt="previous" class="w-6 h-6">
+        <img src="/assets/icons/ic-left-arrow.png" alt="previous" class="w-6 h-6">
       </button>
       <h2 class="current-month">
         {{ MONTHS[currentMonth] }} {{ currentYear }}
       </h2>
       <button @click="nextMonth">
-        <img :src="rightArrow" alt="next" class="w-6 h-6">
+        <img src="/assets/icons/ic-right-arrow.png" alt="next" class="w-6 h-6">
       </button>
     </div>
     
