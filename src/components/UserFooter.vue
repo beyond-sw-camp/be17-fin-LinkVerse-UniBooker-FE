@@ -14,7 +14,7 @@
       <div class="footer-copyright">
         <p class="footer-copyright-text">
           Copyright LinkVerse. All rights reserved.
-          <img src="/public/assets/images/unibooker_logo.svg" alt="UniBooker" class="footer-logo" />
+          <img src="/public/assets/images/unibooker_blue_logo.svg" alt="UniBooker" class="footer-logo" />
         </p>
       </div>
     </div>

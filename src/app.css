@@ -26,14 +26,14 @@
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 4px; /* 스크롤바 너비 */
   }
   ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: rgba(255, 255, 255, 0.3); /* 트랙 배경색 */
   }
   ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1); /* 스크롤 색 */
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
