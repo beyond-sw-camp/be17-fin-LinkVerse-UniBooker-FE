@@ -3,17 +3,12 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-// 전역 스타일
-import './app.css'
 
 // 전역 스타일
 import './app.css'
 import Button from '@/components/Button.vue' // 버튼 컴포넌트 전역 등록
 import Input from '@/components/Input.vue' // input 컴포넌트 전역 등록
 import Modal from '@/components/Modal.vue' // Modal 컴포넌트 전역 등록
-
-// CSS imports
-import './assets/styles/index.css'
 
 const app = createApp(App)
 
