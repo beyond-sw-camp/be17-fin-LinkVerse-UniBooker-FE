@@ -94,7 +94,16 @@ const selectMenuItem = (serviceIndex, menu) => {
 
     <!-- 서브메뉴 별 내용이 표시되는 곳 -->
      <div class="content-body">
-
+        <div class="content-top">
+          <div class="admin-badge">
+            <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
+            <span>김아영 관리자님</span>
+            <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
+          </div>
+        </div>
+        <div class="content-slot">
+          <!-- 여기에 내용이 들어갑니다! -->
+        </div>
      </div>
   </div>
 </template>
@@ -158,6 +167,30 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .content-body {
-  @apply bg-gray-line w-full ml-[-20px] rounded-tl-[20px] rounded-bl-[20px];
+  @apply overflow-y-auto bg-gray-line flex-1 ml-[-20px] rounded-tl-[20px] rounded-bl-[20px] px-[30px] py-[22px];
+}
+
+.content-top {
+  @apply w-full flex justify-end;
+}
+
+.admin-badge {
+  @apply bg-white flex items-center rounded-[20px] overflow-hidden px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer;
+}
+
+.admin-badge img:first-child {
+  @apply w-[90px];
+}
+
+.admin-badge span {
+  @apply ml-[3px] mr-[12px];
+}
+
+.admin-badge img:last-child {
+  @apply w-[17px] h-[18px];
+}
+
+.content-slot {
+  @apply mt-[10px] w-full;
 }
 </style>
