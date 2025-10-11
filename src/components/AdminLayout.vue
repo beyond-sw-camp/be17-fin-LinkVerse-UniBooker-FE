@@ -1,47 +1,107 @@
-<script setup></script>
+<script setup>
+import { ref } from 'vue'
+
+// 예시 서비스 그룹 목록입니다.
+const services = ref([
+  { label: '동아리 모집' },
+  { label: '회의실 예약' },
+  { label: '통근버스 신청' },
+  { label: '캠핑카 이용 신청' },
+])
+
+// 서비스 그룹의 드롭다운 메뉴 항목
+const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
+
+const openDropdown = ref(null) // 열려있는 서비스 그룹
+const selectedMenuItems = ref(
+  // 드롭다운 메뉴 항목의 초기값은 첫 번째 메뉴인 '전체 분석'
+  // 이후에는 마지막으로 머물렀던 메뉴 항목을 유지
+  Object.fromEntries(services.value.map((_, i) => [i, dropdownItems[0]])),
+)
+
+// 드롭다운 토글
+const toggleDropdown = (index) => {
+  if (openDropdown.value === index) {
+    openDropdown.value = null
+  } else {
+    openDropdown.value = index
+  }
+}
+
+// 드롭다운 메뉴 선택
+const selectMenuItem = (serviceIndex, menu) => {
+  selectedMenuItems.value[serviceIndex] = menu
+}
+</script>
 
 <template>
-  <div class="sub-bar-contaienr">
-    <!-- UniBooker 로고 -->
-    <div class="logo-section">
-      <img src="/public/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
-    </div>
+  <div class="admin-layout">
 
-    <!-- 리소스 그룹 생성 버튼 -->
-    <div class="service-group-create-button-container">서비스 그룹 생성</div>
+    <!-- 서브메뉴바 -->
+    <div class="sub-bar-contaienr">
+      <!-- UniBooker 로고 -->
+      <div class="logo-section">
+        <img src="/public/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
+      </div>
 
-    <!-- Control 섹션 -->
-    <div class="sub-menu-section">
-      <span class="sub-menu-label">Control</span>
-      <div class="sub-menu-items-container">
-        <div class="sub-menu-item">전체 현황</div>
-        <div class="sub-menu-item">관리자 관리</div>
-        <div class="sub-menu-item">서비스 그룹 관리</div>
+      <!-- 리소스 그룹 생성 버튼 -->
+      <div class="service-group-create-button-container">서비스 그룹 생성</div>
+
+      <!-- Control 섹션 -->
+      <div class="sub-menu-section">
+        <span class="sub-menu-label">Control</span>
+        <div class="sub-menu-items-container">
+          <div class="sub-menu-item">전체 현황</div>
+          <div class="sub-menu-item">관리자 관리</div>
+          <div class="sub-menu-item">서비스 그룹 관리</div>
+        </div>
+      </div>
+
+      <!-- Service Groups 섹션 -->
+      <div class="sub-menu-section flex-1">
+        <span class="sub-menu-label">Service Groups</span>
+        <div class="sub-menu-items-container sub-menu-scroll">
+          <div v-for="(item, index) in services" :key="index">
+            <div
+              class="sub-menu-item"
+              :class="{ 'selected-menu-item': openDropdown === index }"
+              @click="toggleDropdown(index)"
+            >
+              {{ item.label }}
+            </div>
+            <div v-if="openDropdown === index">
+              <div
+                v-for="child in dropdownItems"
+                :key="child"
+                class="service-group-menu-item"
+                :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
+                @click.stop="selectMenuItem(index, child)"
+              >
+                {{ child }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 로그아웃 버튼 -->
+      <div class="sub-menu-logout-button-container">
+        <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
+        Logout
       </div>
     </div>
 
-    <!-- Service Groups 섹션 -->
-    <div class="sub-menu-section flex-1">
-      <span class="sub-menu-label">Service Groups</span>
-      <div class="sub-menu-items-container sub-menu-scroll">
-        <div class="sub-menu-item">동아리 모집</div>
-        <div class="sub-menu-item">회의실 예약</div>
-        <div class="sub-menu-item">통근버스 신청</div>
-        <div class="sub-menu-item">캠핑카 이용 신청</div>
-      </div>
-    </div>
 
-    <!-- 로그아웃 버튼 -->
-    <div class="sub-menu-logout-button-container">
-      <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
-      Logout
-    </div>
+    <!-- 서브메뉴 별 내용이 표시되는 곳 -->
+     <div class="content-body">
+
+     </div>
   </div>
 </template>
 
 <style scoped>
 .sub-bar-contaienr {
-  @apply bg-primary h-screen text-white overflow-hidden flex flex-col max-w-[260px];
+  @apply bg-primary h-screen text-white overflow-hidden flex flex-col max-w-[280px] w-full pr-[20px];
 }
 
 .logo-section {
@@ -53,7 +113,7 @@
 }
 
 .sub-menu-section {
-  @apply mt-[30px];
+  @apply mt-[25px];
 }
 
 .sub-menu-label {
@@ -61,15 +121,18 @@
 }
 
 .sub-menu-item {
-  @apply 
-    w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer
+  @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer
     hover:border-l-4
     hover:border-white
     hover:bg-[rgba(255,255,255,0.44)];
 }
 
+.selected-menu-item {
+  @apply border-l-4 border-white bg-[rgba(255,255,255,0.44)];
+}
+
 .sub-menu-logout-button-container {
-  @apply flex gap-3 items-center ml-[16px] mb-[20px] text-sm cursor-pointer; 
+  @apply flex gap-3 items-center ml-[16px] mb-[20px] text-sm cursor-pointer hover:font-medium w-fit;
 }
 
 .sub-menu-logout-button-container img {
@@ -78,5 +141,23 @@
 
 .sub-menu-scroll {
   @apply flex-1 overflow-y-auto max-h-[280px];
+}
+
+.service-group-menu-item {
+  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0]
+  hover:text-white
+  hover:font-medium;
+}
+
+.selected-service-group-item {
+  @apply text-white font-medium;
+}
+
+.admin-layout {
+  @apply flex;
+}
+
+.content-body {
+  @apply bg-gray-line w-full ml-[-20px] rounded-tl-[20px] rounded-bl-[20px];
 }
 </style>
