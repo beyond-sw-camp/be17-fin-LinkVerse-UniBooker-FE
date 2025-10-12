@@ -1,17 +1,22 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+
+defineOptions({
+  inheritAttrs: false,
+})
 
 const props = defineProps({
   type: {
     type: String,
-    default: 'text', // 'text' | 'checkbox' | 'radio'
+    default: 'text', // 'text' | 'checkbox' | 'radio' | 'file'
   },
   label: String, // 체크박스·라디오 옆에 표시할 글자
   placeholder: { type: String, default: '' }, // input일 때 placeholder
   name: String, // 라디오 그룹 지정용 (같은 name = 같은 그룹)
   value: [String, Number, Boolean], // 라디오 버튼 값
-  modelValue: [String, Number, Boolean], // v-model용
+  modelValue: [String, Number, Boolean, FileList], // v-model용
   disabled: Boolean,
+  accept: String,
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -32,10 +37,30 @@ const onChange = (e) => {
     emit('update:modelValue', e.target.value)
   }
 }
+
+// 파일 input ref와 선택된 파일명
+const fileInput = ref(null)
+const selectedFileName = ref('')
+
+// 파일 선택 핸들러
+const onFileChange = (e) => {
+  const files = e.target.files
+  if (files && files.length > 0) {
+    selectedFileName.value = files[0].name
+    emit('update:modelValue', files)
+  }
+}
+
+// 파일 선택창 열기
+const openFilePicker = () => {
+  if (!props.disabled && fileInput.value) {
+    fileInput.value.click()
+  }
+}
 </script>
 
 <template>
-  <div>
+  <div :class="$attrs.class">
     <!-- 체크박스 -->
     <template v-if="props.type === 'checkbox'">
       <label class="components-label">
@@ -66,11 +91,34 @@ const onChange = (e) => {
       </label>
     </template>
 
+    <!-- 파일 input (커스텀 UI) -->
+    <template v-else-if="props.type === 'file'">
+      <div class="relative">
+        <!-- 숨겨진 실제 file input -->
+        <input
+          ref="fileInput"
+          type="file"
+          class="hidden"
+          :disabled="disabled"
+          :accept="accept"
+          @change="onFileChange"
+        />
+        <!-- 커스텀 파일 입력 UI (텍스트 입력창처럼 보임) -->
+        <div
+          class="input-base cursor-pointer text-gray-400 hover:text-gray-600 w-full"
+          :class="{ 'opacity-50 cursor-not-allowed': disabled }"
+          @click="openFilePicker"
+        >
+          {{ selectedFileName || placeholder || '클릭하여 파일을 선택해주세요.' }}
+        </div>
+      </div>
+    </template>
+
     <!-- 텍스트 input -->
     <template v-else>
       <input
         :type="props.type"
-        :class="inputClasses"
+        :class="[inputClasses, 'w-full']"
         :placeholder="props.placeholder"
         :disabled="disabled"
         :value="modelValue != null ? modelValue : ''"
@@ -88,7 +136,7 @@ const onChange = (e) => {
 
 /* 텍스트 input */
 .input-base {
-  @apply px-2.5 py-2.5 rounded placeholder-gray-400 outline-none border-b-2 transition-all duration-200 focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed;
+  @apply px-2.5 py-2.5 rounded placeholder-gray-400 hover:placeholder-gray-600 outline-none border-b-2 transition-all duration-200 focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed;
 }
 
 /* 체크박스 */
