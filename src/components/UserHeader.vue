@@ -1,71 +1,112 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 
-// 로그인 상태 (실제로는 Pinia store에서 관리)
-const isLoggedIn = ref(true)
+const router = useRouter()
+const authStore = useAuthStore()
+
+// 페이지 로드 시 인증 상태 확인
+onMounted(() => {
+  authStore.checkAuth()
+})
+
+// 네비게이션 핸들러
+const goToService = () => {
+  router.push('/service')
+}
+
+const goToReservation = () => {
+  router.push('/reservation')
+}
+
+const goToMypage = () => {
+  router.push('/mypage')
+}
+
+// 인증 핸들러
+const handleLogin = () => {
+  router.push('/login')
+}
+
+const handleSignup = () => {
+  router.push('/signup')
+}
 
 const handleLogout = () => {
-  // 로그아웃 로직
-  console.log('로그아웃 처리')
+  authStore.logout()
+  router.push('/')
 }
 </script>
 
 <template>
-  <header class="header">
-    <div class="header-container">
+  <header class="user-header">
+    <div class="user-header-container">
       <!-- 로고 영역 -->
-      <div class="header-logo">
+      <div class="user-header-logo-wrapper">
         <img
-          src="/public/assets/images/admin_logo.png"
+          src="/assets/images/admin_logo.png"
           alt="한화시스템 로고"
-          class="header-logo-img"
+          class="user-header-logo-img"
         />
-        <span class="header-logo-text">한화시스템</span>
       </div>
 
       <!-- 로그인 후 네비게이션 메뉴 -->
-      <nav v-if="isLoggedIn" class="header-nav">
-        <a href="/service" class="header-nav-item">서비스 목록</a>
-        <a href="/reservation" class="header-nav-item">예약 내역</a>
-        <a href="/mypage" class="header-nav-item">마이페이지</a>
-        <button @click="handleLogout" class="header-nav-item header-logout">LOGOUT</button>
+      <nav v-if="authStore.isLoggedIn" class="user-header-nav">
+        <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
+        <button @click="goToReservation" class="user-header-nav-item">예약 내역</button>
+        <button @click="goToMypage" class="user-header-nav-item">마이페이지</button>
       </nav>
+
+      <!-- 로그인 전: LOGIN | SIGNUP -->
+      <div v-if="!authStore.isLoggedIn" class="user-btn-container">
+        <button @click="handleLogin" class="user-header-btn">LOGIN</button>
+        <span class="user-btn-divider">|</span>
+        <button @click="handleSignup" class="user-header-btn">SIGNUP</button>
+      </div>
+
+      <!-- 로그인 후: LOGOUT -->
+      <div v-else class="user-btn-container">
+        <button @click="handleLogout" class="user-header-btn">LOGOUT</button>
+      </div>
     </div>
   </header>
 </template>
 
 <style scoped>
-/* 헤더 스타일 */
-.header {
+.user-header {
   @apply w-full bg-white border-b border-gray-200 shadow-sm;
 }
 
-.header-container {
-  @apply max-w-7xl mx-auto px-6 py-4 flex items-center justify-between;
+.user-header-container {
+  @apply max-w-7xl mx-auto px-6 py-1 flex items-center justify-between;
 }
 
-.header-logo {
-  @apply flex items-center gap-3;
+.user-header-logo-wrapper {
+  @apply flex items-center;
 }
 
-.header-logo-img {
-  @apply h-8 w-auto;
+.user-header-logo-img {
+  @apply h-9 w-auto;
 }
 
-.header-logo-text {
-  @apply text-xl font-bold text-gray-800;
+.user-header-nav {
+  @apply flex items-center gap-12 ml-10;
 }
 
-/* 네비게이션 메뉴 스타일 */
-.header-nav {
-  @apply flex items-center gap-8;
+.user-header-nav-item {
+  @apply text-base font-medium text-gray-500 hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none;
 }
 
-.header-nav-item {
-  @apply text-base font-medium text-gray-700 hover:text-gray-900 transition-colors cursor-pointer;
+.user-btn-container {
+  @apply flex items-center gap-5;
 }
 
-.header-logout {
-  @apply bg-transparent border-none;
+.user-btn-divider {
+  @apply text-gray-400;
+}
+
+.user-header-btn {
+  @apply text-base font-normal text-gray-400 hover:text-primary-hover hover:font-medium transition-colors cursor-pointer bg-transparent border-none;
 }
 </style>
