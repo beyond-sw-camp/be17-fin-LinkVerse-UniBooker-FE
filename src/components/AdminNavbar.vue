@@ -37,21 +37,23 @@ const goToLogin = () => {
       />
 
       <!-- 메뉴도 flex items-center 추가 -->
-      <div class="navbar-menu items-center pr-20">
+      <div class="navbar-menu items-center pr-[65px]">
         <a class="navbar-link" @click="goToServiceIntro">서비스 소개</a>
         <a class="navbar-link" @click="goToInquiry">사용 신청하기</a>
         <a class="navbar-link" @click="goToSignup">문의하기</a>
       </div>
 
-      <Button class="rounded-[50px] px-8 text-sm font-normal" @click="goToLogin">로그인</Button>
+      <Button class="h-9 rounded-[50px] px-5 text-[12px] font-medium" @click="goToLogin"
+        >로그인</Button
+      >
     </div>
   </nav>
 </template>
 
 <style scoped>
 .navbar {
-  @apply w-full rounded-[25px];
-  background-color: #F5F5F5;
+  @apply w-full rounded-[25px] shadow-md;
+  background-color: #f5f5f5;
 }
 
 .navbar-container {
@@ -67,6 +69,6 @@ const goToLogin = () => {
 }
 
 .navbar-link {
-  @apply text-gray-700 hover:text-black text-sm font-normal hover:font-medium duration-300 cursor-pointer;
+  @apply text-gray-700 hover:text-primary text-sm font-normal hover:font-medium duration-300 cursor-pointer;
 }
 </style>
