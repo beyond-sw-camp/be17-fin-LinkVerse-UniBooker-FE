@@ -17,6 +17,11 @@ const router = createRouter({
       path: '/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/ReservationCompletedView.vue')
+    },
+    { // 서비스(리소스 그룹) 목록 페이지
+      path: '/service/list',
+      name: 'ServiceList',
+      component: () => import('@/views/ServiceListView.vue')
     }
   ]
 })
