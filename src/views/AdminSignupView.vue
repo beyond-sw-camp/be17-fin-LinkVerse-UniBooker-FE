@@ -1,6 +1,8 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import AdminNavbar from '@/components/AdminNavbar.vue'
+import Button from '@/components/Button.vue'
+import Input from '@/components/Input.vue'
 
 const formData = reactive({
   companyName: '',
@@ -79,146 +81,153 @@ const handleSubmit = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#eeeeee] flex flex-col items-center px-4">
+  <div class="admin-signup-container">
     <!-- 네비게이션 -->
-    <div class="w-full max-w-[1194px] mt-[30px]">
+    <div class="admin-signup-navbar">
       <AdminNavbar />
     </div>
 
     <!-- 메인 카드 -->
-    <div class="components-card w-full max-w-[1194px] mt-[30px]">
+    <div class="admin-signup-card">
       <!-- 타이틀 섹션 -->
-      <div class="text-center mb-12">
-        <h1 class="components-card-title mt-[20px]">가입 정보를 입력해주세요.</h1>
-        <p class="components-card-description text-[14px] text-text">
-          승인까지 최대 3일 정도 소요됩니다. 빠른 승인을 원하실 경우 [ 문의하기 ]를 통해 알려주세요.
+      <div class="admin-signup-header">
+        <h1 class="admin-signup-title">가입 정보를 입력해주세요.</h1>
+        <p class="admin-signup-description">
+          승인까지 최대 3일 정도 소요됩니다. 빠른 승인을 원하실 경우
+          <a class="admin-signup-link">[문의하기]</a>를 통해 알려주세요.
         </p>
       </div>
 
       <!-- 폼 영역 -->
-      <form @submit.prevent="handleSubmit" class="flex flex-col items-center">
+      <form @submit.prevent="handleSubmit" class="admin-signup-form">
         <!-- 기업명 -->
-        <div class="flex items-center w-full max-w-[450px] mb-[20px] mr-[30px]">
-          <label class="components-form-label">기업명</label>
-          <div class="components-input-with-button-wrapper flex-1">
-            <input
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">기업명</label>
+          <div class="admin-signup-input-with-button">
+            <Input
               v-model="formData.companyName"
               type="text"
               placeholder="기업명을 입력해주세요."
-              class="input-style"
               @input="resetCompanyNameCheck"
             />
-            <Button class="bg-[#b4b4b4] hover:bg-[#9b9b9b] text-[12px] px-3 py-1 rounded-[8px]" type="button" @click="checkCompanyName"> 중복확인 </Button>
+            <Button class="admin-signup-check-button" type="button" @click="checkCompanyName">
+              중복확인
+            </Button>
           </div>
         </div>
 
         <!-- 이름 -->
-        <div class="flex items-center items-start mb-[20px]">
-          <label class="min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px]">
-            이름
-          </label>
-          <input
-            v-model="formData.name"
-            type="text"
-            class="input-style"
-            placeholder="이름을 입력해주세요."
-          />
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">이름</label>
+          <div class="admin-signup-input-wrapper">
+            <Input v-model="formData.name" type="text" placeholder="이름을 입력해주세요." />
+          </div>
         </div>
 
         <!-- 이메일 -->
-        <div class="flex items-center w-full max-w-[450px] mb-[20px] mr-[30px]">
-          <label class="components-form-label">이메일</label>
-          <div class="components-input-with-button-wrapper flex-1">
-            <input
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">이메일</label>
+          <div class="admin-signup-input-with-button">
+            <Input
               v-model="formData.email"
               type="email"
               placeholder="이메일을 입력해주세요."
-              class="input-style"
               @input="resetEmailCheck"
             />
-            <Button class="bg-[#b4b4b4] hover:bg-[#9b9b9b] text-[12px] px-3 py-1 rounded-[8px]" type="button" @click="checkEmail"> 중복확인 </Button>
+            <Button class="admin-signup-check-button" type="button" @click="checkEmail">
+              중복확인
+            </Button>
           </div>
         </div>
 
         <!-- 연락처 -->
-        <div class="flex items-center items-start mb-[20px]">
-          <label class="min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px]">연락처</label>
-          <input
-            v-model="formData.phone"
-            type="tel"
-            class="input-style"
-            placeholder="연락처를 입력해주세요."
-          />
-        </div>
-
-        <!-- 신청 사유 -->
-         <div class="flex items-center items-start mb-[70px]">
-          <label class="min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px]">신청사유</label>
-          <input
-            type="text"
-            class="input-style"
-            placeholder="신청사유를 간단하게 입력해주세요."
-          />
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">연락처</label>
+          <div class="admin-signup-input-wrapper">
+            <Input v-model="formData.phone" type="tel" placeholder="연락처를 입력해주세요." />
+          </div>
         </div>
 
         <!-- 기업로고 -->
-        <div class="flex items-center w-full max-w-[500px] mb-[55px] ml-[20px]">
-          <label class="components-form-label">기업로고</label>
-          <div class="components-file-upload-wrapper flex-1">
-            <input id="logo-upload" class="input-style !hover:border-0" type="file" accept="image/*" @change="handleFileUpload" />
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">기업로고</label>
+          <div class="admin-signup-input-wrapper">
+            <Input id="logo-upload" type="file" accept="image/*" @change="handleFileUpload" />
           </div>
         </div>
 
         <!-- 제출 버튼 -->
-        <Button type="submit" class="w-[510px] mb-[12px] rounded-[50px] text-sm font-medium"> 사용 신청하기 </Button>
+        <Button type="submit" class="admin-signup-submit-button"> 사용 신청하기 </Button>
       </form>
     </div>
   </div>
 </template>
 
 <style scoped>
-.components-card {
-  @apply bg-white rounded-[20px] p-10 mb-[50px];
+/* 컨테이너 */
+.admin-signup-container {
+  @apply min-h-screen bg-[#eeeeee] flex flex-col items-center px-4;
 }
 
-.components-card-title {
-  @apply font-semibold text-center mb-2 text-[18px];
+/* 네비게이션 영역 */
+.admin-signup-navbar {
+  @apply w-full max-w-[1194px] mt-[30px];
 }
 
-.components-card-subtitle {
-  @apply text-gray-700 text-sm text-center leading-relaxed;
+/* 회원가입 카드 */
+.admin-signup-card {
+  @apply bg-white shadow-md rounded-[20px] w-full max-w-[1194px] p-10 mt-[30px] mb-[50px];
 }
 
-.components-form-label {
-  @apply min-w-[68px] text-left text-[14px] text-gray-600 font-medium ml-[5px];
+/* 헤더 영역 */
+.admin-signup-header {
+  @apply text-center mb-[30px];
 }
 
-.components-input-with-button-wrapper {
-  @apply flex w-full gap-2;
+.admin-signup-title {
+  @apply text-[18px] font-semibold text-gray-600 mt-[16px];
 }
 
-.components-file-upload-wrapper {
-  @apply relative;
+.admin-signup-description {
+  @apply text-gray-500 text-[13px] leading-relaxed my-[10px] mb-[4px];
 }
 
-.components-file-upload-input {
-  @apply hidden;
+.admin-signup-link {
+  @apply font-medium text-gray-500 hover:text-primary mx-1 cursor-pointer;
 }
 
-.components-file-upload-label {
-  @apply flex items-center w-full max-w-[350px] h-[35px] px-[10px] py-[10px];
-  @apply border border-[#cbcbcb] rounded-[3px];
-  @apply font-normal text-base text-[#cbcbcb] cursor-pointer;
-  @apply bg-gray-100;
-  @apply transition-all duration-300;
+/* 폼 영역 */
+.admin-signup-form {
+  @apply flex flex-col items-center;
 }
 
-.components-file-upload-label:hover {
-  @apply border-primary bg-primary/[0.02];
-  @apply bg-gray-100;
+/* 입력 필드 */
+.admin-signup-field {
+  @apply flex items-center w-full max-w-[350px] mb-5;
 }
 
-.input-style {
-  @apply flex-1 w-[407px] text-sm border-b border-transparent hover:border-gray-line focus:border-gray-line px-2 py-1 outline-none;
+.admin-signup-label {
+  @apply min-w-[68px] text-center text-[14px] text-gray-600 font-medium mr-3;
+}
+
+/* 입력 래퍼 (일반) */
+.admin-signup-input-wrapper {
+  @apply flex-1 text-sm;
+}
+
+/* 입력 래퍼 (버튼 포함) */
+.admin-signup-input-with-button {
+  @apply flex items-center w-full gap-2 flex-1 text-sm;
+}
+
+/* 중복확인 버튼 */
+.admin-signup-check-button {
+  @apply h-[30px] bg-[#f5f5f5] border border-gray-400 font-normal text-gray-400 text-[12px] px-3 py-1 rounded-[15px] shadow-sm;
+  @apply active:bg-primary active:text-white;
+}
+
+/* 제출 버튼 */
+.admin-signup-submit-button {
+  @apply w-[510px] rounded-[50px] text-sm font-medium mt-[19px] mb-[12px];
 }
 </style>
