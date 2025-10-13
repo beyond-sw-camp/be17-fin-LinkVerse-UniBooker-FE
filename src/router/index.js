@@ -7,10 +7,12 @@ const router = createRouter({
       path: '/admin/signup',
       name: 'adminSignup',
       component: () => import('@/views/AdminSignupView.vue'),
+      component: () => import('@/views/AdminSignupView.vue'),
     },
     {
       path: '/admin/login',
       name: 'adminLogin',
+      component: () => import('@/views/AdminLoginView.vue'),
       component: () => import('@/views/AdminLoginView.vue'),
     },
     {
@@ -18,6 +20,16 @@ const router = createRouter({
       path: '/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/ReservationCompletedView.vue'),
+    },
+    {
+      path: '/super/dashboard',
+      name: 'superDashboard',
+      component: () => import('@/views/SuperDashboardView.vue'),
+    },
+    {
+      path: '/super/management',
+      name: 'superManagement',
+      component: () => import('@/views/SuperManagementView.vue'),
     },
   ],
 })
