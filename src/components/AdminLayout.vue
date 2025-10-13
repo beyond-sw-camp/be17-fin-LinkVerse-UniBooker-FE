@@ -166,7 +166,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .content-body {
-  @apply overflow-y-auto bg-gray-line flex-1 ml-[-20px] rounded-tl-[20px] rounded-bl-[20px] px-[30px] py-[22px];
+  @apply h-screen overflow-y-auto bg-gray-line flex-1 ml-[-20px] rounded-tl-[20px] rounded-bl-[20px] px-[30px] py-[22px];
 }
 
 .content-top {
