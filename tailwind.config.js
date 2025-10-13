@@ -21,7 +21,7 @@ export default {
 
         // 기본 컬러
         black: '#000000',
-        white: '#FFFFFF'
+        white: '#FFFFFF',
       },
       fontFamily: {
         'mont-noto': ['Montserrat', 'Noto Sans KR', 'sans-serif'],
