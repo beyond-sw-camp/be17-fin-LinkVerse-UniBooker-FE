@@ -43,9 +43,9 @@ const goToLogin = () => {
         <a class="navbar-link" @click="goToInquiry">문의하기</a>
       </div>
 
-      <Button class="h-9 rounded-[50px] px-5 text-[12px] font-medium" @click="goToLogin"
-        >로그인</Button
-      >
+      <Button class="h-9 rounded-[50px] px-5 text-[12px] font-medium" @click="goToLogin">
+        로그인
+      </Button>
     </div>
   </nav>
 </template>

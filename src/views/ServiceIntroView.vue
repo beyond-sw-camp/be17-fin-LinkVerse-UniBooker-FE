@@ -14,14 +14,26 @@ const router = useRouter()
         <AdminNavbar />
       </div>
 
-      <!-- 히어로 콘텐츠 -->
-      <div class="service-page-hero">
-        <p class="service-page-hero-subtitle">대규모 예약의 새로운 기준</p>
-        <h1 class="service-page-hero-title">UniBooker</h1>
-        <p class="service-page-hero-description">
-          수십 명이 동시에 접속해도 밀리지 않는 예약 시스템을<br />
-          이제 구독만으로 우리 기업에 도입하세요.
-        </p>
+      <!-- 히어로 콘텐츠 그리드 -->
+      <div class="service-page-hero-grid">
+        <!-- 왼쪽: 텍스트 -->
+        <div class="service-page-hero-text">
+          <p class="service-page-hero-subtitle">대규모 예약의 새로운 기준</p>
+          <h1 class="service-page-hero-title">UniBooker</h1>
+          <p class="service-page-hero-description">
+            수십 명이 동시에 접속해도 밀리지 않는 예약 시스템을<br />
+            이제 구독만으로 우리 기업에 도입하세요.
+          </p>
+        </div>
+
+        <!-- 오른쪽: 이미지 -->
+        <div class="service-page-main-image">
+          <img
+            src="/public/assets/images/6c43f219c30ef9799c70a95471f2a836.gif"
+            alt="서비스소개 배경"
+            class="service-page-gif"
+          />
+        </div>
       </div>
     </section>
 
@@ -169,6 +181,15 @@ const router = useRouter()
   @apply w-full bg-gray-line flex flex-col items-center;
 }
 
+.service-page-hero-grid {
+  @apply w-full max-w-7xl ml-10 px-20 py-10
+         grid grid-cols-1 lg:grid-cols-2 gap-12 items-center;
+}
+
+.service-page-main-image {
+  @apply w-full flex items-center;
+}
+
 /* 네비게이션 */
 .service-page-navbar {
   @apply w-full max-w-[1194px] mt-[30px];
@@ -176,7 +197,7 @@ const router = useRouter()
 
 /* 히어로 콘텐츠 */
 .service-page-hero {
-  @apply w-full flex flex-col items-start text-left max-w-7xl pt-40 pb-20 px-20 w-full;
+  @apply w-full flex flex-col items-start text-left max-w-7xl pt-40 pb-20 w-full;
 }
 
 .service-page-hero-subtitle {
