@@ -36,7 +36,6 @@ const selectMenuItem = (serviceIndex, menu) => {
 
 <template>
   <div class="admin-layout">
-
     <!-- 서브메뉴바 -->
     <div class="sub-bar-contaienr">
       <!-- UniBooker 로고 -->
@@ -91,20 +90,20 @@ const selectMenuItem = (serviceIndex, menu) => {
       </div>
     </div>
 
-
     <!-- 서브메뉴 별 내용이 표시되는 곳 -->
-     <div class="content-body">
-        <div class="content-top">
-          <div class="admin-badge">
-            <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
-            <span>김아영 관리자님</span>
-            <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
-          </div>
+    <div class="content-body">
+      <div class="content-top">
+        <div class="admin-badge">
+          <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
+          <span>김아영 관리자님</span>
+          <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
         </div>
-        <div class="content-slot">
-          <!-- 여기에 내용이 들어갑니다! -->
-        </div>
-     </div>
+      </div>
+      <div class="content-slot">
+        <!-- 여기에 내용이 들어갑니다! -->
+        <slot />
+      </div>
+    </div>
   </div>
 </template>
 
