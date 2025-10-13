@@ -9,7 +9,7 @@ const goToHome = () => {
 }
 
 const goToServiceIntro = () => {
-  router.push('/service')
+  router.push('/admin/service')
 }
 
 const goToInquiry = () => {
@@ -39,8 +39,8 @@ const goToLogin = () => {
       <!-- 메뉴도 flex items-center 추가 -->
       <div class="navbar-menu items-center pr-[65px]">
         <a class="navbar-link" @click="goToServiceIntro">서비스 소개</a>
-        <a class="navbar-link" @click="goToInquiry">사용 신청하기</a>
-        <a class="navbar-link" @click="goToSignup">문의하기</a>
+        <a class="navbar-link" @click="goToSignup">사용 신청하기</a>
+        <a class="navbar-link" @click="goToInquiry">문의하기</a>
       </div>
 
       <Button class="h-9 rounded-[50px] px-5 text-[12px] font-medium" @click="goToLogin"
