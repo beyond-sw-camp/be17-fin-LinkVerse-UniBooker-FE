@@ -24,6 +24,11 @@ const router = createRouter({
       component: () => import('../views/ServiceIntroView.vue'),
     },
     {
+      path: '/admin/manager-management',
+      name: 'ManagerManagement',
+      component: () => import('../views/ManagerManagement.vue'),
+    },
+    {
       path: '/user/login',
       name: 'userLogin',
       component: () => import('@/views/UserLoginView.vue'),
@@ -77,6 +82,12 @@ const router = createRouter({
       name: 'ServiceGroupList',
       component: () => import('@/views/super/ServiceGroupListView.vue'),
       props: true,
+    },
+    {
+      // 사용자 예약/신청 이력
+      path: '/myReservation',
+      name: 'myReservation',
+      component: () => import('@/views/UserMyReservation.vue'),
     },
   ],
 })
