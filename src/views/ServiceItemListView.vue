@@ -1,5 +1,6 @@
 <script setup>
 import PageNation from '@/components/PageNation.vue'
+import Dropdown from '@/components/Dropdown.vue'
 import { ref, reactive, computed, onMounted  } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -20,7 +21,7 @@ const meetingRooms = reactive([
 const serviceType = ref('RESERVATION')
 
 // 필터 드롭다운 종류
-const filterItems = ['전체', '예약 가능', '예약 불가']
+const filterItems = [{label: '전체', value: '전체'}, {label: '예약 가능', value: '예약 가능'}, {label: '예약 불가', value: '예약 불가'}]
 
 // 선택된 필터 상태
 const selectedFilter = ref('전체')
@@ -81,9 +82,13 @@ onMounted(() => {
           </div>
 
           <!-- 필터 -->
-          <select class="service-item-filter" @change="statusFilterChange">
-            <option v-for="(item, index) in filterItems" :key="index">{{ item }}</option>
-          </select>
+          <Dropdown
+            v-model="selectedFilter"
+            :options="filterItems"
+            placeholder="선택"
+            width="w-48"
+            class="service-item-filter" @change="statusFilterChange"
+          />
         </div>
       </div>
 
@@ -163,7 +168,7 @@ onMounted(() => {
 
 /* 필터 */
 .service-item-filter {
-  @apply self-end border rounded-md px-3 py-1 text-sm text-gray-700 bg-white focus:ring-1 focus:ring-gray-400 cursor-pointer;
+  @apply self-end bg-white rounded-md px-3 py-1 text-sm text-gray-700 focus:ring-1 focus:ring-gray-400 cursor-pointer;
 }
 
 /* 카드 */
