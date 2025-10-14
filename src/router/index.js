@@ -7,7 +7,37 @@ const router = createRouter({
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     {
-      path: '/user/home',
+      path: '/admin/signup',
+      name: 'adminSignup',
+      component: () => import('@/views/AdminSignupView.vue'),
+    },
+    {
+      path: '/admin/login',
+      name: 'adminLogin',
+      component: () => import('@/views/AdminLoginView.vue'),
+    },
+    {
+      path: '/admin/home',
+      name: 'adminHonme',
+      component: () => import('@/views/AdminLandingView.vue'),
+    },
+    {
+      path: '/admin/service',
+      name: 'serviceIntro',
+      component: () => import('../views/ServiceIntroView.vue'),
+    },
+    {
+      path: '/admin/manager-management',
+      name: 'ManagerManagement',
+      component: () => import('../views/ManagerManagement.vue'),
+    },
+    {
+      path: '/admin/service-group-create',
+      name: 'ServiceGroupCreate',
+      component: () => import('../views/ServiceGroupCreate.vue'),
+    },
+    {
+      path: '/user/login',
       name: 'userLogin',
       component: () => import('@/views/user/UserLoginView.vue'),
     },
