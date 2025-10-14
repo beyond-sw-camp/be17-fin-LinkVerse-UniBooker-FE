@@ -158,7 +158,7 @@ const goToFindPassword = () => {
 }
 
 .user-login-input {
-  @apply flex-1 w-[250px] border border-gray-300 rounded-sm text-sm;
+  @apply flex-1 w-[250px] rounded-sm text-sm;
   @apply placeholder-gray-400 transition-all duration-200;
 }
 
