@@ -191,7 +191,7 @@ const closeAddModal = () => {
   @apply text-white px-0;
 }
 
-.edit-modal-button-container input {
+.edit-modal-container input {
   @apply border-b border-gray-deep;
 }
 
@@ -201,42 +201,42 @@ const closeAddModal = () => {
 }
 
 h3 {
-    @apply text-[18px] font-medium mb-[3px]
+  @apply text-[18px] font-medium mb-[3px];
 }
 
 .add-modal-container p {
-    @apply text-[12px] text-gray-dark;
+  @apply text-[12px] text-gray-dark;
 }
 
 .input-field-container {
-    @apply mt-[35px] flex flex-col gap-6;
+  @apply mt-[35px] flex flex-col gap-6;
 }
 
 .input-field-item {
-    @apply flex flex-col gap-1;
+  @apply flex flex-col gap-1;
 }
 
 label {
-    @apply text-[14px];
+  @apply text-[14px];
 }
 
 .input-field-item span {
-    @apply text-[#FF2222];
+  @apply text-[#FF2222];
 }
 
 .add-modal-container input {
-    @apply bg-gray-line px-[14px] py-[10px] text-[14px] rounded-[3px]
+  @apply bg-gray-line px-[14px] py-[10px] text-[14px] rounded-[3px];
 }
 
 .add-modal-button-container {
-    @apply flex gap-3 mt-[70px];
+  @apply flex gap-3 mt-[70px];
 }
 
 .add-modal-button-container button {
-    @apply py-[10px];
+  @apply py-[10px];
 }
 
 #add-button {
-    @apply px-0;
+  @apply px-0;
 }
 </style>
