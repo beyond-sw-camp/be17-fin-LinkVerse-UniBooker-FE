@@ -48,6 +48,80 @@ const companies = [
     date: '2025-10-06',
     status: '대기',
   },
+  {
+    name: 'Lambda Corp',
+    domain: 'lambda.com',
+    admin: '김민재',
+    date: '2025-10-07',
+    status: '승인',
+  },
+  { name: 'Mu Inc', domain: 'mu.io', admin: '박서준', date: '2025-10-08', status: '대기' },
+  { name: 'Nu LLC', domain: 'nu.net', admin: '이지은', date: '2025-10-09', status: '승인' },
+  { name: 'Xi Co', domain: 'xi.org', admin: '정해인', date: '2025-10-10', status: '승인' },
+  {
+    name: 'Omicron Ltd',
+    domain: 'omicron.ai',
+    admin: '손예진',
+    date: '2025-10-11',
+    status: '대기',
+  },
+  { name: 'Pi Solutions', domain: 'pi.com', admin: '이승기', date: '2025-10-12', status: '승인' },
+  { name: 'Rho Systems', domain: 'rho.io', admin: '박보검', date: '2025-10-13', status: '거부' },
+  { name: 'Sigma Tech', domain: 'sigma.net', admin: '김태리', date: '2025-10-14', status: '승인' },
+  {
+    name: 'Tau Enterprises',
+    domain: 'tau.org',
+    admin: '유재석',
+    date: '2025-10-15',
+    status: '승인',
+  },
+  {
+    name: 'Upsilon Solutions',
+    domain: 'upsilon.ai',
+    admin: '이영호',
+    date: '2025-10-16',
+    status: '대기',
+  },
+  { name: 'Phi Corp', domain: 'phi.com', admin: '정우성', date: '2025-10-17', status: '승인' },
+  { name: 'Chi Inc', domain: 'chi.io', admin: '한효주', date: '2025-10-18', status: '승인' },
+  { name: 'Psi LLC', domain: 'psi.net', admin: '조정석', date: '2025-10-19', status: '대기' },
+  { name: 'Omega Co', domain: 'omega.org', admin: '신민아', date: '2025-10-20', status: '승인' },
+  { name: 'Alpha2 Ltd', domain: 'alpha2.ai', admin: '김우빈', date: '2025-10-21', status: '승인' },
+  {
+    name: 'Beta2 Solutions',
+    domain: 'beta2.com',
+    admin: '수지',
+    date: '2025-10-22',
+    status: '거부',
+  },
+  {
+    name: 'Gamma2 Systems',
+    domain: 'gamma2.io',
+    admin: '류준열',
+    date: '2025-10-23',
+    status: '승인',
+  },
+  {
+    name: 'Delta2 Tech',
+    domain: 'delta2.net',
+    admin: '박서준',
+    date: '2025-10-24',
+    status: '승인',
+  },
+  {
+    name: 'Epsilon2 Enterprises',
+    domain: 'epsilon2.org',
+    admin: '김태희',
+    date: '2025-10-25',
+    status: '대기',
+  },
+  {
+    name: 'Zeta2 Solutions',
+    domain: 'zeta2.ai',
+    admin: '원빈',
+    date: '2025-10-26',
+    status: '승인',
+  },
 ]
 </script>
 
@@ -132,7 +206,20 @@ const companies = [
 }
 
 .list-container {
-  @apply bg-white p-3 mt-3;
+  @apply bg-white mt-3 max-h-[calc(100vh-200px)] overflow-y-auto;
+}
+
+.list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.list-container::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.5);
+  border-radius: 4px;
+}
+
+.list-container::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
 }
 
 .list-row {
@@ -141,6 +228,10 @@ const companies = [
 
 table {
   @apply w-full text-center;
+}
+
+thead {
+  @apply bg-gray-50;
 }
 
 td,
