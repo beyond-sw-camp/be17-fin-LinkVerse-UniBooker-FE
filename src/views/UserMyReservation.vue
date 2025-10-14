@@ -7,7 +7,7 @@ import Input from '@/components/Input.vue'
 const router = useRouter()
 
 const goToMyReservationDetail = (id) => {
-  router.push(`/reservation/${id}`)
+  router.push(`/myreservation/${id}`)
 }
 
 /* 상태 */
@@ -38,15 +38,15 @@ const reservations = ref([
     resource_group_name: '회의실 예약', // 리소스 그룹 이름
     startTime: '2025년 10월 8일 14:00', // 시작 시간
     endTime: '2025년 10월 8일 15:00', // 종료 시간
-    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',  // 리소스 그룹 썸네일
+    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',  // 리소스 썸네일
     status: 'CONFIRMED', // 예약 상태
   },
   {
     id: 1234567891,
     name: '보드게임 동아리',
     resource_group_name: '동아리 모집',
-    startTime: '2025년 10월 8일 14:00', // 시작 시간
-    endTime: '2025년 10월 8일 15:00', // 종료 시간
+    startTime: '2025년 10월 8일 14:00', 
+    endTime: '2025년 10월 8일 15:00', 
     thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
     status: 'CANCELLED',
   },
@@ -54,8 +54,8 @@ const reservations = ref([
     id: 1234567892,
     name: '분당선(판교역) 출근',
     resource_group_name: '통근버스 신청',
-    startTime: '2025년 10월 8일 14:00', // 시작 시간
-    endTime: '2025년 10월 8일 15:00', // 종료 시간
+    startTime: '2025년 10월 8일 14:00', 
+    endTime: '2025년 10월 8일 15:00',
     thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
     status: 'CANCELLED',
   },
@@ -63,8 +63,8 @@ const reservations = ref([
     id: 1234567893,
     name: '패밀리 디럭스',
     resource_group_name: '캠핑카 이용 신청',
-    startTime: '2025년 10월 8일 14:00', // 시작 시간
-    endTime: '2025년 10월 8일 15:00', // 종료 시간
+    startTime: '2025년 10월 8일 14:00', 
+    endTime: '2025년 10월 8일 15:00',
     thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
     status: 'CONFIRMED',
   }
@@ -85,7 +85,7 @@ const reservations = ref([
         </div>
         <div class="reservation-list">
           <a v-for="item in reservations" :key="item.id" class="reservation-item cursor-pointer" @click="goToMyReservationDetail(item.id)">
-            <img :src="item.thumbnail" alt="" class="item-image" />
+            <img :src="item.thumbnail" class="item-image" />
             <div class="item-info">
               <div class="item-header">
                 <h3 class="item-name">{{ item.name }}</h3>
@@ -112,12 +112,12 @@ const reservations = ref([
 
 <style scoped>
 .page-background {
-  @apply min-h-screen bg-white py-8 px-4 font-mont-noto;
+  @apply min-h-screen bg-white py-10 px-4 font-mont-noto;
 }
 
 /* 컨테이너 */
 .content-card {
-  @apply max-w-6xl mx-auto bg-white rounded-2xl shadow p-6;
+  @apply max-w-6xl mx-auto bg-white rounded-2xl shadow p-7;
 }
 
 /* 타이틀 */

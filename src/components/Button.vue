@@ -4,7 +4,7 @@ const props = defineProps({
 })
 
 // 모든 버튼에 공통으로 적용될 기본 클래스
-const baseClasses = 'px-12 py-2.5 rounded'
+const baseClasses = 'px-12 py-2.5 rounded-md'
 
 // 테마별로 달라지는 부분만 정의
 const themeClasses = {

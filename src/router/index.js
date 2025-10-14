@@ -89,6 +89,12 @@ const router = createRouter({
       name: 'myReservation',
       component: () => import('@/views/UserMyReservation.vue'),
     },
+    { // 사용자 예약/신청 이력 상세 페이지
+      path: '/myReservation/:id',
+      name: 'myReservationDetail',
+      component: () => import('@/views/UserMyReservationDetail.vue'),
+      props: true, 
+    }
   ],
 })
 
