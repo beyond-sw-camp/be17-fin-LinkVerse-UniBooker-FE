@@ -47,7 +47,7 @@ const router = createRouter({
       path: '/service-item/list',
       name: 'ServiceItemList',
       component: () => import('@/views/ServiceItemListView.vue'),
-    }
+    },
     {
       path: '/super/dashboard',
       name: 'superDashboard',
