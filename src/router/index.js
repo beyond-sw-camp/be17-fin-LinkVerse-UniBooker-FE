@@ -16,34 +16,41 @@ const router = createRouter({
     {
       path: '/admin/home',
       name: 'adminHonme',
-      component: () => import('@/views/AdminLandingView.vue')
+      component: () => import('@/views/AdminLandingView.vue'),
     },
     {
       path: '/admin/service',
       name: 'serviceIntro',
-      component: () => import('../views/ServiceIntroView.vue')
+      component: () => import('../views/ServiceIntroView.vue'),
+    },
+    {
+      path: '/admin/manager-management',
+      name: 'ManagerManagement',
+      component: () => import('../views/ManagerManagement.vue'),
     },
     {
       path: '/user/login',
       name: 'userLogin',
-      component: () => import('@/views/UserLoginView.vue')
+      component: () => import('@/views/UserLoginView.vue'),
     },
     {
       path: '/user/signup',
       name: 'userSignup',
-      component: () => import('@/views/UserSignupView.vue')
+      component: () => import('@/views/UserSignupView.vue'),
     },
     {
       path: '/reservation/completed',
       name: 'userReservationCompleted',
-      component: () => import('@/views/ReservationCompletedView.vue')
+      component: () => import('@/views/ReservationCompletedView.vue'),
     },
-    { // 서비스(리소스 그룹) 목록 페이지
+    {
+      // 서비스(리소스 그룹) 목록 페이지
       path: '/service/list',
       name: 'ServiceList',
-      component: () => import('@/views/ServiceListView.vue')
+      component: () => import('@/views/ServiceListView.vue'),
     },
-    { // 서비스 항목(리소스) 목록 페이지
+    {
+      // 서비스 항목(리소스) 목록 페이지
       path: '/service-item/list',
       name: 'ServiceItemList',
       component: () => import('@/views/ServiceItemListView.vue'),
