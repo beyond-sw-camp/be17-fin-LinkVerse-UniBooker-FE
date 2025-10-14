@@ -22,8 +22,13 @@ const router = createRouter({
       path: '/service/list',
       name: 'ServiceList',
       component: () => import('@/views/ServiceListView.vue')
-    }
-  ]
+    },
+    { // 서비스 항목(리소스) 목록 페이지
+      path: '/service-item/list',
+      name: 'ServiceItemList',
+      component: () => import('@/views/ServiceItemListView.vue'),
+    },
+  ],
 })
 
 export default router
