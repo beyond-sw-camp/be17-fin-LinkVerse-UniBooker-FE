@@ -7,18 +7,35 @@ const router = createRouter({
       path: '/admin/signup',
       name: 'adminSignup',
       component: () => import('@/views/AdminSignupView.vue'),
+      component: () => import('@/views/AdminSignupView.vue'),
     },
     {
       path: '/admin/login',
       name: 'adminLogin',
       component: () => import('@/views/AdminLoginView.vue'),
+      component: () => import('@/views/AdminLoginView.vue'),
+    },
+    {
+      path: '/admin/home',
+      name: 'adminHonme',
+      component: () => import('@/views/AdminLandingView.vue')
+    },
+    {
+      path: '/admin/service',
+      name: 'serviceIntro',
+      component: () => import('../views/ServiceIntroView.vue')
     },
     {
       path: '/user/login',
       name: 'userLogin',
       component: () => import('@/views/UserLoginView.vue')
     },
-    { // 예약 완료 페이지
+    {
+      path: '/user/signup',
+      name: 'userSignup',
+      component: () => import('@/views/UserSignupView.vue')
+    },
+    {
       path: '/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/ReservationCompletedView.vue')
@@ -29,6 +46,17 @@ const router = createRouter({
       component: () => import('@/views/ServiceListView.vue')
     }
   ]
+    {
+      path: '/super/dashboard',
+      name: 'superDashboard',
+      component: () => import('@/views/SuperDashboardView.vue'),
+    },
+    {
+      path: '/super/management',
+      name: 'superManagement',
+      component: () => import('@/views/SuperManagementView.vue'),
+    },
+  ],
 })
 
 export default router

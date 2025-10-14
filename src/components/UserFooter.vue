@@ -1,98 +1,78 @@
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const goToPrivacy = () => {
+  router.push('/privacy')
+}
+
+const goToTerms = () => {
+  router.push('/terms')
+}
+
+const goToContact = () => {
+  router.push('/contact')
+}
+</script>
+
 <template>
-  <footer class="footer">
-    <div class="footer-container">
+  <footer class="user-footer">
+    <div class="user-footer-container">
       <!-- 링크 메뉴 -->
-      <nav class="footer-nav">
-        <a href="/privacy" class="footer-nav-item">개인정보처리방침</a>
-        <span class="footer-divider">|</span>
-        <a href="/terms" class="footer-nav-item">이용약관</a>
-        <span class="footer-divider">|</span>
-        <a href="/contact" class="footer-nav-item">비지니스 문의</a>
+      <nav class="user-footer-nav">
+        <button @click="goToPrivacy" class="user-footer-nav-item">개인정보처리방침</button>
+        <span class="user-footer-divider">|</span>
+        <button @click="goToTerms" class="user-footer-nav-item">이용약관</button>
+        <span class="user-footer-divider">|</span>
+        <button @click="goToContact" class="user-footer-nav-item">비지니스 문의</button>
       </nav>
 
       <!-- 저작권 정보 -->
-      <div class="footer-copyright">
-        <p class="footer-copyright-text">
+      <div class="user-footer-copyright">
+        <p class="user-footer-copyright-text">
           Copyright LinkVerse. All rights reserved.
-          <img src="/public/assets/images/unibooker_blue_logo.svg" alt="UniBooker" class="footer-logo" />
+          <img
+            src="/public/assets/images/unibooker_blue_logo.svg"
+            alt="UniBooker"
+            class="user-footer-logo"
+          />
         </p>
       </div>
     </div>
   </footer>
 </template>
 
-<script setup>
-// 필요시 로직 추가
-</script>
-
 <style scoped>
-.footer {
-  @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
+.user-footer {
+  @apply w-full h-[30px] bg-gray-50 border-t border-gray-200 mt-auto;
 }
 
-.footer-container {
-  @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
+.user-footer-container {
+  @apply max-w-7xl mx-auto px-6 flex flex-col items-center;
 }
 
-/* 네비게이션 링크 */
-.footer-nav {
-  @apply flex items-center gap-4;
+.user-footer-nav {
+  @apply my-4 flex items-center gap-5;
 }
 
-.footer-nav-item {
-  @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
+.user-footer-nav-item {
+  @apply text-sm font-normal text-gray-400 hover:text-gray-500 hover:font-medium transition-colors cursor-pointer bg-transparent border-none;
 }
 
-.footer-divider {
+.user-footer-divider {
   @apply text-gray-400 text-sm;
 }
 
-/* 저작권 정보 */
-.footer-copyright {
+.user-footer-copyright {
   @apply text-center;
 }
 
-.footer-copyright-text {
-  @apply text-xs text-gray-500 flex items-center gap-1;
+.user-footer-copyright-text {
+  @apply text-xs text-gray-800 flex items-center;
 }
 
-/* 풋터 로고 */
-.footer-logo {
-  @apply h-4 w-auto inline-block;
-}
-
-.footer {
-  @apply w-full bg-gray-50 border-t border-gray-200 mt-auto;
-}
-
-.footer-container {
-  @apply max-w-7xl mx-auto px-6 py-6 flex flex-col items-center gap-3;
-}
-
-/* 네비게이션 링크 */
-.footer-nav {
-  @apply flex items-center gap-4;
-}
-
-.footer-nav-item {
-  @apply text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors;
-}
-
-.footer-divider {
-  @apply text-gray-400 text-sm;
-}
-
-/* 저작권 정보 */
-.footer-copyright {
-  @apply text-center;
-}
-
-.footer-copyright-text {
-  @apply text-xs text-gray-500 flex items-center gap-1;
-}
-
-/* 풋터 로고 */
-.footer-logo {
-  @apply h-4 w-auto inline-block;
+.user-footer-logo {
+  @apply h-3.5 w-auto ml-1 inline-block grayscale opacity-60;
 }
 </style>
