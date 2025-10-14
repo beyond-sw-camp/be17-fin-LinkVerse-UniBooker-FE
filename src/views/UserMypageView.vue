@@ -85,17 +85,17 @@ const handleWithdrawal = () => {
 
           <!-- 버튼 그룹 -->
           <div class="user-mypage-button-group">
-            <button type="submit" class="user-mypage-update-button">정보수정</button>
-            <button type="button" @click="handleChangePassword" class="user-mypage-password-button">
+            <Button type="submit" class="user-mypage-update-button">정보수정</Button>
+            <Button type="button" @click="handleChangePassword" class="user-mypage-password-button">
               비밀번호 변경
-            </button>
+            </Button>
             <div class="user-mypage-button-container">
-              <button type="button" @click="handleLogout" class="user-mypage-logout-button">
+              <Button type="button" @click="handleLogout" class="user-mypage-logout-button">
                 로그아웃
-              </button>
-              <button type="button" @click="handleWithdrawal" class="user-mypage-withdrawal-button">
+              </Button>
+              <Button type="button" @click="handleWithdrawal" class="user-mypage-withdrawal-button">
                 회원탈퇴
-              </button>
+              </Button>
             </div>
           </div>
         </form>
@@ -174,25 +174,25 @@ const handleWithdrawal = () => {
 
 /* 정보수정 버튼 */
 .user-mypage-update-button {
-  @apply w-full py-2 bg-primary text-white rounded-sm font-medium;
+  @apply w-full py-2 bg-primary text-white font-medium;
   @apply hover:bg-primary-hover transition-all duration-200;
 }
 
 /* 비밀번호 변경 버튼 */
 .user-mypage-password-button {
-  @apply w-full py-2 bg-white text-primary border border-primary rounded-sm font-medium;
+  @apply w-full py-2 bg-white text-primary border border-primary font-medium;
   @apply hover:bg-gray-100 transition-all duration-200;
 }
 
 /* 로그아웃 버튼 */
 .user-mypage-logout-button {
-  @apply flex-1 py-2 bg-white text-primary border border-primary rounded-sm font-medium;
+  @apply flex-1 py-2 bg-white text-primary border border-primary font-medium;
   @apply hover:bg-gray-100 transition-all duration-200;
 }
 
 /* 회원탈퇴 버튼 */
 .user-mypage-withdrawal-button {
-  @apply flex-1 py-2 bg-white text-red-600 border border-red-600 rounded-sm font-medium;
+  @apply flex-1 py-2 bg-white text-red-600 border border-red-600 font-medium;
   @apply hover:bg-red-100 transition-all duration-200;
 }
 </style>
