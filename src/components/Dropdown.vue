@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
 }
 
 .dropdown-selected-container {
-  @apply text-left px-2.5 py-2.5 w-full rounded placeholder-gray-400 outline-none border-b-2
+  @apply bg-white text-left px-2.5 py-2.5 w-full rounded placeholder-gray-400 outline-none border-b-2
          transition-all duration-200 focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed;
 }
 
