@@ -58,6 +58,11 @@ const router = createRouter({
       name: 'superManagement',
       component: () => import('@/views/SuperManagementView.vue'),
     },
+    { // 사용자 예약/신청 이력
+      path: '/myReservation',
+      name: 'myReservation',
+      component: () => import('@/views/UserMyReservation.vue'),
+    }
   ],
 })
 
