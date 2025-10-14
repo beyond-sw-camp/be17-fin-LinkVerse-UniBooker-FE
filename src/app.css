@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    @apply h-full;
+  }
+  body {
+    @apply bg-gray-50 font-mont-noto;
+  }
+  input,
+  button {
+    @apply outline-none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px; /* 스크롤바 너비 */
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.3); /* 트랙 배경색 */
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1); /* 스크롤 색 */
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
