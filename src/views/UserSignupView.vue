@@ -45,7 +45,7 @@ const handleSubmit = () => {
                 v-model="formData.userId"
                 type="text"
                 placeholder="아이디"
-                class="user-signup-input-button"
+                class="user-signup-input"
               />
               <button type="button" @click="checkDuplicate" class="user-signup-check-button">
                 중복확인
@@ -148,12 +148,6 @@ const handleSubmit = () => {
   @apply flex-1 w-full relative;
 }
 
-.user-signup-input-button {
-  @apply w-full border border-gray-300 rounded-sm text-sm;
-  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
-  @apply transition-all duration-200;
-}
-
 .user-signup-check-button {
   @apply absolute right-2 top-1/2 -translate-y-1/2;
   @apply px-3 py-1.5 bg-[#f5f5f5] border border-gray-400 text-gray-400 rounded-md text-xs font-medium;
@@ -162,7 +156,7 @@ const handleSubmit = () => {
 
 /* 일반 입력 필드 */
 .user-signup-input {
-  @apply flex-1 w-full border border-gray-300 rounded-sm text-sm;
+  @apply flex-1 w-full rounded-sm text-sm;
   @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
   @apply placeholder-gray-400 transition-all duration-200;
 }
