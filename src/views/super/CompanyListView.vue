@@ -3,7 +3,9 @@ import Dropdown from '@/components/Dropdown.vue'
 import Input from '@/components/Input.vue'
 import SuperLayout from '@/components/SuperLayout.vue'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const selected = ref(1)
 const searchKeyword = ref('')
 
@@ -13,6 +15,11 @@ const dropdownOptions = [
   { label: '서비스 그룹 수순', value: 1 },
   { label: '고객 수순', value: 1 },
 ]
+
+const goToCompanyDetail = (company) => {
+  router.push(`/super/management/${encodeURIComponent(company.name)}`)
+}
+
 const companies = [
   { name: 'Alpha Corp', domain: 'alpha.com', admin: '홍길동', date: '2025-10-01', status: '승인' },
   { name: 'Beta Inc', domain: 'beta.io', admin: '김철수', date: '2025-09-28', status: '대기' },
@@ -141,12 +148,6 @@ const companies = [
         placeholder="정렬 기준"
         width="w-40"
       />
-      <div class="checkboxes">
-        <Input type="checkbox" label="신청 중" />
-        <Input type="checkbox" label="승인됨" />
-        <Input type="checkbox" label="비활성" />
-        <Input type="checkbox" label="거절됨" />
-      </div>
     </div>
     <div class="company-list">
       <div class="list-container">
@@ -161,7 +162,12 @@ const companies = [
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(company, index) in companies" :key="index" class="list-row">
+            <tr
+              v-for="(company, index) in companies"
+              :key="index"
+              class="list-row"
+              @click="goToCompanyDetail(company)"
+            >
               <td>{{ company.name }}</td>
               <td>{{ company.domain }}</td>
               <td>{{ company.admin }}</td>

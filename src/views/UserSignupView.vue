@@ -27,9 +27,6 @@ const handleSubmit = () => {
 
 <template>
   <div class="user-signup-page">
-    <!-- 헤더 컴포넌트 -->
-    <UserHeader />
-
     <!-- 메인 컨텐츠 -->
     <main class="user-signup-main">
       <div class="user-signup-card">
@@ -105,9 +102,6 @@ const handleSubmit = () => {
         </form>
       </div>
     </main>
-
-    <!-- 푸터 컴포넌트 -->
-    <UserFooter />
   </div>
 </template>
 

@@ -50,9 +50,9 @@ const selectMenuItem = (serviceIndex, menu) => {
       <div class="sub-menu-section">
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
-          <div class="sub-menu-item">전체 현황</div>
-          <div class="sub-menu-item">관리자 관리</div>
-          <div class="sub-menu-item">서비스 그룹 관리</div>
+          <router-link class="sub-menu-item" to="#!">전체 현황</router-link>
+          <router-link class="sub-menu-item" to="/admin/manager-management">관리자 관리</router-link>
+          <router-link class="sub-menu-item" to="#!">서비스 그룹 관리</router-link>
         </div>
       </div>
 
@@ -61,23 +61,25 @@ const selectMenuItem = (serviceIndex, menu) => {
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
           <div v-for="(item, index) in services" :key="index">
-            <div
+            <router-link
+              to="#!"
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
               @click="toggleDropdown(index)"
             >
               {{ item.label }}
-            </div>
+            </router-link>
             <div v-if="openDropdown === index">
-              <div
+              <router-link
                 v-for="child in dropdownItems"
+                to="#!"
                 :key="child"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"
               >
                 {{ child }}
-              </div>
+              </router-link>
             </div>
           </div>
         </div>
@@ -129,7 +131,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .sub-menu-item {
-  @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer
+  @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer block
     hover:border-l-4
     hover:border-white
     hover:bg-[rgba(255,255,255,0.44)];
@@ -152,7 +154,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .service-group-menu-item {
-  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0]
+  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0] block
   hover:text-white
   hover:font-medium;
 }
