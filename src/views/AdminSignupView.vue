@@ -42,7 +42,6 @@ const checkEmail = async () => {
     return
   }
 
-  // TODO: API 호출
   emailChecked.value = true
   alert('사용 가능한 이메일입니다.')
 }
@@ -100,19 +99,27 @@ const handleSubmit = () => {
 
       <!-- 폼 영역 -->
       <form @submit.prevent="handleSubmit" class="admin-signup-form">
+        <!-- 사용자등록번호 -->
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">사용자등록번호</label>
+          <div class="admin-signup-input-with-button">
+            <Input
+              v-model="formData.email"
+              type="email"
+              placeholder="이메일을 입력해주세요."
+              @input="resetEmailCheck"
+            />
+            <Button class="admin-signup-check-button" type="button" @click="checkEmail">
+              중복확인
+            </Button>
+          </div>
+        </div>
+
         <!-- 기업명 -->
         <div class="admin-signup-field">
           <label class="admin-signup-label">기업명</label>
-          <div class="admin-signup-input-with-button">
-            <Input
-              v-model="formData.companyName"
-              type="text"
-              placeholder="기업명을 입력해주세요."
-              @input="resetCompanyNameCheck"
-            />
-            <Button class="admin-signup-check-button" type="button" @click="checkCompanyName">
-              중복확인
-            </Button>
+          <div class="admin-signup-input-wrapper">
+            <Input v-model="formData.name" type="text" placeholder="기업명을 입력해주세요." />
           </div>
         </div>
 
@@ -203,11 +210,11 @@ const handleSubmit = () => {
 
 /* 입력 필드 */
 .admin-signup-field {
-  @apply flex items-center w-full max-w-[350px] mb-5;
+  @apply flex items-center w-full max-w-[380px] mb-5;
 }
 
 .admin-signup-label {
-  @apply min-w-[68px] text-center text-[14px] text-gray-600 font-medium mr-3;
+  @apply min-w-[90px] text-center text-[14px] text-gray-600 font-medium mr-5;
 }
 
 /* 입력 래퍼 (일반) */
