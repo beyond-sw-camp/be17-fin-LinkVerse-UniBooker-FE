@@ -16,7 +16,11 @@ const router = createRouter({
       component: () => import('@/views/AdminLoginView.vue'),
     },
     {
-      // 예약 완료 페이지
+      path: '/user/login',
+      name: 'userLogin',
+      component: () => import('@/views/UserLoginView.vue')
+    },
+    { // 예약 완료 페이지
       path: '/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/ReservationCompletedView.vue'),
