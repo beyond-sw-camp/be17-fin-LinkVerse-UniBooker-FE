@@ -26,11 +26,6 @@ const goToSignup = () => {
 
 <template>
   <div class="admin-login-container">
-    <!-- 네비게이션 -->
-    <div class="admin-login-navbar">
-      <AdminNavbar />
-    </div>
-
     <!-- 메인 카드 -->
     <div class="admin-login-card">
       <!-- 타이틀 -->
@@ -75,11 +70,6 @@ const goToSignup = () => {
 /* 컨테이너 */
 .admin-login-container {
   @apply min-h-screen bg-[#eeeeee] flex flex-col items-center px-4;
-}
-
-/* 네비게이션 영역 */
-.admin-login-navbar {
-  @apply w-full max-w-[1194px] mt-[30px];
 }
 
 /* 로그인 카드 */

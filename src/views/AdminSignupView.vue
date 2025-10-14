@@ -81,11 +81,6 @@ const handleSubmit = () => {
 
 <template>
   <div class="admin-signup-container">
-    <!-- 네비게이션 -->
-    <div class="admin-signup-navbar">
-      <AdminNavbar />
-    </div>
-
     <!-- 메인 카드 -->
     <div class="admin-signup-card">
       <!-- 타이틀 섹션 -->
@@ -174,11 +169,6 @@ const handleSubmit = () => {
 /* 컨테이너 */
 .admin-signup-container {
   @apply min-h-screen bg-[#eeeeee] flex flex-col items-center px-4;
-}
-
-/* 네비게이션 영역 */
-.admin-signup-navbar {
-  @apply w-full max-w-[1194px] mt-[30px];
 }
 
 /* 회원가입 카드 */
