@@ -1,4 +1,5 @@
 <script setup>
+import Dropdown from '@/components/Dropdown.vue'
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -6,14 +7,14 @@ const router = useRouter()
 
 // 예시 서비스 목록
 const services = reactive([
-  { label: '동아리 모집', src:'/assets/images/service/organization.jpg', status: '진행중', contents: '회의실 A, 회의실 B는 앞으로 예약 시스템을 통해 이용 가능합니다.' },
-  { label: '회의실 예약', src:'/assets/images/service/meeting_room.jpg', status: '진행중', contents: '퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!' },
-  { label: '통근버스 신청', src:'/assets/images/service/commuting_bus.jpg', status: '마감', contents: '경기도 출퇴근 버스 신청 받습니다.' },
-  { label: '캠핑카 이용 신청', src:'/assets/images/service/camping_car.jpg', status: '종료', contents: '이번 연휴 때 캠핑하시는 분들 캠핑카 대여 가능합니다.' },
+  { label: '동아리 모집', type: 'APPLICATION', src:'/assets/images/service/organization.jpg', status: '진행중', contents: '회의실 A, 회의실 B는 앞으로 예약 시스템을 통해 이용 가능합니다.' },
+  { label: '회의실 예약', type: 'RESERVATION', src:'/assets/images/service/meeting_room.jpg', status: '진행중', contents: '퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!' },
+  { label: '통근버스 신청', type: 'APPLICATION', src:'/assets/images/service/commuting_bus.jpg', status: '마감', contents: '경기도 출퇴근 버스 신청 받습니다.' },
+  { label: '캠핑카 이용 신청', type: 'APPLICATION', src:'/assets/images/service/camping_car.jpg', status: '종료', contents: '이번 연휴 때 캠핑하시는 분들 캠핑카 대여 가능합니다.' },
 ])
 
 // 필터 드롭다운 종류
-const filterItems = ['전체', '진행중', '마감', '종료']
+const filterItems = [{label:'전체', value:'전체'}, {label:'진행중', value:'진행중'}, {label:'마감', value:'마감'}, {label:'종료', value:'종료'}]
 
 // 선택된 필터 상태
 const selectedFilter = ref('전체')
@@ -30,44 +31,51 @@ const selectMenuItem = (e) => {
 }
 
 // 카드 선택시 서비스 항목 목록 페이지
-const goToService = () => {
-  router.push('/')
+const goToService = (item) => { // 백엔드 연결시에는 서비스 항목 id로 받기
+  router.push({
+    path: '/service-item/list',
+    query: { type: item.type },
+  })
 }
 </script>
 
 <template>
-  <div class="service-container">
-    <!-- 헤더 -->
-    <div class="service-header">
-      <h2 class="service-title">서비스</h2>
+  <div class="page-wrapper">
+    <div class="service-container">
+      <!-- 헤더 -->
+      <div class="service-header">
+        <h2 class="service-title">서비스</h2>
 
-      <!-- 필터 -->
-      <div class="service-filter">
-        <select class="filter-select" @change="selectMenuItem">
-          <option v-for="(item, index) in filterItems" :key="index">{{ item }}</option>
-        </select>
+        <!-- 필터 -->
+        <Dropdown
+          v-model="selectedFilter"
+          :options="filterItems"
+          placeholder="선택"
+          width="w-40"
+          class="service-filter filter-select" @change="selectMenuItem"
+        />
       </div>
-    </div>
 
-    <!-- 서비스 카드 목록 -->
-    <div class="service-grid">
-      <div v-for="(item, index) in filteredServices" :key="index" class="service-card" @click="goToService()">
-        <img :src="item.src" :alt="item.label" class="service-img" />
-        <div class="service-body">
-          <div class="service-header-row">
-            <h3 class="service-name">{{ item.label }}</h3>
-            <span class="status">
-              <span 
-                class="dot"
-                :class="{
-                  'dot-active': item.status === '진행중',
-                  'dot-end': item.status === '마감',
-                  'dot-finish': item.status === '종료'
-                }" 
-              /> {{ item.status }}
-            </span>
+      <!-- 서비스 카드 목록 -->
+      <div class="service-grid">
+        <div v-for="(item, index) in filteredServices" :key="index" class="service-card" @click="goToService(item)">
+          <img :src="item.src" :alt="item.label" class="service-img" />
+          <div class="service-body">
+            <div class="service-header-row">
+              <h3 class="service-name">{{ item.label }}</h3>
+              <span class="status">
+                <span 
+                  class="dot"
+                  :class="{
+                    'dot-active': item.status === '진행중',
+                    'dot-end': item.status === '마감',
+                    'dot-finish': item.status === '종료'
+                  }" 
+                /> {{ item.status }}
+              </span>
+            </div>
+            <p class="service-desc">{{ item.contents }}</p>
           </div>
-          <p class="service-desc">{{ item.contents }}</p>
         </div>
       </div>
     </div>
@@ -75,9 +83,13 @@ const goToService = () => {
 </template>
 
 <style scoped>
+.page-wrapper {
+  @apply bg-white min-h-screen;
+}
+
 /* 전체 컨테이너 */
 .service-container {
-  @apply p-8 bg-white min-h-screen;
+  @apply max-w-6xl mx-auto p-8 bg-white min-h-screen;
 }
 
 /* 헤더 */
@@ -86,16 +98,7 @@ const goToService = () => {
 }
 
 .service-title {
-  @apply text-base sm:text-lg font-semibold text-gray-800;
-}
-
-/* 필터 */
-.service-filter {
-  @apply relative;
-}
-
-.filter-select {
-  @apply border rounded-md px-3 py-1 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer;
+  @apply text-xl sm:text-xl font-semibold text-gray-800;
 }
 
 /* 카드 */
@@ -120,7 +123,7 @@ const goToService = () => {
 }
 
 .service-name {
-  @apply text-sm font-semibold text-gray-900;
+  @apply text-base font-semibold text-gray-900;
 }
 
 .service-desc {
