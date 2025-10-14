@@ -58,14 +58,33 @@ const router = createRouter({
     {
       path: '/super/dashboard',
       name: 'superDashboard',
-      component: () => import('@/views/SuperDashboardView.vue'),
+      component: () => import('@/views/super/DashboardView.vue'),
     },
     {
       path: '/super/management',
       name: 'superManagement',
-      component: () => import('@/views/SuperManagementView.vue'),
+      component: () => import('@/views/super/CompanyListView.vue'),
     },
-    { // 사용자 예약/신청 이력
+    {
+      path: '/super/management/:companyName',
+      name: 'CompanyDetail',
+      component: () => import('@/views/super/CompanyDetailView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/management/:companyName/managers',
+      name: 'ManagerList',
+      component: () => import('@/views/super/ManagerListView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/management/:companyName/services',
+      name: 'ServiceGroupList',
+      component: () => import('@/views/super/ServiceGroupListView.vue'),
+      props: true,
+    },
+    {
+      // 사용자 예약/신청 이력
       path: '/myReservation',
       name: 'myReservation',
       component: () => import('@/views/UserMyReservation.vue'),
