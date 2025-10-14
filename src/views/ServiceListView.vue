@@ -1,4 +1,5 @@
 <script setup>
+import Dropdown from '@/components/Dropdown.vue'
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -13,7 +14,7 @@ const services = reactive([
 ])
 
 // 필터 드롭다운 종류
-const filterItems = ['전체', '진행중', '마감', '종료']
+const filterItems = [{label:'전체', value:'전체'}, {label:'진행중', value:'진행중'}, {label:'마감', value:'마감'}, {label:'종료', value:'종료'}]
 
 // 선택된 필터 상태
 const selectedFilter = ref('전체')
@@ -46,11 +47,13 @@ const goToService = (item) => { // 백엔드 연결시에는 서비스 항목 id
         <h2 class="service-title">서비스</h2>
 
         <!-- 필터 -->
-        <div class="service-filter">
-          <select class="filter-select" @change="selectMenuItem">
-            <option v-for="(item, index) in filterItems" :key="index">{{ item }}</option>
-          </select>
-        </div>
+        <Dropdown
+          v-model="selectedFilter"
+          :options="filterItems"
+          placeholder="선택"
+          width="w-40"
+          class="service-filter filter-select" @change="selectMenuItem"
+        />
       </div>
 
       <!-- 서비스 카드 목록 -->
@@ -96,15 +99,6 @@ const goToService = (item) => { // 백엔드 연결시에는 서비스 항목 id
 
 .service-title {
   @apply text-xl sm:text-xl font-semibold text-gray-800;
-}
-
-/* 필터 */
-.service-filter {
-  @apply relative;
-}
-
-.filter-select {
-  @apply border rounded-md px-3 py-1 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-gray-400 cursor-pointer;
 }
 
 /* 카드 */
