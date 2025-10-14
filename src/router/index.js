@@ -29,7 +29,7 @@ const router = createRouter({
       component: () => import('../views/ManagerManagement.vue'),
     },
     {
-      path: '/user/login',
+      path: '/user/home',
       name: 'userLogin',
       component: () => import('@/views/UserLoginView.vue'),
     },

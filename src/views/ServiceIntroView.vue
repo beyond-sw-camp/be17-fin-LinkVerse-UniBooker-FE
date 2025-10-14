@@ -9,11 +9,6 @@ const router = useRouter()
   <div class="service-page-container">
     <!-- 히어로 섹션 (네비게이션 포함) -->
     <section class="service-page-hero-section">
-      <!-- 네비게이션 -->
-      <div class="service-page-navbar">
-        <AdminNavbar />
-      </div>
-
       <!-- 히어로 콘텐츠 그리드 -->
       <div class="service-page-hero-grid">
         <!-- 왼쪽: 텍스트 -->
@@ -188,11 +183,6 @@ const router = useRouter()
 
 .service-page-main-image {
   @apply w-full flex items-center;
-}
-
-/* 네비게이션 */
-.service-page-navbar {
-  @apply w-full max-w-[1194px] mt-[30px];
 }
 
 /* 히어로 콘텐츠 */
