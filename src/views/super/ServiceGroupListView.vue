@@ -87,7 +87,11 @@ const serviceGroups = [
         </thead>
         <tbody>
           <tr v-for="(s, i) in serviceGroups" :key="i">
-            <td>{{ s.groupName }}</td>
+            <td>
+              <div class="service-link">
+                {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+              </div>
+            </td>
             <td>{{ s.groupCode }}</td>
             <td>{{ s.category }}</td>
             <td>{{ s.createdAt }}</td>
@@ -123,5 +127,13 @@ th {
 }
 tr:hover td {
   @apply bg-gray-50;
+}
+
+td img {
+  @apply h-[16px];
+}
+
+.service-link {
+  @apply flex items-center hover:underline cursor-pointer;
 }
 </style>
