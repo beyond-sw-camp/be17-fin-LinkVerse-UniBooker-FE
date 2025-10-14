@@ -114,7 +114,7 @@ const goToSignup = () => {
 
 /* 네비게이션 */
 .admin-landing-navbar {
-  @apply w-full max-w-[1194px] mt-8;
+  @apply w-full max-w-[1194px] mt-[30px];
 }
 
 /* 히어로 섹션 */
