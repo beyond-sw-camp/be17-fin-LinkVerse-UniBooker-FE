@@ -53,17 +53,29 @@ const router = createRouter({
     {
       path: '/super/dashboard',
       name: 'superDashboard',
-      component: () => import('@/views/SuperDashboardView.vue'),
+      component: () => import('@/views/super/DashboardView.vue'),
     },
     {
       path: '/super/management',
       name: 'superManagement',
-      component: () => import('@/views/SuperManagementView.vue'),
+      component: () => import('@/views/super/CompanyListView.vue'),
     },
     {
       path: '/super/management/:companyName',
       name: 'CompanyDetail',
-      component: () => import('@/views/SuperCompanyView.vue'),
+      component: () => import('@/views/super/CompanyDetailView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/management/:companyName/managers',
+      name: 'ManagerList',
+      component: () => import('@/views/super/ManagerListView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/management/:companyName/services',
+      name: 'ServiceGroupList',
+      component: () => import('@/views/super/ServiceGroupListView.vue'),
       props: true,
     },
   ],

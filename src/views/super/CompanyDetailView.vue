@@ -9,6 +9,14 @@ const goToManagement = () => {
   router.push('/super/management')
 }
 
+const goToManagerList = () => {
+  router.push(`/super/management/${encodeURIComponent(company.name)}/managers`)
+}
+
+const goToServiceGroupList = () => {
+  router.push(`/super/management/${encodeURIComponent(company.name)}/services`)
+}
+
 const companyName = route.params.companyName
 
 const company = {
@@ -92,8 +100,8 @@ const company = {
           </tbody>
         </table>
 
-        <div class="link-button">
-          서비스 그룹 목록
+        <div class="link-button" @click="goToManagerList">
+          관리자 계정 목록
           <img src="/public/assets/icons/ic-arrow-outward.png" />
         </div>
       </section>
@@ -120,7 +128,7 @@ const company = {
           </tbody>
         </table>
 
-        <div class="link-button">
+        <div class="link-button" @click="goToServiceGroupList">
           서비스 그룹 목록
           <img src="/public/assets/icons/ic-arrow-outward.png" />
         </div>
@@ -133,6 +141,7 @@ const company = {
 .path {
   @apply text-sm text-gray-600 mb-2;
 }
+
 .path span {
   @apply cursor-pointer hover:underline;
 }
