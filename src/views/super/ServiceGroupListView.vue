@@ -23,7 +23,8 @@ const serviceGroups = [
     createdAt: '2025-01-02',
     updatedAt: '2025-01-10',
     status: '활성',
-    manager: '홍길동',
+    createdBy: '홍길동',
+    updatedBy: '김수현',
   },
   {
     groupName: '출장 신청',
@@ -32,7 +33,8 @@ const serviceGroups = [
     createdAt: '2025-03-01',
     updatedAt: '2025-03-05',
     status: '활성',
-    manager: '이영희',
+    createdBy: '이영희',
+    updatedBy: '박세진',
   },
   {
     groupName: '교육 신청',
@@ -41,7 +43,8 @@ const serviceGroups = [
     createdAt: '2025-03-15',
     updatedAt: '2025-03-18',
     status: '활성',
-    manager: '박민수',
+    createdBy: '박민수',
+    updatedBy: '최유리',
   },
   {
     groupName: '휴가/연차 신청',
@@ -50,7 +53,8 @@ const serviceGroups = [
     createdAt: '2025-04-10',
     updatedAt: '2025-04-15',
     status: '활성',
-    manager: '최지훈',
+    createdBy: '최지훈',
+    updatedBy: '김보라',
   },
   {
     groupName: '물품 신청',
@@ -59,7 +63,8 @@ const serviceGroups = [
     createdAt: '2025-05-02',
     updatedAt: '2025-05-05',
     status: '활성',
-    manager: '김나영',
+    createdBy: '김나영',
+    updatedBy: '이승현',
   },
 ]
 </script>
@@ -82,7 +87,8 @@ const serviceGroups = [
             <th>생성일자</th>
             <th>수정일자</th>
             <th>상태</th>
-            <th>담당자</th>
+            <th>생성자</th>
+            <th>수정자</th>
           </tr>
         </thead>
         <tbody>
@@ -97,7 +103,8 @@ const serviceGroups = [
             <td>{{ s.createdAt }}</td>
             <td>{{ s.updatedAt }}</td>
             <td>{{ s.status }}</td>
-            <td>{{ s.manager }}</td>
+            <td>{{ s.createdBy }}</td>
+            <td>{{ s.updatedBy }}</td>
           </tr>
         </tbody>
       </table>
