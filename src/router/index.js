@@ -75,6 +75,11 @@ const router = createRouter({
       name: 'ManagerManagement',
       component: () => import('../views/admin/ManagerManagement.vue'),
     },
+    {
+      path: '/admin/service-group-create',
+      name: 'ServiceGroupCreate',
+      component: () => import('../views/admin/ServiceGroupCreate.vue'),
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
