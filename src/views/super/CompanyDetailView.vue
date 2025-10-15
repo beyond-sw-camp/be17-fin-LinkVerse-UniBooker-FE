@@ -5,16 +5,16 @@ import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()
 const route = useRoute()
 
-const goToManagement = () => {
-  router.push('/super/management')
+const goToCompanies = () => {
+  router.push('/super/companies')
 }
 
 const goToManagerList = () => {
-  router.push(`/super/management/${encodeURIComponent(company.name)}/managers`)
+  router.push(`/super/companies/${encodeURIComponent(company.name)}/managers`)
 }
 
 const goToServiceGroupList = () => {
-  router.push(`/super/management/${encodeURIComponent(company.name)}/services`)
+  router.push(`/super/companies/${encodeURIComponent(company.name)}/services`)
 }
 
 const companyName = route.params.companyName
@@ -37,7 +37,7 @@ const company = {
 <template>
   <SuperLayout>
     <div class="path">
-      <span @click="goToManagement">기업 목록</span> > <span>{{ company.name }}</span>
+      <span @click="goToCompanies">기업 목록</span> > <span>{{ company.name }}</span>
     </div>
 
     <h2 class="title">기업 상세 페이지</h2>

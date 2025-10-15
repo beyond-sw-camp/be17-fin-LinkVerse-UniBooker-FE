@@ -7,8 +7,12 @@ const goDashboard = () => {
   router.push('/super/dashboard')
 }
 
-const goManagement = () => {
-  router.push('/super/management')
+const goCompanyList = () => {
+  router.push('/super/companies')
+}
+
+const goApplicationList = () => {
+  router.push('/super/applications')
 }
 </script>
 
@@ -25,7 +29,8 @@ const goManagement = () => {
       <div class="sub-menu-section">
         <div class="sub-menu-items-container">
           <div class="sub-menu-item" @click="goDashboard">대시보드</div>
-          <div class="sub-menu-item" @click="goManagement">기업 관리</div>
+          <div class="sub-menu-item" @click="goCompanyList">기업 관리</div>
+          <div class="sub-menu-item" @click="goApplicationList">신청 관리</div>
         </div>
       </div>
 

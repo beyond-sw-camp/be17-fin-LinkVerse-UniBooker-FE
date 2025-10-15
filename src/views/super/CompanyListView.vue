@@ -17,7 +17,7 @@ const dropdownOptions = [
 ]
 
 const goToCompanyDetail = (company) => {
-  router.push(`/super/management/${encodeURIComponent(company.name)}`)
+  router.push(`/super/companies/${encodeURIComponent(company.name)}`)
 }
 
 const companies = [
