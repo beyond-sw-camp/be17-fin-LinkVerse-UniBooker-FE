@@ -100,7 +100,7 @@ const closeAddModal = () => {
         </div>
 
         <div class="add-modal-button-container">
-          <button class="delete-button">취소</button>
+          <button @click="closeAddModal" class="delete-button">취소</button>
           <Button id="add-button">추가하기</Button>
         </div>
       </div>
