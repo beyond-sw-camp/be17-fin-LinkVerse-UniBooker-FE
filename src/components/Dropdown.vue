@@ -6,6 +6,7 @@ const props = defineProps({
   modelValue: { type: [String, Number], default: null },
   placeholder: { type: String, default: 'Select...' },
   width: { type: String, default: 'w-48' },
+  bgColor: { type: String, default: 'white' } // white 또는 gray
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -53,6 +54,7 @@ onBeforeUnmount(() => {
     <!-- 버튼 -->
     <button
       class="dropdown-selected-container flex justify-between items-center w-full"
+      :class="props.bgColor === 'white' ? 'bg-white' : 'bg-gray-line'"
       @click="toggleDropdown"
     >
       <span>{{ selectedLabel || placeholder }}</span>
@@ -79,7 +81,7 @@ onBeforeUnmount(() => {
 }
 
 .dropdown-selected-container {
-  @apply bg-white text-left px-2.5 py-2.5 w-full rounded placeholder-gray-400 outline-none border-b-2
+  @apply text-left px-2.5 py-2.5 w-full rounded placeholder-gray-400 outline-none border-b-2
          transition-all duration-200 focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed;
 }
 
