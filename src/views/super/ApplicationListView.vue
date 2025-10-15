@@ -1,18 +1,69 @@
 <script setup>
 import Button from '@/components/Button.vue'
 import SuperLayout from '@/components/SuperLayout.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const goToApplicationDetail = (company) => {
+  router.push(`/super/applications/${company.companyId}/details`)
+}
 
 const companies = [
-  { companyName: '넥스트테크', applicationDate: '2025-10-10', administrator: '김민수' },
-  { companyName: '에이아이랩스', applicationDate: '2025-10-11', administrator: '이서연' },
-  { companyName: '블루웨이브', applicationDate: '2025-10-12', administrator: '박지훈' },
-  { companyName: '오픈루프', applicationDate: '2025-10-12', administrator: '최윤아' },
-  { companyName: '하이브소프트', applicationDate: '2025-10-13', administrator: '정우성' },
-  { companyName: '메타브릿지', applicationDate: '2025-10-13', administrator: '홍지민' },
-  { companyName: '코드크래프트', applicationDate: '2025-10-14', administrator: '한지호' },
-  { companyName: '데이터버스', applicationDate: '2025-10-14', administrator: '유지연' },
-  { companyName: '그로스앤컴퍼니', applicationDate: '2025-10-15', administrator: '김도현' },
-  { companyName: '인사이트랩', applicationDate: '2025-10-15', administrator: '오세은' },
+  {
+    companyId: 1,
+    companyName: '넥스트테크',
+    applicationDate: '2025-10-10',
+    administrator: '김민수',
+  },
+  {
+    companyId: 2,
+    companyName: '에이아이랩스',
+    applicationDate: '2025-10-11',
+    administrator: '이서연',
+  },
+  {
+    companyId: 3,
+    companyName: '블루웨이브',
+    applicationDate: '2025-10-12',
+    administrator: '박지훈',
+  },
+  { companyId: 4, companyName: '오픈루프', applicationDate: '2025-10-12', administrator: '최윤아' },
+  {
+    companyId: 5,
+    companyName: '하이브소프트',
+    applicationDate: '2025-10-13',
+    administrator: '정우성',
+  },
+  {
+    companyId: 6,
+    companyName: '메타브릿지',
+    applicationDate: '2025-10-13',
+    administrator: '홍지민',
+  },
+  {
+    companyId: 7,
+    companyName: '코드크래프트',
+    applicationDate: '2025-10-14',
+    administrator: '한지호',
+  },
+  {
+    companyId: 8,
+    companyName: '데이터버스',
+    applicationDate: '2025-10-14',
+    administrator: '유지연',
+  },
+  {
+    companyId: 9,
+    companyName: '그로스앤컴퍼니',
+    applicationDate: '2025-10-15',
+    administrator: '김도현',
+  },
+  {
+    companyId: 10,
+    companyName: '인사이트랩',
+    applicationDate: '2025-10-15',
+    administrator: '오세은',
+  },
 ]
 </script>
 
@@ -44,7 +95,7 @@ const companies = [
                 <td>{{ c.companyName }}</td>
                 <td>{{ c.applicationDate }}</td>
                 <td>{{ c.administrator }}</td>
-                <td><Button>상세 보기</Button></td>
+                <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
               </tr>
             </tbody>
           </table>

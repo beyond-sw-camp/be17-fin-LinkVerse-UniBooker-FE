@@ -113,6 +113,12 @@ const router = createRouter({
       component: () => import('@/views/super/ApplicationListView.vue'),
       props: true,
     },
+    {
+      path: '/super/applications/:companyId/details',
+      name: 'superApplicationDetails',
+      component: () => import('@/views/super/ApplicationDetailView.vue'),
+      props: true,
+    },
   ],
 })
 
