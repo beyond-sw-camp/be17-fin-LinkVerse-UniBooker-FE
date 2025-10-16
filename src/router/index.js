@@ -17,6 +17,11 @@ const router = createRouter({
       component: () => import('@/views/user/UserSignupView.vue'),
     },
     {
+      path: '/user/mypage',
+      name: 'userMypage',
+      component: () => import('@/views/UserMypageView.vue')
+    },
+    {
       path: '/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/user/ReservationCompletedView.vue'),
