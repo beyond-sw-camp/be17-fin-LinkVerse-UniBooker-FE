@@ -7,12 +7,12 @@ const router = useRouter()
 
 const companyName = route.params.companyName
 
-const goToManagement = () => {
-  router.push('/super/management')
+const goToCompanies = () => {
+  router.push('/super/companies')
 }
 
 const goToCompanyDetail = () => {
-  router.push(`/super/management/${encodeURIComponent(companyName)}`)
+  router.push(`/super/companies/${encodeURIComponent(companyName)}`)
 }
 
 const serviceGroups = [
@@ -72,7 +72,7 @@ const serviceGroups = [
 <template>
   <SuperLayout>
     <div class="path">
-      <span @click="goToManagement">기업 목록</span> >
+      <span @click="goToCompanies">기업 목록</span> >
       <span @click="goToCompanyDetail">{{ companyName }}</span> >
       <span>서비스 그룹 목록</span>
     </div>

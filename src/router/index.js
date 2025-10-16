@@ -47,10 +47,6 @@ const router = createRouter({
       props: true,
     },
 
-
-
-    
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,26 +85,38 @@ const router = createRouter({
       component: () => import('@/views/super/DashboardView.vue'),
     },
     {
-      path: '/super/management',
-      name: 'superManagement',
+      path: '/super/companies',
+      name: 'superCompanyList',
       component: () => import('@/views/super/CompanyListView.vue'),
     },
     {
-      path: '/super/management/:companyName',
+      path: '/super/companies/:companyName',
       name: 'CompanyDetail',
       component: () => import('@/views/super/CompanyDetailView.vue'),
       props: true,
     },
     {
-      path: '/super/management/:companyName/managers',
+      path: '/super/companies/:companyName/managers',
       name: 'ManagerList',
       component: () => import('@/views/super/ManagerListView.vue'),
       props: true,
     },
     {
-      path: '/super/management/:companyName/services',
+      path: '/super/companies/:companyName/services',
       name: 'ServiceGroupList',
       component: () => import('@/views/super/ServiceGroupListView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/applications',
+      name: 'superApplicationList',
+      component: () => import('@/views/super/ApplicationListView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/applications/:companyId/details',
+      name: 'superApplicationDetails',
+      component: () => import('@/views/super/ApplicationDetailView.vue'),
       props: true,
     },
   ],
