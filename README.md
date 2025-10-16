@@ -75,7 +75,7 @@
 <br><br>
 
 ## 🖥 화면 설계서
-> 추후 추가 예정
+> [Figma링크](https://www.figma.com/design/7xSlI165fAoEO6CYpWqIqZ/UniBooker-%ED%99%94%EB%A9%B4-%EC%84%A4%EA%B3%84%EC%84%9C?node-id=1125-3384&m=dev&t=u8xcRCOC6QbjigES-1)
 
 <br><br>
 
