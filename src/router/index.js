@@ -20,6 +20,7 @@ const router = createRouter({
       path: '/user/mypage',
       name: 'userMypage',
       component: () => import('@/views/UserMypageView.vue'),
+      component: () => import('@/views/UserMypageView.vue'),
     },
     {
       path: '/reservation/completed',
@@ -57,7 +58,6 @@ const router = createRouter({
       name: 'UserNotification',
       component: () => import('@/views/user/UserNotificationView.vue'),
     },
-    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터
@@ -150,12 +150,17 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/super/system-management',
+      name: 'superSystemManagement',
+      component: () => import('@/views/super/SystemManagementView.vue'),
+      props: true,
+    },
+    {
       // 플랫폼 관리자 알림 이력 페이지
       path: '/super/notification',
       name: 'SuperNotification',
       component: () => import('@/views/super/SuperNotificationView.vue'),
     },
-
   ],
 })
 
