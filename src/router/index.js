@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,53 +11,56 @@ const router = createRouter({
       path: '/c/:companySlug/login',
       name: 'UserLogin',
       component: () => import('@/views/user/UserLoginView.vue'),
+      meta: { layout: 'user' }
     },
     {
       path: '/c/:companySlug/signup',
       name: 'UserSignup',
       component: () => import('@/views/user/UserSignupView.vue'),
+      meta: { layout: 'user' }
     },
     {
-      path: '/user/mypage',
+      path: '/c/:companySlug/mypage',
       name: 'userMypage',
       component: () => import('@/views/UserMypageView.vue'),
-      component: () => import('@/views/UserMypageView.vue'),
+      meta: { layout: 'user', requiresAuth: true }
     },
     {
-      path: '/reservation/completed',
+      path: '/c/:companySlug/reservation/completed',
       name: 'userReservationCompleted',
       component: () => import('@/views/user/ReservationCompletedView.vue'),
+      meta: { layout: 'user' }
     },
     {
-      // 서비스(리소스 그룹) 목록 페이지
-      path: '/service/list',
+      path: '/c/:companySlug/service/list',
       name: 'ServiceList',
       component: () => import('@/views/user/ServiceListView.vue'),
+      meta: { layout: 'user' }
     },
     {
-      // 서비스 항목(리소스) 목록 페이지
-      path: '/service-item/list',
+      path: '/c/:companySlug/service-item/list',
       name: 'ServiceItemList',
       component: () => import('@/views/user/ServiceItemListView.vue'),
+      meta: { layout: 'user' }
     },
     {
-      // 사용자 예약/신청 이력
-      path: '/myReservation',
+      path: '/c/:companySlug/myReservation',
       name: 'myReservation',
       component: () => import('@/views/user/UserMyReservation.vue'),
+      meta: { layout: 'user', requiresAuth: true }
     },
     {
-      // 사용자 예약/신청 이력 상세 페이지
-      path: '/myReservation/:id',
+      path: '/c/:companySlug/myReservation/:id',
       name: 'myReservationDetail',
       component: () => import('@/views/user/UserMyReservationDetail.vue'),
       props: true,
+      meta: { layout: 'user', requiresAuth: true }
     },
     {
-      // 사용자 알림 이력 페이지
-      path: '/notification',
+      path: '/c/:companySlug/notification',
       name: 'UserNotification',
       component: () => import('@/views/user/UserNotificationView.vue'),
+      meta: { layout: 'user', requiresAuth: true }
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,7 +92,6 @@ const router = createRouter({
       component: () => import('../views/admin/ManagerManagement.vue'),
     },
     {
-      // 기업 관리자기 알림 이력 페이지
       path: '/admin/notification',
       name: 'AdminNotification',
       component: () => import('@/views/admin/AdminNotificationView.vue'),
@@ -144,24 +147,46 @@ const router = createRouter({
       props: true,
     },
     {
-      path: '/super/applications/:companyId/details',
-      name: 'superApplicationDetails',
-      component: () => import('@/views/super/ApplicationDetailView.vue'),
-      props: true,
-    },
-    {
-      path: '/super/system-management',
-      name: 'superSystemManagement',
-      component: () => import('@/views/super/SystemManagementView.vue'),
-      props: true,
-    },
-    {
-      // 플랫폼 관리자 알림 이력 페이지
       path: '/super/notification',
       name: 'SuperNotification',
       component: () => import('@/views/super/SuperNotificationView.vue'),
     },
   ],
+})
+
+/**
+ * Navigation Guard: 인증 필요 페이지 접근 제어 (User 전용)
+ */
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  // 로그인 필요 페이지 체크
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    if (to.path.startsWith('/c/')) {
+      const companySlug = to.params.companySlug || 'default'
+      next(`/c/${companySlug}/login`)
+    } else {
+      next()
+    }
+    return
+  }
+  
+  // ===== 추가: 기업별 로그인 검증 =====
+  // 사용자 페이지이고 로그인 상태일 때
+  if (to.path.startsWith('/c/') && authStore.isLoggedIn) {
+    const urlCompanySlug = to.params.companySlug
+    const loginCompanySlug = authStore.companySlug
+    
+    // 로그인한 기업과 다른 기업 페이지 접속 시도
+    if (urlCompanySlug && loginCompanySlug && urlCompanySlug !== loginCompanySlug) {
+      alert('다른 기업의 페이지입니다. 로그아웃됩니다.')
+      authStore.logout()
+      next(`/c/${urlCompanySlug}/login`)
+      return
+    }
+  }
+  
+  next()
 })
 
 export default router

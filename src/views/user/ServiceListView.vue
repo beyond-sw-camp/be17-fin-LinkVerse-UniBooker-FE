@@ -1,20 +1,53 @@
 <script setup>
 import Dropdown from '@/components/Dropdown.vue'
 import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 // 예시 서비스 목록
 const services = reactive([
-  { label: '동아리 모집', type: 'APPLICATION', src:'/assets/images/service/organization.jpg', status: '진행중', contents: '회의실 A, 회의실 B는 앞으로 예약 시스템을 통해 이용 가능합니다.' },
-  { label: '회의실 예약', type: 'RESERVATION', src:'/assets/images/service/meeting_room.jpg', status: '진행중', contents: '퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!' },
-  { label: '통근버스 신청', type: 'APPLICATION', src:'/assets/images/service/commuting_bus.jpg', status: '마감', contents: '경기도 출퇴근 버스 신청 받습니다.' },
-  { label: '캠핑카 이용 신청', type: 'APPLICATION', src:'/assets/images/service/camping_car.jpg', status: '종료', contents: '이번 연휴 때 캠핑하시는 분들 캠핑카 대여 가능합니다.' },
+  {
+    label: '동아리 모집',
+    type: 'APPLICATION',
+    src: '/assets/images/service/organization.jpg',
+    status: '진행중',
+    contents: '회의실 A, 회의실 B는 앞으로 예약 시스템을 통해 이용 가능합니다.',
+  },
+  {
+    label: '회의실 예약',
+    type: 'RESERVATION',
+    src: '/assets/images/service/meeting_room.jpg',
+    status: '진행중',
+    contents:
+      '퇴근 후 할 일이 없으신가요? 사내 동아리 활동에 참여해서 진로도 쌓고 취미도 찾아보세요!',
+  },
+  {
+    label: '통근버스 신청',
+    type: 'APPLICATION',
+    src: '/assets/images/service/commuting_bus.jpg',
+    status: '마감',
+    contents: '경기도 출퇴근 버스 신청 받습니다.',
+  },
+  {
+    label: '캠핑카 이용 신청',
+    type: 'APPLICATION',
+    src: '/assets/images/service/camping_car.jpg',
+    status: '종료',
+    contents: '이번 연휴 때 캠핑하시는 분! 캠핑카 대여 가능합니다.',
+  },
 ])
 
 // 필터 드롭다운 종류
-const filterItems = [{label:'전체', value:'전체'}, {label:'진행중', value:'진행중'}, {label:'마감', value:'마감'}, {label:'종료', value:'종료'}]
+const filterItems = [
+  { label: '전체', value: '전체' },
+  { label: '진행중', value: '진행중' },
+  { label: '마감', value: '마감' },
+  { label: '종료', value: '종료' },
+]
 
 // 선택된 필터 상태
 const selectedFilter = ref('전체')
@@ -22,7 +55,7 @@ const selectedFilter = ref('전체')
 // 선택한 필터에 따라 보여줄 서비스 목록 계산
 const filteredServices = computed(() => {
   if (selectedFilter.value === '전체') return services
-  return services.filter(service => service.status === selectedFilter.value)
+  return services.filter((service) => service.status === selectedFilter.value)
 })
 
 // 필터 드롭다운 메뉴 선택
@@ -30,10 +63,15 @@ const selectMenuItem = (e) => {
   selectedFilter.value = e.target.value
 }
 
-// 카드 선택시 서비스 항목 목록 페이지
-const goToService = (item) => { // 백엔드 연결시에는 서비스 항목 id로 받기
+/**
+ * 카드 선택시 서비스 항목 목록 페이지로 이동
+ * - companySlug 포함
+ */
+const goToService = (item) => {
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
+
   router.push({
-    path: '/service-item/list',
+    path: `/c/${slug}/service-item/list`,
     query: { type: item.type },
   })
 }
@@ -52,26 +90,33 @@ const goToService = (item) => { // 백엔드 연결시에는 서비스 항목 id
           :options="filterItems"
           placeholder="선택"
           width="w-40"
-          class="service-filter filter-select" @change="selectMenuItem"
+          class="service-filter filter-select"
+          @change="selectMenuItem"
         />
       </div>
 
       <!-- 서비스 카드 목록 -->
       <div class="service-grid">
-        <div v-for="(item, index) in filteredServices" :key="index" class="service-card" @click="goToService(item)">
+        <div
+          v-for="(item, index) in filteredServices"
+          :key="index"
+          class="service-card"
+          @click="goToService(item)"
+        >
           <img :src="item.src" :alt="item.label" class="service-img" />
           <div class="service-body">
             <div class="service-header-row">
               <h3 class="service-name">{{ item.label }}</h3>
               <span class="status">
-                <span 
+                <span
                   class="dot"
                   :class="{
                     'dot-active': item.status === '진행중',
                     'dot-end': item.status === '마감',
-                    'dot-finish': item.status === '종료'
-                  }" 
-                /> {{ item.status }}
+                    'dot-finish': item.status === '종료',
+                  }"
+                />
+                {{ item.status }}
               </span>
             </div>
             <p class="service-desc">{{ item.contents }}</p>
