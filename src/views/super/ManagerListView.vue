@@ -127,31 +127,33 @@ const managers = [
       <span>관리자 계정 목록</span>
     </div>
 
-    <div class="manager-list-container">
-      <table>
-        <thead>
-          <tr>
-            <th>이름</th>
-            <th>권한</th>
-            <th>이메일</th>
-            <th>연락처</th>
-            <th>상태</th>
-            <th>생성일시</th>
-            <th>수정일시</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(m, i) in managers" :key="i">
-            <td>{{ m.name }}</td>
-            <td>{{ m.role }}</td>
-            <td>{{ m.email }}</td>
-            <td>{{ m.phone }}</td>
-            <td>{{ m.status }}</td>
-            <td>{{ m.createdAt }}</td>
-            <td>{{ m.updatedAt }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="components-white-container">
+      <div class="components-super-table-container">
+        <table class="components-super-table">
+          <thead>
+            <tr>
+              <th>이름</th>
+              <th>권한</th>
+              <th>이메일</th>
+              <th>연락처</th>
+              <th>상태</th>
+              <th>생성일시</th>
+              <th>수정일시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(m, i) in managers" :key="i">
+              <td>{{ m.name }}</td>
+              <td>{{ m.role }}</td>
+              <td>{{ m.email }}</td>
+              <td>{{ m.phone }}</td>
+              <td>{{ m.status }}</td>
+              <td>{{ m.createdAt }}</td>
+              <td>{{ m.updatedAt }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </SuperLayout>
 </template>
@@ -162,21 +164,5 @@ const managers = [
 }
 .path span {
   @apply cursor-pointer hover:underline;
-}
-.manager-list-container {
-  @apply bg-white rounded-md shadow p-8 space-y-6 overflow-x-auto;
-}
-table {
-  @apply w-full border-collapse;
-}
-th,
-td {
-  @apply border-b border-gray-200 py-3 px-4 text-left;
-}
-th {
-  @apply text-gray-700 font-semibold;
-}
-tr:hover td {
-  @apply bg-gray-50;
 }
 </style>

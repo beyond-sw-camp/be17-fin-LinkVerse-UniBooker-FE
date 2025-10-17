@@ -72,9 +72,9 @@ const companies = [
     <span class="components-page-title">신청 목록</span>
 
     <div class="components-white-container">
-      <div class="table-container">
+      <div class="components-super-table-container">
         <!-- header -->
-        <table>
+        <table class="components-super-table">
           <thead>
             <tr>
               <th>번호</th>
@@ -84,65 +84,19 @@ const companies = [
               <th></th>
             </tr>
           </thead>
+          <tbody>
+            <tr v-for="(c, i) in companies" :key="i">
+              <td>{{ i + 1 }}</td>
+              <td>{{ c.companyName }}</td>
+              <td>{{ c.applicationDate }}</td>
+              <td>{{ c.administrator }}</td>
+              <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
+            </tr>
+          </tbody>
         </table>
-
-        <!-- scroll body -->
-        <div class="table-body">
-          <table>
-            <tbody>
-              <tr v-for="(c, i) in companies" :key="i">
-                <td>{{ i + 1 }}</td>
-                <td>{{ c.companyName }}</td>
-                <td>{{ c.applicationDate }}</td>
-                <td>{{ c.administrator }}</td>
-                <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </div>
     </div>
   </SuperLayout>
 </template>
 
-<style scoped>
-.table-container {
-  @apply w-full;
-}
-
-table {
-  @apply w-full border-collapse;
-}
-
-thead th {
-  @apply text-gray-700 font-semibold bg-gray-100 py-3 px-4 text-center border-b border-gray-300;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.table-body {
-  @apply overflow-y-auto;
-  max-height: calc(100vh - 200px);
-}
-
-tbody td {
-  @apply border-b border-gray-200 py-3 px-4 text-center;
-}
-
-.table-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table-body::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-[4px];
-}
-
-.table-body::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
-}
-
-tbody tr:hover td {
-  @apply bg-gray-50;
-}
-</style>
+<style scoped></style>

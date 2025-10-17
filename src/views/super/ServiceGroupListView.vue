@@ -81,37 +81,39 @@ const serviceGroups = [
       <span>서비스 그룹 목록</span>
     </div>
     <span class="components-page-title">서비스 그룹 목록</span>
-    <div class="service-group-list-container">
-      <table>
-        <thead>
-          <tr>
-            <th>그룹명</th>
-            <th>그룹코드</th>
-            <th>카테고리</th>
-            <th>생성일자</th>
-            <th>수정일자</th>
-            <th>상태</th>
-            <th>생성자</th>
-            <th>수정자</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(s, i) in serviceGroups" :key="i">
-            <td>
-              <div class="service-link" @click="goToServiceList(s.groupName)">
-                {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
-              </div>
-            </td>
-            <td>{{ s.groupCode }}</td>
-            <td>{{ s.category }}</td>
-            <td>{{ s.createdAt }}</td>
-            <td>{{ s.updatedAt }}</td>
-            <td>{{ s.status }}</td>
-            <td>{{ s.createdBy }}</td>
-            <td>{{ s.updatedBy }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="components-white-container">
+      <div class="components-super-table-container">
+        <table class="components-super-table">
+          <thead>
+            <tr>
+              <th>그룹명</th>
+              <th>그룹코드</th>
+              <th>카테고리</th>
+              <th>생성일자</th>
+              <th>수정일자</th>
+              <th>상태</th>
+              <th>생성자</th>
+              <th>수정자</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(s, i) in serviceGroups" :key="i">
+              <td>
+                <div class="service-link" @click="goToServiceList(s.groupName)">
+                  {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+                </div>
+              </td>
+              <td>{{ s.groupCode }}</td>
+              <td>{{ s.category }}</td>
+              <td>{{ s.createdAt }}</td>
+              <td>{{ s.updatedAt }}</td>
+              <td>{{ s.status }}</td>
+              <td>{{ s.createdBy }}</td>
+              <td>{{ s.updatedBy }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </SuperLayout>
 </template>
@@ -126,33 +128,9 @@ const serviceGroups = [
 .service-group-list-container {
   @apply bg-white rounded-md shadow p-8 mt-3 space-y-6 overflow-x-auto;
 }
-table {
-  @apply w-full border-collapse;
-}
-th,
-td {
-  @apply border-b border-gray-200 py-3 px-4 text-left;
-}
-th {
-  @apply text-gray-700 font-semibold;
-}
-tr:hover td {
-  @apply bg-gray-50;
-}
 
 td img {
   @apply h-[16px];
-}
-.table-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table-body::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-[4px];
-}
-
-.table-body::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400;
 }
 
 .service-link {

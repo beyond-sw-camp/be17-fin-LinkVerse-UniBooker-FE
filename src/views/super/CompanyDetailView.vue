@@ -34,7 +34,7 @@ const company = {
       <span @click="goToCompanies">기업 목록</span> > <span>{{ company.name }}</span>
     </div>
 
-    <h2 class="title">기업 상세 페이지</h2>
+    <span class="components-page-title">기업 상세 페이지</span>
 
     <CompanyDetail :company="company" />
   </SuperLayout>
@@ -49,12 +49,8 @@ const company = {
   @apply cursor-pointer hover:underline;
 }
 
-.title {
-  @apply text-lg font-bold mb-4;
-}
-
 .company-container {
-  @apply bg-white rounded-md shadow p-8 space-y-6;
+  @apply bg-white rounded-md shadow p-6 space-y-4 mt-4;
 }
 
 .section-block {

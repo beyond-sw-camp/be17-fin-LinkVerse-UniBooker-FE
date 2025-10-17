@@ -134,7 +134,7 @@ const companies = [
 
 <template>
   <SuperLayout>
-    <span class="title">플랫폼 이용 기업 목록</span>
+    <span class="components-page-title">플랫폼 이용 기업 목록</span>
     <div class="controls-bar">
       <Input
         v-model="searchKeyword"
@@ -150,8 +150,8 @@ const companies = [
       />
     </div>
     <div class="company-list">
-      <div class="list-container">
-        <table>
+      <div class="list-container components-super-table-container">
+        <table class="components-super-table">
           <thead>
             <tr>
               <th>기업명</th>
@@ -184,9 +184,6 @@ const companies = [
 </template>
 
 <style scoped>
-.title {
-  @apply text-lg;
-}
 .controls-bar {
   @apply flex gap-3;
 }
@@ -212,20 +209,7 @@ const companies = [
 }
 
 .list-container {
-  @apply bg-white mt-3 max-h-[calc(100vh-200px)] overflow-y-auto;
-}
-
-.list-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.list-container::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.5);
-  border-radius: 4px;
-}
-
-.list-container::-webkit-scrollbar-track {
-  background-color: #f0f0f0;
+  @apply bg-white mt-3 max-h-[calc(100vh-200px)];
 }
 
 .list-row {

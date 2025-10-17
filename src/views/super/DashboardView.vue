@@ -80,46 +80,55 @@ const errorLogs = ref([
     <!-- 통계 차트 -->
     <div class="statistics">
       <div class="statistics-item-container">
-        <span class="title">기업</span>
-        <div class="statistics-item">
-          <span class="subtitle">현재 가입 수</span>
-          <p class="data">123</p>
-          <span class="subtitle">월별 신규 가입</span>
-          <vue-apex-charts
-            type="bar"
-            :options="companyOptions"
-            :series="companySeries"
-            height="200"
-          />
+        <div>
+          <span class="title">기업</span>
+          <div class="statistics-item">
+            <span class="subtitle">현재 가입 수</span>
+            <p class="data">123</p>
+            <span class="subtitle">월별 신규 가입</span>
+          </div>
         </div>
+
+        <vue-apex-charts
+          type="bar"
+          :options="companyOptions"
+          :series="companySeries"
+          height="200"
+        />
       </div>
 
       <div class="statistics-item-container">
-        <span class="title">고객</span>
-        <div class="statistics-item">
-          <span class="subtitle">현재 가입 수</span>
-          <p class="data">456</p>
-          <vue-apex-charts
-            type="line"
-            :options="customerOptions"
-            :series="customerSeries"
-            height="200"
-          />
+        <div>
+          <span class="title">고객</span>
+          <div class="statistics-item">
+            <span class="subtitle">현재 가입 수</span>
+            <p class="data">456</p>
+          </div>
         </div>
+
+        <vue-apex-charts
+          type="line"
+          :options="customerOptions"
+          :series="customerSeries"
+          height="200"
+        />
       </div>
 
       <div class="statistics-item-container">
-        <span class="title">서비스</span>
-        <div class="statistics-item">
-          <span class="subtitle">총 서비스 수</span>
-          <p class="data">234</p>
-          <vue-apex-charts
-            type="donut"
-            :options="serviceOptions"
-            :series="serviceSeries"
-            height="200"
-          />
+        <div>
+          <span class="title">서비스</span>
+          <div class="statistics-item">
+            <span class="subtitle">총 서비스 수</span>
+            <p class="data">234</p>
+          </div>
         </div>
+
+        <vue-apex-charts
+          type="donut"
+          :options="serviceOptions"
+          :series="serviceSeries"
+          height="200"
+        />
       </div>
     </div>
 
@@ -127,38 +136,47 @@ const errorLogs = ref([
     <div class="error-logs-container">
       <span class="title">에러 로그</span>
       <div class="error-logs">
-        <table>
-          <thead>
-            <tr>
-              <th>에러코드</th>
-              <th>상세내용</th>
-              <th>시간</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(log, index) in errorLogs" :key="index">
-              <td>{{ log.code }}</td>
-              <td>{{ log.message }}</td>
-              <td>{{ log.time }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="components-super-table-container">
+          <table class="components-super-table">
+            <thead>
+              <tr>
+                <th>에러코드</th>
+                <th>상세내용</th>
+                <th>시간</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(log, index) in errorLogs" :key="index">
+                <td>{{ log.code }}</td>
+                <td>{{ log.message }}</td>
+                <td>{{ log.time }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </SuperLayout>
 </template>
 
 <style scoped>
+/* 통계 영역 */
 .statistics {
-  @apply flex gap-3 font-mont-noto;
+  @apply grid gap-4 font-mont-noto;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+/* 각 카드 */
 .statistics-item-container {
-  @apply grow flex flex-col;
+  @apply bg-white rounded-lg p-4 shadow-sm flex flex-col justify-between transition-all duration-200 hover:shadow-md;
 }
 
 .statistics-item {
-  @apply bg-white p-4 rounded-md h-full;
+  @apply flex flex-col gap-2;
+}
+
+.title {
+  @apply text-sm font-semibold text-gray-600 mb-1;
 }
 
 .subtitle {
@@ -169,56 +187,21 @@ const errorLogs = ref([
   @apply text-3xl font-bold mb-2 text-gray-800;
 }
 
+/* 차트는 가로에 맞게 반응형으로 */
+.statistics-item :deep(.apexcharts-canvas) {
+  width: 100% !important;
+}
+
 /*  에러 로그 영역 */
 .error-logs-container {
   @apply mt-6 font-mont-noto;
 }
 
 .error-logs {
-  @apply bg-white  rounded-md mt-2 overflow-y-auto border border-gray-200;
-  @apply max-h-64; /* 필요시 max-h-80으로 조정 */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f9fafb;
+  @apply bg-white rounded-md p-3 mt-2 border border-gray-200 flex flex-col max-h-64;
 }
 
-/* 스크롤바 커스텀 (웹킷 기반 브라우저) */
-.error-logs::-webkit-scrollbar {
-  width: 6px;
-}
-.error-logs::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 9999px;
-}
-.error-logs::-webkit-scrollbar-track {
-  background-color: #f9fafb;
-}
-
-.error-logs table {
-  @apply w-full text-sm text-left;
-}
-
-.error-logs thead {
-  @apply bg-gray-50 text-gray-600 sticky top-0;
-}
-
-.error-logs tbody {
-  @apply overflow-y-auto;
-}
-
-.error-logs th,
-.error-logs td {
-  @apply py-2 px-3;
-}
-
-.error-logs tr {
-  @apply border-b hover:bg-gray-50 transition-colors;
-}
-
-.error-logs td:first-child {
-  @apply font-mono text-red-600;
-}
-
-.error-logs td:last-child {
-  @apply text-gray-500;
+.error-logs .components-super-table-container {
+  @apply flex-1 overflow-y-auto;
 }
 </style>
