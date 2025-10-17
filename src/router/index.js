@@ -62,7 +62,6 @@ const router = createRouter({
       component: () => import('@/views/user/UserNotificationView.vue'),
       meta: { layout: 'user', requiresAuth: true }
     },
-    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터
