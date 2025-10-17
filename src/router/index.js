@@ -7,8 +7,8 @@ const router = createRouter({
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     {
-      path: '/user/home',
-      name: 'userLogin',
+      path: '/c/:companySlug/login',
+      name: 'UserLogin',
       component: () => import('@/views/user/UserLoginView.vue'),
     },
     {
