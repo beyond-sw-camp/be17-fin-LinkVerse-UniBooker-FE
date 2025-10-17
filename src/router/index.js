@@ -51,6 +51,13 @@ const router = createRouter({
       component: () => import('@/views/user/UserMyReservationDetail.vue'),
       props: true,
     },
+    {
+      // 사용자 알림 이력 페이지
+      path: '/notification',
+      name: 'UserNotification',
+      component: () => import('@/views/user/UserNotificationView.vue'),
+    },
+    
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터
@@ -79,6 +86,12 @@ const router = createRouter({
       path: '/admin/manager-management',
       name: 'ManagerManagement',
       component: () => import('../views/admin/ManagerManagement.vue'),
+    },
+    {
+      // 기업 관리자기 알림 이력 페이지
+      path: '/admin/notification',
+      name: 'AdminNotification',
+      component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,6 +149,13 @@ const router = createRouter({
       component: () => import('@/views/super/ApplicationDetailView.vue'),
       props: true,
     },
+    {
+      // 플랫폼 관리자 알림 이력 페이지
+      path: '/super/notification',
+      name: 'SuperNotification',
+      component: () => import('@/views/super/SuperNotificationView.vue'),
+    },
+
   ],
 })
 
