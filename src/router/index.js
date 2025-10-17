@@ -20,6 +20,7 @@ const router = createRouter({
       path: '/user/mypage',
       name: 'userMypage',
       component: () => import('@/views/UserMypageView.vue'),
+      component: () => import('@/views/UserMypageView.vue'),
     },
     {
       path: '/reservation/completed',
@@ -113,9 +114,21 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/super/companies/:companyName/services/:serviceGroupName',
+      name: 'ServiceGroupDetail',
+      component: () => import('@/views/super/ServiceGroupDetailView.vue'),
+      props: true,
+    },
+    {
       path: '/super/applications',
       name: 'superApplicationList',
       component: () => import('@/views/super/ApplicationListView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/applications/:companyId/details',
+      name: 'superApplicationDetails',
+      component: () => import('@/views/super/ApplicationDetailView.vue'),
       props: true,
     },
     {
