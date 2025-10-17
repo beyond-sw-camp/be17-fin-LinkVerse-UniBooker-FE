@@ -1,25 +1,30 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter()
+const selectedMenu = ref(route.path)
 
-const goDashboard = () => {
-  router.push('/super/dashboard')
-}
+// 메뉴 배열 정의
+const menuItems = [
+  { label: '대시보드', path: '/super/dashboard' },
+  { label: '기업 관리', path: '/super/companies' },
+  { label: '신청 관리', path: '/super/applications' },
+  { label: '시스템 관리', path: '/super/system-management' },
+]
 
-const goCompanyList = () => {
-  router.push('/super/companies')
-}
-
-const goApplicationList = () => {
-  router.push('/super/applications')
+const goMenu = (path) => {
+  router.push(path)
+  selectedMenu.value = path
 }
 </script>
 
 <template>
   <div class="super-layout">
     <!-- 서브메뉴바 -->
-    <div class="sub-bar-contaienr">
+    <div class="sub-bar-container">
       <!-- UniBooker 로고 -->
       <div class="logo-section">
         <img src="/public/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
@@ -28,9 +33,15 @@ const goApplicationList = () => {
       <!-- 메뉴 섹션 -->
       <div class="sub-menu-section">
         <div class="sub-menu-items-container">
-          <div class="sub-menu-item" @click="goDashboard">대시보드</div>
-          <div class="sub-menu-item" @click="goCompanyList">기업 관리</div>
-          <div class="sub-menu-item" @click="goApplicationList">신청 관리</div>
+          <div
+            v-for="item in menuItems"
+            :key="item.path"
+            class="sub-menu-item"
+            :class="{ 'selected-menu-item': selectedMenu === item.path }"
+            @click="goMenu(item.path)"
+          >
+            {{ item.label }}
+          </div>
         </div>
       </div>
 
@@ -59,7 +70,7 @@ const goApplicationList = () => {
 </template>
 
 <style scoped>
-.sub-bar-contaienr {
+.sub-bar-container {
   @apply bg-gray-dark h-screen  text-white overflow-hidden flex flex-col max-w-[240px] w-full pr-[20px];
 }
 
