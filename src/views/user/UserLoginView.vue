@@ -1,16 +1,15 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import UserHeader from '@/components/UserHeader.vue'
-import UserFooter from '@/components/UserFooter.vue'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import { getCompanyBySlug, loginUser } from '@/services/user/user_api'
+import { useAuthStore } from '@/stores/UseStore'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
-// 기업 정보
 const companyInfo = ref(null)
 const isLoadingCompany = ref(false)
 
@@ -58,14 +57,18 @@ const loadCompanyInfo = async () => {
 
 // ========== 로그인 처리 ==========
 
+/**
+ * 로그인 처리
+ * - 이메일/비밀번호 검증
+ * - API 호출 및 토큰 저장
+ * - companyId, companySlug 저장
+ */
 const handleLogin = async () => {
-  // 1. 기업 정보 확인
   if (!companyInfo.value) {
     alert('기업 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
     return
   }
 
-  // 2. 입력값 검증
   if (!formData.email) {
     alert('이메일을 입력해주세요.')
     return
@@ -87,55 +90,43 @@ const handleLogin = async () => {
     if (response.isSuccess && response.data) {
       const loginResult = response.data
 
-      // 토큰 확인
       if (!loginResult.accessToken) {
         alert('로그인 응답에 토큰이 없습니다.')
         return
       }
 
-      // 3. 토큰 저장 (localStorage + sessionStorage 병행)
-      try {
-        localStorage.setItem('accessToken', loginResult.accessToken)
-        sessionStorage.setItem('accessToken', loginResult.accessToken)
+      const userData = {
+        userId: loginResult.userId,
+        name: loginResult.name,
+        email: loginResult.email,
+        role: loginResult.role,
+        companyId: loginResult.companyId,
+        token: loginResult.accessToken,
+      }
 
-        // 4. 사용자 정보 저장
-        const userInfo = {
-          userId: loginResult.userId,
-          name: loginResult.name,
-          email: loginResult.email,
-          role: loginResult.role,
-          companyId: loginResult.companyId,
-        }
-        localStorage.setItem('userInfo', JSON.stringify(userInfo))
-        sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
+      // Store의 login 메서드 호출 (companyId, companySlug 전달)
+      authStore.login(
+        userData,
+        loginResult.role || 'USER',
+        loginResult.companyId,
+        companyInfo.value.companySlug,
+      )
 
-        // 5. 저장 완료 대기
-        await new Promise((resolve) => setTimeout(resolve, 300))
+      localStorage.setItem('accessToken', loginResult.accessToken)
+      sessionStorage.setItem('accessToken', loginResult.accessToken)
 
-        // 저장 검증
-        const savedLocal = localStorage.getItem('accessToken')
-        const savedSession = sessionStorage.getItem('accessToken')
+      console.log('✅ Store 로그인 상태:', authStore.isLoggedIn)
+      console.log('✅ Store 역할:', authStore.role)
+      console.log('✅ Store 기업 ID:', authStore.companyId)
+      console.log('✅ Store 기업 Slug:', authStore.companySlug)
 
-        console.log('💾 저장 검증:')
-        console.log('  localStorage:', savedLocal ? '✅ OK' : '❌ FAIL')
-        console.log('  sessionStorage:', savedSession ? '✅ OK' : '❌ FAIL')
-
-        if (!savedLocal && !savedSession) {
-          alert('⚠️ 브라우저 저장소 사용 불가. 관리자에게 문의하세요.')
-          return
-        }
-
-        // 6. 비밀번호 변경 필요 여부 체크
-        if (loginResult.passwordChangeRequired) {
-          alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
-          router.push('/user/change-password')
-        } else {
-          alert('로그인 성공!')
-          router.push('/service/list')
-        }
-      } catch (storageError) {
-        console.error('Storage 저장 실패:', storageError)
-        alert('⚠️ 저장 중 오류 발생: ' + storageError.message)
+      // ===== 수정: 로그인 후 리다이렉트 경로에 companySlug 포함 =====
+      if (loginResult.passwordChangeRequired) {
+        alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
+        router.push(`/c/${companyInfo.value.companySlug}/change-password`)
+      } else {
+        alert('로그인 성공!')
+        router.push(`/c/${companyInfo.value.companySlug}/service/list`)
       }
     } else {
       alert(response.message || '로그인에 실패했습니다.')
@@ -186,9 +177,6 @@ const goToFindPassword = () => {
 
 <template>
   <div class="user-login-page">
-    <!-- 헤더 컴포넌트 -->
-    <UserHeader class="user-login-header" />
-
     <!-- 메인 컨텐츠 -->
     <main class="user-login-main">
       <!-- 환영 메시지 -->
@@ -254,9 +242,6 @@ const goToFindPassword = () => {
         </form>
       </div>
     </main>
-
-    <!-- 푸터 컴포넌트 -->
-    <UserFooter />
   </div>
 </template>
 
