@@ -15,6 +15,10 @@ const goToCompanyDetail = () => {
   router.push(`/super/companies/${encodeURIComponent(companyName)}`)
 }
 
+const goToServiceList = (serviceGroupName) => {
+  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}`)
+}
+
 const serviceGroups = [
   {
     groupName: '회의실 예약',
@@ -76,7 +80,7 @@ const serviceGroups = [
       <span @click="goToCompanyDetail">{{ companyName }}</span> >
       <span>서비스 그룹 목록</span>
     </div>
-
+    <span class="components-page-title">서비스 그룹 목록</span>
     <div class="service-group-list-container">
       <table>
         <thead>
@@ -94,7 +98,7 @@ const serviceGroups = [
         <tbody>
           <tr v-for="(s, i) in serviceGroups" :key="i">
             <td>
-              <div class="service-link">
+              <div class="service-link" @click="goToServiceList(s.groupName)">
                 {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
               </div>
             </td>
@@ -120,7 +124,7 @@ const serviceGroups = [
   @apply cursor-pointer hover:underline;
 }
 .service-group-list-container {
-  @apply bg-white rounded-md shadow p-8 space-y-6 overflow-x-auto;
+  @apply bg-white rounded-md shadow p-8 mt-3 space-y-6 overflow-x-auto;
 }
 table {
   @apply w-full border-collapse;
@@ -138,6 +142,17 @@ tr:hover td {
 
 td img {
   @apply h-[16px];
+}
+.table-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-body::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-[4px];
+}
+
+.table-body::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
 }
 
 .service-link {
