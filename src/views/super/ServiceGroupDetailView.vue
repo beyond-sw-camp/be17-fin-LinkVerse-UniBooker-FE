@@ -92,7 +92,7 @@ const services = [
       <span @click="goToServiceGroupList">서비스 그룹 목록</span> >
       <span @click="goToServiceGroup">{{ serviceGroupName }}</span>
     </div>
-    <span class="components-page-title">서비스 그룹 상세</span>
+    <div class="components-page-title">서비스 그룹 상세</div>
     <div class="components-white-container">
       <div>
         <span class="subtitle">{{ serviceGroupName }}</span>
@@ -102,9 +102,9 @@ const services = [
       </p>
       <p class="service-group-info">{{ serviceGroup.description }}</p>
       <br />
-      <span class="subtitle">서비스 목록</span>
-      <div class="table-body">
-        <table>
+      <div class="subtitle">서비스 목록</div>
+      <div class="components-super-table-container">
+        <table class="components-super-table">
           <thead>
             <tr>
               <th>서비스명</th>
@@ -146,7 +146,7 @@ const services = [
 }
 
 .subtitle {
-  @apply text-lg;
+  @apply text-lg font-semibold mb-2;
 }
 
 .service-group-info {
@@ -155,26 +155,6 @@ const services = [
 
 .service-link {
   @apply flex items-center hover:underline cursor-pointer;
-}
-
-table {
-  @apply w-full border-collapse;
-}
-
-.table-body {
-  @apply overflow-y-auto;
-  max-height: calc(100vh - 200px);
-}
-
-th,
-td {
-  @apply border-b border-gray-200 py-3 px-4 text-center;
-}
-th {
-  @apply text-gray-700 font-semibold sticky;
-}
-tr:hover td {
-  @apply bg-gray-50;
 }
 
 td img {

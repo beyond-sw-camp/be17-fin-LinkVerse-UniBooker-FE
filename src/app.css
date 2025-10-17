@@ -51,12 +51,11 @@
 
   /* 플랫폼 관리자 페이지 테이블 스타일 */
   .components-super-table-container {
-    @apply w-full overflow-y-auto border border-gray-200 rounded-lg;
-    max-height: calc(100vh - 200px);
+    @apply w-full h-full  overflow-y-auto border border-gray-200 rounded-lg;
   }
 
   .components-super-table {
-    @apply w-full border-collapse table-auto;
+    @apply w-full border-collapse table-auto text-sm;
   }
 
   .components-super-table thead th {
