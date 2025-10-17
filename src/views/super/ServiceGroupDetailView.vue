@@ -37,8 +37,7 @@ const goToServiceGroup = () => {
 
 const services = [
   {
-    groupName: '회의실 A',
-    name: '회의실 예약',
+    name: '회의실 A',
     status: '활성',
     capacity: 10,
     createdAt: '2025-09-01',
@@ -47,8 +46,7 @@ const services = [
     updatedBy: '박영희',
   },
   {
-    groupName: '회의실 B',
-    name: '회의실 예약',
+    name: '회의실 B',
     status: '비활성',
     capacity: 8,
     createdAt: '2025-08-20',
@@ -57,8 +55,7 @@ const services = [
     updatedBy: '김영희',
   },
   {
-    groupName: '회의실 C',
-    name: '회의실 예약',
+    name: '회의실 C',
     status: '활성',
     capacity: 12,
     createdAt: '2025-07-15',
@@ -67,8 +64,7 @@ const services = [
     updatedBy: '홍길동',
   },
   {
-    groupName: '교육실 A',
-    name: '교육실 예약',
+    name: '교육실 A',
     status: '활성',
     capacity: 20,
     createdAt: '2025-06-10',
@@ -77,8 +73,7 @@ const services = [
     updatedBy: '이수민',
   },
   {
-    groupName: '교육실 B',
-    name: '교육실 예약',
+    name: '교육실 B',
     status: '비활성',
     capacity: 15,
     createdAt: '2025-05-25',
