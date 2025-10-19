@@ -1,9 +1,13 @@
 <script setup>
+import Modal from '@/components/Modal.vue'
 import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+
+const showModal = ref(false)
 
 const companyName = route.params.companyName
 const serviceGroupName = route.params.serviceGroupName
@@ -74,8 +78,15 @@ const services = [
   <SuperBreadcrumb />
   <div class="components-page-title">서비스 그룹 상세</div>
   <div class="components-white-container">
-    <div>
+    <div class="subtitle-container">
       <span class="subtitle">{{ serviceGroupName }}</span>
+      <div class="modal-toggle-btn" @click="showModal = !showModal">
+        <img src="/public/assets/icons/ic-more.png" />
+      </div>
+    </div>
+    <div v-if="showModal" class="action-modal" @click="showModal = false">
+      <div class="action-menu">비활성화</div>
+      <div class="action-menu">삭제</div>
     </div>
     <p class="service-group-info">
       {{ serviceGroup.type }} | {{ serviceGroup.creator }} | {{ serviceGroup.created_at }}
@@ -117,15 +128,28 @@ const services = [
 </template>
 
 <style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
+.subtitle-container {
+  @apply flex relative;
 }
-.path span {
-  @apply cursor-pointer hover:underline;
+
+.subtitle-container img {
+  @apply h-1 ml-auto mr-3 self-center;
 }
 
 .subtitle {
   @apply text-lg font-semibold mb-2;
+}
+
+.modal-toggle-btn {
+  @apply w-[24px] h-[24px] ml-auto content-center cursor-pointer;
+}
+
+.action-modal {
+  @apply float-right inline-flex flex-col rounded-md shadow-md;
+}
+
+.action-menu {
+  @apply w-20 h-10 text-center content-center text-sm hover:bg-gray-100 cursor-pointer;
 }
 
 .service-group-info {

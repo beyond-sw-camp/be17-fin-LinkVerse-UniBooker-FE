@@ -6,6 +6,8 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const showModal = ref(false)
+
 const serviceName = route.params.serviceName
 
 // 서비스 정보
@@ -98,7 +100,16 @@ const filteredReservations = computed(() => {
 
   <!-- 서비스 정보 -->
   <div class="components-white-container">
-    <div class="subtitle">{{ service.name }}</div>
+    <div class="subtitle-container">
+      <span class="subtitle">{{ service.name }}</span>
+      <div class="modal-toggle-btn" @click="showModal = !showModal">
+        <img src="/public/assets/icons/ic-more.png" />
+      </div>
+    </div>
+    <div v-if="showModal" class="action-modal" @click="showModal = false">
+      <div class="action-menu">비활성화</div>
+      <div class="action-menu">삭제</div>
+    </div>
     <p class="text-sm text-gray-600">{{ service.status }} | {{ service.capacity }}명 수용</p>
     <p class="text-sm text-gray-600 mt-1">{{ service.description }}</p>
 
@@ -168,8 +179,23 @@ const filteredReservations = computed(() => {
 </template>
 
 <style scoped>
+.subtitle-container {
+  @apply flex relative;
+}
+.subtitle-container img {
+  @apply h-1 ml-auto mr-3 self-center;
+}
 .subtitle {
-  @apply text-lg font-semibold;
+  @apply text-lg font-semibold mb-2;
+}
+.modal-toggle-btn {
+  @apply w-[24px] h-[24px] ml-auto content-center cursor-pointer;
+}
+.action-modal {
+  @apply float-right inline-flex flex-col rounded-md shadow-md;
+}
+.action-menu {
+  @apply w-20 h-10 text-center content-center text-sm hover:bg-gray-100 cursor-pointer;
 }
 .calendar-btn {
   @apply inline-flex float-right bg-white p-2 ml-auto mb-3 rounded-md shadow-md text-sm text-gray-dark;
