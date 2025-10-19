@@ -7,14 +7,6 @@ const router = useRouter()
 
 const companyName = route.params.companyName
 
-const goToCompanies = () => {
-  router.push('/super/companies')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}`)
-}
-
 const goToServiceList = (serviceGroupName) => {
   router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}`)
 }

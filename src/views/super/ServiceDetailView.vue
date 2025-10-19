@@ -3,13 +3,9 @@ import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
 import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
 import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const router = useRouter()
-
-const companyName = route.params.companyName
-const serviceGroupName = route.params.serviceGroupName
 const serviceName = route.params.serviceName
 
 // 서비스 정보
@@ -172,12 +168,6 @@ const filteredReservations = computed(() => {
 </template>
 
 <style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
-}
-.path span {
-  @apply cursor-pointer hover:underline;
-}
 .subtitle {
   @apply text-lg font-semibold;
 }

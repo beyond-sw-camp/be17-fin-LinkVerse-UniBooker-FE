@@ -68,6 +68,9 @@ const goToServiceDetail = () =>
     <template v-if="companyName">
       > <span @click="goToCompanyDetail">{{ companyName }}</span>
     </template>
+    <template v-if="route.path.includes('managers')">
+      > <span @click="goToServiceGroupList">관리자 계정 목록</span>
+    </template>
     <template v-if="route.path.includes('services')">
       > <span @click="goToServiceGroupList">서비스 그룹 목록</span>
     </template>

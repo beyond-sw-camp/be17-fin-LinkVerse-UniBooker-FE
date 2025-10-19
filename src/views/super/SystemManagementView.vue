@@ -91,7 +91,7 @@ const removeField = (index) => {
     />
 
     <!-- 기존 필드 리스트 -->
-    <div class="fields mt-4">
+    <div class="fields">
       <div class="field-row" v-for="(field, index) in fields" :key="field.id">
         <div class="field-name">{{ field.name }}</div>
         <div class="field-type">{{ field.type }}</div>
@@ -149,7 +149,7 @@ const removeField = (index) => {
 <style scoped>
 /* 필드 리스트 간격 */
 .fields {
-  @apply space-y-2;
+  @apply space-y-2 mt-4 text-sm;
 }
 
 /* 필드 한 줄 배치 */

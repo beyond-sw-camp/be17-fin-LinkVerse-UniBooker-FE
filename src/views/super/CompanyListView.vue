@@ -142,8 +142,8 @@ const companies = [
     />
     <Dropdown v-model="selected" :options="dropdownOptions" placeholder="정렬 기준" width="w-40" />
   </div>
-  <div class="company-list">
-    <div class="list-container components-super-table-container">
+  <div class="components-white-container">
+    <div class="components-super-table-container">
       <table class="components-super-table">
         <thead>
           <tr>
@@ -194,30 +194,5 @@ const companies = [
 
 .controls-bar-button {
   @apply relative flex gap-1 cursor-pointer;
-}
-
-.checkboxes {
-  @apply flex gap-3 items-center;
-}
-
-.list-container {
-  @apply bg-white mt-3 max-h-[calc(100vh-200px)];
-}
-
-.list-row {
-  @apply border-t hover:bg-gray-50 cursor-pointer;
-}
-
-table {
-  @apply w-full text-center;
-}
-
-thead {
-  @apply bg-gray-50;
-}
-
-td,
-th {
-  @apply py-2 px-3;
 }
 </style>

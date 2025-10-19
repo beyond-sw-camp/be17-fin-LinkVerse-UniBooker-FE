@@ -15,26 +15,10 @@ const serviceGroup = {
   description: '이 서비스 그룹은 회사 내 회의실 예약 관리를 위해 사용됩니다.',
 }
 
-const goToCompanies = () => {
-  router.push('/super/companies')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}`)
-}
-
 const goToServiceDetail = (serviceName) => {
   router.push(
     `/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}/${serviceName}`,
   )
-}
-
-const goToServiceGroupList = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services`)
-}
-
-const goToServiceGroup = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}`)
 }
 
 const services = [
