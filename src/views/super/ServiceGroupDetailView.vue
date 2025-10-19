@@ -24,7 +24,9 @@ const goToCompanyDetail = () => {
 }
 
 const goToServiceDetail = (serviceName) => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceName}`)
+  router.push(
+    `/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}/${serviceName}`,
+  )
 }
 
 const goToServiceGroupList = () => {

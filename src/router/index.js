@@ -109,38 +109,38 @@ const router = createRouter({
     },
     {
       path: '/super/companies/:companyName',
-      name: 'CompanyDetail',
+      name: 'superCompanyDetail',
       component: () => import('@/views/super/CompanyDetailView.vue'),
       props: true,
     },
     {
       path: '/super/companies/:companyName/managers',
-      name: 'ManagerList',
+      name: 'superManagerList',
       component: () => import('@/views/super/ManagerListView.vue'),
       props: true,
     },
     {
       path: '/super/companies/:companyName/services',
-      name: 'ServiceGroupList',
+      name: 'superServiceGroupList',
       component: () => import('@/views/super/ServiceGroupListView.vue'),
       props: true,
     },
     {
       path: '/super/companies/:companyName/services/:serviceGroupName',
-      name: 'ServiceGroupDetail',
+      name: 'superServiceGroupDetail',
       component: () => import('@/views/super/ServiceGroupDetailView.vue'),
+      props: true,
+    },
+    {
+      path: '/super/companies/:companyName/services/:serviceGroupName/:serviceName',
+      name: 'superServiceDetail',
+      component: () => import('@/views/super/ServiceDetailView.vue'),
       props: true,
     },
     {
       path: '/super/applications',
       name: 'superApplicationList',
       component: () => import('@/views/super/ApplicationListView.vue'),
-      props: true,
-    },
-    {
-      path: '/super/applications/:companyId/details',
-      name: 'superApplicationDetails',
-      component: () => import('@/views/super/ApplicationDetailView.vue'),
       props: true,
     },
     {
@@ -158,7 +158,7 @@ const router = createRouter({
     {
       // 플랫폼 관리자 알림 이력 페이지
       path: '/super/notification',
-      name: 'SuperNotification',
+      name: 'superNotification',
       component: () => import('@/views/super/SuperNotificationView.vue'),
     },
   ],
