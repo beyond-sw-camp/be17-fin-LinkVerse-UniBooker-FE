@@ -83,6 +83,7 @@ const handleLogin = async () => {
     const loginData = {
       email: formData.email,
       password: formData.password,
+      companyId: companyInfo.value.id,
     }
 
     const response = await loginUser(loginData)

@@ -8,8 +8,8 @@ const router = createRouter({
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     {
-      path: '/c/:companySlug/login',
-      name: 'UserLogin',
+      path: '/c/:companySlug',
+      name: 'UserLanding',
       component: () => import('@/views/user/UserLoginView.vue'),
       meta: { layout: 'user' }
     },
@@ -20,9 +20,9 @@ const router = createRouter({
       meta: { layout: 'user' }
     },
     {
-      path: '/c/:companySlug/mypage',
+      path: '/c/:companySlug/user/mypage',
       name: 'userMypage',
-      component: () => import('@/views/UserMypageView.vue'),
+      component: () => import('@/views/user/UserMypageView.vue'),
       meta: { layout: 'user', requiresAuth: true }
     },
     {
@@ -160,37 +160,28 @@ const router = createRouter({
 })
 
 /**
- * Navigation Guard: 인증 필요 페이지 접근 제어 (User 전용)
+ * 전역 네비게이션 가드
+ * - 로그인 상태에서 랜딩 페이지 접근 시 서비스 목록으로 리다이렉트
+ * - 회사별 페이지 접근 시 companySlug 검증
  */
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
-  // 로그인 필요 페이지 체크
-  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    if (to.path.startsWith('/c/')) {
-      const companySlug = to.params.companySlug || 'default'
-      next(`/c/${companySlug}/login`)
-    } else {
-      next()
-    }
-    return
+  const currentSlug = to.params.companySlug
+
+  // 1. 로그인 상태에서 랜딩 페이지 접근 시 서비스 목록으로 리다이렉트
+  if (to.name === 'UserLanding' && authStore.isLoggedIn && currentSlug === authStore.companySlug) {
+    return next(`/c/${currentSlug}/service/list`)
   }
-  
-  // ===== 추가: 기업별 로그인 검증 =====
-  // 사용자 페이지이고 로그인 상태일 때
-  if (to.path.startsWith('/c/') && authStore.isLoggedIn) {
-    const urlCompanySlug = to.params.companySlug
-    const loginCompanySlug = authStore.companySlug
+
+  // 2. company 페이지인 경우 companySlug 검증
+  if (currentSlug) {
+    const isValid = authStore.validateCompanyContext(currentSlug)
     
-    // 로그인한 기업과 다른 기업 페이지 접속 시도
-    if (urlCompanySlug && loginCompanySlug && urlCompanySlug !== loginCompanySlug) {
-      alert('다른 기업의 페이지입니다. 로그아웃됩니다.')
-      authStore.logout()
-      next(`/c/${urlCompanySlug}/login`)
-      return
+    if (!isValid) {
+      return next(`/c/${currentSlug}`)
     }
   }
-  
+
   next()
 })
 
