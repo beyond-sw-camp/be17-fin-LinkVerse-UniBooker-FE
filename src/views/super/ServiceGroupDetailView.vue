@@ -1,5 +1,5 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
+import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -87,56 +87,49 @@ const services = [
 </script>
 
 <template>
-  <SuperLayout>
-    <div class="path">
-      <span @click="goToCompanies">기업 목록</span> >
-      <span @click="goToCompanyDetail">{{ companyName }}</span> >
-      <span @click="goToServiceGroupList">서비스 그룹 목록</span> >
-      <span @click="goToServiceGroup">{{ serviceGroupName }}</span>
+  <SuperBreadcrumb />
+  <div class="components-page-title">서비스 그룹 상세</div>
+  <div class="components-white-container">
+    <div>
+      <span class="subtitle">{{ serviceGroupName }}</span>
     </div>
-    <div class="components-page-title">서비스 그룹 상세</div>
-    <div class="components-white-container">
-      <div>
-        <span class="subtitle">{{ serviceGroupName }}</span>
-      </div>
-      <p class="service-group-info">
-        {{ serviceGroup.type }} | {{ serviceGroup.creator }} | {{ serviceGroup.created_at }}
-      </p>
-      <p class="service-group-info">{{ serviceGroup.description }}</p>
-      <br />
-      <div class="subtitle">서비스 목록</div>
-      <div class="components-super-table-container">
-        <table class="components-super-table">
-          <thead>
-            <tr>
-              <th>서비스명</th>
-              <th>상태</th>
-              <th>최대 수용 인원</th>
-              <th>생성일</th>
-              <th>생성자</th>
-              <th>수정일</th>
-              <th>수정자</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(s, i) in services" :key="i">
-              <td>
-                <div class="service-link" @click="goToServiceDetail(s.name)">
-                  {{ s.name }} <img src="/public/assets/icons/ic-arrow-outward.png" />
-                </div>
-              </td>
-              <td>{{ s.status }}</td>
-              <td>{{ s.capacity }}</td>
-              <td>{{ s.createdAt }}</td>
-              <td>{{ s.createdBy }}</td>
-              <td>{{ s.updatedAt }}</td>
-              <td>{{ s.updatedBy }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <p class="service-group-info">
+      {{ serviceGroup.type }} | {{ serviceGroup.creator }} | {{ serviceGroup.created_at }}
+    </p>
+    <p class="service-group-info">{{ serviceGroup.description }}</p>
+    <br />
+    <div class="subtitle">서비스 목록</div>
+    <div class="components-super-table-container">
+      <table class="components-super-table">
+        <thead>
+          <tr>
+            <th>서비스명</th>
+            <th>상태</th>
+            <th>최대 수용 인원</th>
+            <th>생성일</th>
+            <th>생성자</th>
+            <th>수정일</th>
+            <th>수정자</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(s, i) in services" :key="i">
+            <td>
+              <div class="service-link" @click="goToServiceDetail(s.name)">
+                {{ s.name }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+              </div>
+            </td>
+            <td>{{ s.status }}</td>
+            <td>{{ s.capacity }}</td>
+            <td>{{ s.createdAt }}</td>
+            <td>{{ s.createdBy }}</td>
+            <td>{{ s.updatedAt }}</td>
+            <td>{{ s.updatedBy }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </SuperLayout>
+  </div>
 </template>
 
 <style scoped>

@@ -1,5 +1,4 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
 import VueApexCharts from 'vue3-apexcharts'
 import { ref } from 'vue'
 
@@ -76,87 +75,80 @@ const errorLogs = ref([
 </script>
 
 <template>
-  <SuperLayout>
-    <!-- 통계 차트 -->
-    <div class="statistics">
-      <div class="statistics-item-container">
-        <div>
-          <span class="title">기업</span>
-          <div class="statistics-item">
-            <span class="subtitle">현재 가입 수</span>
-            <p class="data">123</p>
-            <span class="subtitle">월별 신규 가입</span>
-          </div>
+  <!-- 통계 차트 -->
+  <div class="statistics">
+    <div class="statistics-item-container">
+      <div>
+        <span class="title">기업</span>
+        <div class="statistics-item">
+          <span class="subtitle">현재 가입 수</span>
+          <p class="data">123</p>
+          <span class="subtitle">월별 신규 가입</span>
         </div>
-
-        <vue-apex-charts
-          type="bar"
-          :options="companyOptions"
-          :series="companySeries"
-          height="200"
-        />
       </div>
 
-      <div class="statistics-item-container">
-        <div>
-          <span class="title">고객</span>
-          <div class="statistics-item">
-            <span class="subtitle">현재 가입 수</span>
-            <p class="data">456</p>
-          </div>
-        </div>
-
-        <vue-apex-charts
-          type="line"
-          :options="customerOptions"
-          :series="customerSeries"
-          height="200"
-        />
-      </div>
-
-      <div class="statistics-item-container">
-        <div>
-          <span class="title">서비스</span>
-          <div class="statistics-item">
-            <span class="subtitle">총 서비스 수</span>
-            <p class="data">234</p>
-          </div>
-        </div>
-
-        <vue-apex-charts
-          type="donut"
-          :options="serviceOptions"
-          :series="serviceSeries"
-          height="200"
-        />
-      </div>
+      <vue-apex-charts type="bar" :options="companyOptions" :series="companySeries" height="200" />
     </div>
 
-    <!-- 에러 로그 테이블 -->
-    <div class="error-logs-container">
-      <span class="title">에러 로그</span>
-      <div class="error-logs">
-        <div class="components-super-table-container">
-          <table class="components-super-table">
-            <thead>
-              <tr>
-                <th>에러코드</th>
-                <th>상세내용</th>
-                <th>시간</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(log, index) in errorLogs" :key="index">
-                <td>{{ log.code }}</td>
-                <td>{{ log.message }}</td>
-                <td>{{ log.time }}</td>
-              </tr>
-            </tbody>
-          </table>
+    <div class="statistics-item-container">
+      <div>
+        <span class="title">고객</span>
+        <div class="statistics-item">
+          <span class="subtitle">현재 가입 수</span>
+          <p class="data">456</p>
         </div>
       </div>
+
+      <vue-apex-charts
+        type="line"
+        :options="customerOptions"
+        :series="customerSeries"
+        height="200"
+      />
     </div>
-  </SuperLayout>
+
+    <div class="statistics-item-container">
+      <div>
+        <span class="title">서비스</span>
+        <div class="statistics-item">
+          <span class="subtitle">총 서비스 수</span>
+          <p class="data">234</p>
+        </div>
+      </div>
+
+      <vue-apex-charts
+        type="donut"
+        :options="serviceOptions"
+        :series="serviceSeries"
+        height="200"
+      />
+    </div>
+  </div>
+
+  <!-- 에러 로그 테이블 -->
+  <div class="error-logs-container">
+    <span class="title">에러 로그</span>
+    <div class="error-logs">
+      <div class="components-super-table-container">
+        <table class="components-super-table">
+          <thead>
+            <tr>
+              <th>에러코드</th>
+              <th>상세내용</th>
+              <th>시간</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(log, index) in errorLogs" :key="index">
+              <td>{{ log.code }}</td>
+              <td>{{ log.message }}</td>
+              <td>{{ log.time }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
