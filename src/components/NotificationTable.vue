@@ -1,11 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 
-defineProps({
-  notifications: {
-    type: Array,
-    required: true,
-  },
+const props = defineProps({
+  notifications: { type: Array, required: true },
+  // 플랫폼 관리자페이지 테이블 스타일 테마로 선택 
+  theme: { type: String, default: 'default' }
 })
 
 const detailOpen = ref(false)
@@ -21,7 +20,12 @@ function openDetailModal(item) {
   <div>
     <slot name="title" />
 
-    <table class="notification-table">
+    <table
+      :class="[
+        'notification-table',
+        theme === 'super' ? 'components-super-table' : ''
+      ]"
+    >
       <thead>
         <tr>
           <th>번호</th>
@@ -44,7 +48,7 @@ function openDetailModal(item) {
           <td>{{ item.time }}</td>
           <td class="text-center">
             <span v-if="item.status === '읽음'" class="text-gray-dark/70 text-sm font-medium">읽음</span>
-            <span v-else class="text-primary/70">읽지 않음</span>
+            <span v-else class="text-primary">읽지 않음</span>
           </td>
           <td class="text-center">
             <img
@@ -98,5 +102,8 @@ function openDetailModal(item) {
 }
 .notification-table {
   @apply w-full border-collapse text-[13px] mt-6 max-w-5xl mx-auto;
+}
+.notification-table.components-super-table {
+  @apply table-auto text-sm m-0 max-w-none;
 }
 </style>
