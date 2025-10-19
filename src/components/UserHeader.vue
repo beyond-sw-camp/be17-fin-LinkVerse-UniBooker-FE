@@ -75,7 +75,7 @@ const handleLogout = () => {
   const targetSlug = authStore.companySlug || 'default'
   authStore.logout()
   alert('로그아웃되었습니다.')
-  router.push(`/c/${targetSlug}/login`)
+  router.push(`/c/${targetSlug}/`)
 }
 </script>
 

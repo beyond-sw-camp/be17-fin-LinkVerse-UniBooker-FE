@@ -8,7 +8,7 @@ const router = createRouter({
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     {
-      path: '/c/:companySlug/login',
+      path: '/c/:companySlug/',
       name: 'UserLogin',
       component: () => import('@/views/user/UserLoginView.vue'),
       meta: { layout: 'user' }
