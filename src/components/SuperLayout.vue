@@ -4,8 +4,6 @@ import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 
-
-
 const route = useRoute()
 const router = useRouter()
 const selectedMenu = ref(route.path)
