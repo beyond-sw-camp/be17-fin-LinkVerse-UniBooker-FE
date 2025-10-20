@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -63,7 +63,7 @@ const goMenu = (path) => {
       </div>
       <div class="content-slot">
         <!-- 여기에 내용이 들어갑니다! -->
-        <slot />
+        <RouterView />
       </div>
     </div>
   </div>
