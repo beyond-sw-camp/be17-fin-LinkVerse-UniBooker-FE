@@ -60,7 +60,7 @@ const loadCompanyInfo = async () => {
 /**
  * 로그인 처리
  * - 이메일/비밀번호 검증
- * - API 호출 및 토큰 저장
+ * - API 호출 (쿠키는 자동으로 설정됨)
  * - companyId, companySlug 저장
  */
 const handleLogin = async () => {
@@ -91,21 +91,15 @@ const handleLogin = async () => {
     if (response.isSuccess && response.data) {
       const loginResult = response.data
 
-      if (!loginResult.accessToken) {
-        alert('로그인 응답에 토큰이 없습니다.')
-        return
-      }
-
       const userData = {
         userId: loginResult.userId,
         name: loginResult.name,
         email: loginResult.email,
         role: loginResult.role,
         companyId: loginResult.companyId,
-        token: loginResult.accessToken,
       }
 
-      // Store의 login 메서드 호출 (companyId, companySlug 전달)
+      // Store의 login 메서드 호출 (토큰은 쿠키로 자동 저장됨)
       authStore.login(
         userData,
         loginResult.role || 'USER',
@@ -113,15 +107,12 @@ const handleLogin = async () => {
         companyInfo.value.companySlug,
       )
 
-      localStorage.setItem('accessToken', loginResult.accessToken)
-      sessionStorage.setItem('accessToken', loginResult.accessToken)
-
       console.log('✅ Store 로그인 상태:', authStore.isLoggedIn)
       console.log('✅ Store 역할:', authStore.role)
       console.log('✅ Store 기업 ID:', authStore.companyId)
       console.log('✅ Store 기업 Slug:', authStore.companySlug)
 
-      // ===== 수정: 로그인 후 리다이렉트 경로에 companySlug 포함 =====
+      // 로그인 후 리다이렉트
       if (loginResult.passwordChangeRequired) {
         alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
         router.push(`/c/${companyInfo.value.companySlug}/change-password`)
