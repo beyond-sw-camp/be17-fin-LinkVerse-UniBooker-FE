@@ -42,7 +42,7 @@
 
 @layer components {
   .components-page-title {
-    @apply text-[20px] font-medium w-full flex  justify-between;
+    @apply text-[20px] font-medium w-full mb-2 flex justify-between;
   }
 
   .components-white-container {
