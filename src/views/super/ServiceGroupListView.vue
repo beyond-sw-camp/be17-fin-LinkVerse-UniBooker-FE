@@ -1,5 +1,5 @@
 <script setup>
-import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import SuperBreadcrumb from '@/components/Breadcrumb.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -63,10 +63,17 @@ const serviceGroups = [
     updatedBy: '이승현',
   },
 ]
+
+// 브레드크럼 항목
+const breadcrumbItems = [
+  { label: '기업 목록', path: '/super/companies' },
+  { label: companyName, path: `/super/companies/${encodeURIComponent(companyName)}` },
+  { label: '서비스 그룹 목록' },
+]
 </script>
 
 <template>
-  <SuperBreadcrumb />
+  <SuperBreadcrumb :items="breadcrumbItems" />
   <span class="components-page-title">서비스 그룹 목록</span>
   <div class="components-white-container">
     <div class="components-super-table-container">

@@ -1,6 +1,6 @@
 <script setup>
 import Modal from '@/components/Modal.vue'
-import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import SuperBreadcrumb from '@/components/Breadcrumb.vue'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -72,10 +72,18 @@ const services = [
     updatedBy: '박지훈',
   },
 ]
+
+// 브레드크럼 항목
+const breadcrumbItems = [
+  { label: '기업 목록', path: '/super/companies' },
+  { label: companyName, path: `/super/companies/${encodeURIComponent(companyName)}` },
+  { label: '서비스 그룹 목록', path: `/super/companies/${encodeURIComponent(companyName)}/services` },
+  { label: serviceGroupName}
+]
 </script>
 
 <template>
-  <SuperBreadcrumb />
+  <SuperBreadcrumb :items="breadcrumbItems"/>
   <div class="components-page-title">서비스 그룹 상세</div>
   <div class="components-white-container">
     <div class="subtitle-container">
