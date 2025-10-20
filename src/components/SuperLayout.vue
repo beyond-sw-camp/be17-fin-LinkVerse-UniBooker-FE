@@ -32,8 +32,6 @@ const notifications = ref([
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
-
-
 </script>
 
 <template>
