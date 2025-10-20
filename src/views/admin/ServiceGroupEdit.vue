@@ -1,14 +1,19 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
+
+const router = useRouter()
 
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
   { label: '좌석형', value: 'SEAT' },
   { label: '신청형', value: 'EVENT' },
 ])
+
+const goBack = () => { router.back() }
 </script>
 
 
@@ -115,7 +120,7 @@ const category = ref([
 
     <!-- 버튼 컨테이너 -->
     <div class="button-container">
-      <Button theme="gray">돌아가기</button>
+      <Button theme="gray" @click="goBack">돌아가기</button>
       <Button>수정하기</Button>
     </div>
   </AdminLayout>
