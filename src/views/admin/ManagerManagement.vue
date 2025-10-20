@@ -69,8 +69,8 @@ const closeAddModal = () => {
           <input type="text" />
         </div>
         <div class="edit-modal-button-container">
-          <button class="delete-button">계정삭제</button>
-          <Button id="edit-button">수정</Button>
+          <Button class="button-px" theme="gray">계정삭제</Button>
+          <Button class="button-px">수정</Button>
         </div>
       </div>
     </Modal>
@@ -100,8 +100,8 @@ const closeAddModal = () => {
         </div>
 
         <div class="add-modal-button-container">
-          <button class="delete-button">취소</button>
-          <Button id="add-button">추가하기</Button>
+          <Button class="button-px" theme="gray" @click="closeAddModal">취소</Button>
+          <Button class="button-px">추가하기</Button>
         </div>
       </div>
     </Modal>
@@ -187,10 +187,6 @@ const closeAddModal = () => {
   @apply bg-gray-deep text-text hover:bg-[#c8c8c8];
 }
 
-#edit-button {
-  @apply text-white px-0;
-}
-
 .edit-modal-container input {
   @apply border-b border-gray-deep;
 }
@@ -236,7 +232,7 @@ label {
   @apply py-[10px];
 }
 
-#add-button {
+.button-px {
   @apply px-0;
 }
 </style>

@@ -44,7 +44,7 @@ const selectMenuItem = (serviceIndex, menu) => {
       </div>
 
       <!-- 리소스 그룹 생성 버튼 -->
-      <div class="service-group-create-button-container">서비스 그룹 생성</div>
+      <router-link to="/admin/service-group-create" class="service-group-create-button-container">서비스 그룹 생성</router-link>
 
       <!-- Control 섹션 -->
       <div class="sub-menu-section">

@@ -8,8 +8,8 @@ const router = createRouter({
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     {
-      path: '/c/:companySlug',
-      name: 'UserLanding',
+      path: '/c/:companySlug/',
+      name: 'UserLogin',
       component: () => import('@/views/user/UserLoginView.vue'),
       meta: { layout: 'user' },
     },
@@ -100,6 +100,11 @@ const router = createRouter({
       path: '/admin/notification',
       name: 'AdminNotification',
       component: () => import('@/views/admin/AdminNotificationView.vue'),
+    },
+    {
+      path: '/admin/service-group-create',
+      name: 'ServiceGroupCreate',
+      component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////

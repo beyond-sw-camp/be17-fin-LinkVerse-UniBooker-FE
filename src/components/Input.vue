@@ -136,7 +136,7 @@ const openFilePicker = () => {
 
 /* 텍스트 input */
 .input-base {
-  @apply px-2.5 py-2.5 rounded placeholder-gray-400 hover:placeholder-gray-600 outline-none border-b-2 transition-all duration-200 focus:border-primary disabled:bg-gray-100 disabled:cursor-not-allowed;
+  @apply px-2.5 py-2.5 rounded placeholder-gray-400 hover:placeholder-gray-600 outline-none border-b-2 transition-all duration-200 focus:border-primary disabled:bg-gray-100;
 }
 
 /* 체크박스 */
