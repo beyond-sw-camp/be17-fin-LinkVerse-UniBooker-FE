@@ -52,7 +52,7 @@ const selectMenuItem = (serviceIndex, menu) => {
         <div class="sub-menu-items-container">
           <router-link class="sub-menu-item" to="#!">전체 현황</router-link>
           <router-link class="sub-menu-item" to="/admin/manager-management">관리자 관리</router-link>
-          <router-link class="sub-menu-item" to="#!">서비스 그룹 관리</router-link>
+          <router-link class="sub-menu-item" to="/admin/service-group-managation">서비스 그룹 관리</router-link>
         </div>
       </div>
 
