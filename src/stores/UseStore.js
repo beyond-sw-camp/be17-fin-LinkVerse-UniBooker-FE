@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
   const role = ref(null)
   const token = ref(null)
+  const accessToken = ref(null)
   const companyId = ref(null)          // 추가: 기업 ID
   const companySlug = ref(null)        // 추가: 기업 Slug
 
@@ -18,11 +19,12 @@ export const useAuthStore = defineStore('auth', () => {
    * - 사용자 정보 및 토큰 저장
    * - companyId, companySlug 저장
    */
-  const login = (userData, userRole = 'USER', userCompanyId = null, userCompanySlug = null) => {
+  const login = (userData, userRole = 'USER', userCompanyId = null, userCompanySlug = null, userAccessToken = null) => {
     isLoggedIn.value = true
     user.value = userData
     role.value = userRole
     token.value = userData.token || null
+    accessToken.value = userAccessToken
     companyId.value = userCompanyId
     companySlug.value = userCompanySlug
 
@@ -30,6 +32,10 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('user', JSON.stringify(userData))
     localStorage.setItem('role', userRole)
+
+    if (userAccessToken) {
+    localStorage.setItem('accessToken', userAccessToken)
+    }
     
     if (userData.token) {
       localStorage.setItem('token', userData.token)
@@ -112,15 +118,40 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return {
-    isLoggedIn,
-    user,
-    role,
-    token,
-    companyId,
-    companySlug,
-    login,
-    logout,
-    checkAuth
+/**
+ * 현재 URL의 companySlug와 저장된 companySlug 비교
+ * - 다르면 자동 로그아웃
+ */
+const validateCompanyContext = (currentSlug) => {
+  // 로그인 상태가 아니면 검증 불필요
+  if (!isLoggedIn.value) {
+    return true
   }
+
+  // 저장된 companySlug와 현재 URL의 slug가 다르면 로그아웃
+  if (companySlug.value && companySlug.value !== currentSlug) {
+    console.warn('⚠️ 다른 회사 페이지 접근 감지 - 로그아웃 처리:', {
+      saved: companySlug.value,
+      current: currentSlug
+    })
+    logout()
+    return false
+  }
+
+  return true
+}
+
+return {
+  isLoggedIn,
+  user,
+  role,
+  token,
+  accessToken,
+  companyId,
+  companySlug,
+  login,
+  logout,
+  checkAuth,
+  validateCompanyContext  
+}
 })

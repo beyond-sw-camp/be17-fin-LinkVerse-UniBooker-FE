@@ -1,8 +1,6 @@
 <script setup>
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import UserHeader from '@/components/UserHeader.vue'
-import UserFooter from '@/components/UserFooter.vue'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 

@@ -56,10 +56,18 @@ const getSignUpStatus = async (email) => {
   })
 }
 
+/**
+ * 관리자 로그인
+ */
+const login = async (loginData) => {
+  return await axiosInstance.post('/api/admins/login', loginData)
+}
+
 export default {
   signUpAdmin,
   checkBusinessNumber,
   checkSlug,
   checkEmail,
-  getSignUpStatus
+  getSignUpStatus,
+  login
 }
