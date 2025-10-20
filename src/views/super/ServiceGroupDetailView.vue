@@ -1,9 +1,13 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
+import Modal from '@/components/Modal.vue'
+import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+
+const showModal = ref(false)
 
 const companyName = route.params.companyName
 const serviceGroupName = route.params.serviceGroupName
@@ -15,24 +19,10 @@ const serviceGroup = {
   description: '이 서비스 그룹은 회사 내 회의실 예약 관리를 위해 사용됩니다.',
 }
 
-const goToCompanies = () => {
-  router.push('/super/companies')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}`)
-}
-
 const goToServiceDetail = (serviceName) => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceName}`)
-}
-
-const goToServiceGroupList = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services`)
-}
-
-const goToServiceGroup = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}`)
+  router.push(
+    `/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}/${serviceName}`,
+  )
 }
 
 const services = [
@@ -85,68 +75,81 @@ const services = [
 </script>
 
 <template>
-  <SuperLayout>
-    <div class="path">
-      <span @click="goToCompanies">기업 목록</span> >
-      <span @click="goToCompanyDetail">{{ companyName }}</span> >
-      <span @click="goToServiceGroupList">서비스 그룹 목록</span> >
-      <span @click="goToServiceGroup">{{ serviceGroupName }}</span>
-    </div>
-    <div class="components-page-title">서비스 그룹 상세</div>
-    <div class="components-white-container">
-      <div>
-        <span class="subtitle">{{ serviceGroupName }}</span>
-      </div>
-      <p class="service-group-info">
-        {{ serviceGroup.type }} | {{ serviceGroup.creator }} | {{ serviceGroup.created_at }}
-      </p>
-      <p class="service-group-info">{{ serviceGroup.description }}</p>
-      <br />
-      <div class="subtitle">서비스 목록</div>
-      <div class="components-super-table-container">
-        <table class="components-super-table">
-          <thead>
-            <tr>
-              <th>서비스명</th>
-              <th>상태</th>
-              <th>최대 수용 인원</th>
-              <th>생성일</th>
-              <th>생성자</th>
-              <th>수정일</th>
-              <th>수정자</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(s, i) in services" :key="i">
-              <td>
-                <div class="service-link" @click="goToServiceDetail(s.name)">
-                  {{ s.name }} <img src="/public/assets/icons/ic-arrow-outward.png" />
-                </div>
-              </td>
-              <td>{{ s.status }}</td>
-              <td>{{ s.capacity }}</td>
-              <td>{{ s.createdAt }}</td>
-              <td>{{ s.createdBy }}</td>
-              <td>{{ s.updatedAt }}</td>
-              <td>{{ s.updatedBy }}</td>
-            </tr>
-          </tbody>
-        </table>
+  <SuperBreadcrumb />
+  <div class="components-page-title">서비스 그룹 상세</div>
+  <div class="components-white-container">
+    <div class="subtitle-container">
+      <span class="subtitle">{{ serviceGroupName }}</span>
+      <div class="modal-toggle-btn" @click="showModal = !showModal">
+        <img src="/public/assets/icons/ic-more.png" />
       </div>
     </div>
-  </SuperLayout>
+    <div v-if="showModal" class="action-modal" @click="showModal = false">
+      <div class="action-menu">비활성화</div>
+      <div class="action-menu">삭제</div>
+    </div>
+    <p class="service-group-info">
+      {{ serviceGroup.type }} | {{ serviceGroup.creator }} | {{ serviceGroup.created_at }}
+    </p>
+    <p class="service-group-info">{{ serviceGroup.description }}</p>
+    <br />
+    <div class="subtitle">서비스 목록</div>
+    <div class="components-super-table-container">
+      <table class="components-super-table">
+        <thead>
+          <tr>
+            <th>서비스명</th>
+            <th>상태</th>
+            <th>최대 수용 인원</th>
+            <th>생성일</th>
+            <th>생성자</th>
+            <th>수정일</th>
+            <th>수정자</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(s, i) in services" :key="i">
+            <td>
+              <div class="service-link" @click="goToServiceDetail(s.name)">
+                {{ s.name }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+              </div>
+            </td>
+            <td>{{ s.status }}</td>
+            <td>{{ s.capacity }}</td>
+            <td>{{ s.createdAt }}</td>
+            <td>{{ s.createdBy }}</td>
+            <td>{{ s.updatedAt }}</td>
+            <td>{{ s.updatedBy }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
+.subtitle-container {
+  @apply flex relative;
 }
-.path span {
-  @apply cursor-pointer hover:underline;
+
+.subtitle-container img {
+  @apply h-1 ml-auto mr-3 self-center;
 }
 
 .subtitle {
   @apply text-lg font-semibold mb-2;
+}
+
+.modal-toggle-btn {
+  @apply w-[24px] h-[24px] ml-auto content-center cursor-pointer;
+}
+
+.action-modal {
+  @apply float-right inline-flex flex-col rounded-md shadow-md;
+}
+
+.action-menu {
+  @apply w-20 h-10 text-center content-center text-sm hover:bg-gray-100 cursor-pointer;
 }
 
 .service-group-info {

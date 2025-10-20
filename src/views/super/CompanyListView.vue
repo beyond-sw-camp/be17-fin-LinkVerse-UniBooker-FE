@@ -1,7 +1,6 @@
 <script setup>
 import Dropdown from '@/components/Dropdown.vue'
 import Input from '@/components/Input.vue'
-import SuperLayout from '@/components/SuperLayout.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -133,54 +132,47 @@ const companies = [
 </script>
 
 <template>
-  <SuperLayout>
-    <span class="components-page-title">플랫폼 이용 기업 목록</span>
-    <div class="controls-bar">
-      <Input
-        v-model="searchKeyword"
-        type="text"
-        class="search-bar"
-        placeholder="검색어를 입력하세요"
-      />
-      <Dropdown
-        v-model="selected"
-        :options="dropdownOptions"
-        placeholder="정렬 기준"
-        width="w-40"
-      />
+  <span class="components-page-title">플랫폼 이용 기업 목록</span>
+  <div class="controls-bar">
+    <Input
+      v-model="searchKeyword"
+      type="text"
+      class="search-bar"
+      placeholder="검색어를 입력하세요"
+    />
+    <Dropdown v-model="selected" :options="dropdownOptions" placeholder="정렬 기준" width="w-40" />
+  </div>
+  <div class="components-white-container">
+    <div class="components-super-table-container">
+      <table class="components-super-table">
+        <thead>
+          <tr>
+            <th>기업명</th>
+            <th>도메인</th>
+            <th>관리자명</th>
+            <th>신청일자</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(company, index) in companies"
+            :key="index"
+            class="list-row"
+            @click="goToCompanyDetail(company)"
+          >
+            <td>{{ company.name }}</td>
+            <td>{{ company.domain }}</td>
+            <td>{{ company.admin }}</td>
+            <td>{{ company.date }}</td>
+            <td>
+              {{ company.status }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div class="company-list">
-      <div class="list-container components-super-table-container">
-        <table class="components-super-table">
-          <thead>
-            <tr>
-              <th>기업명</th>
-              <th>도메인</th>
-              <th>관리자명</th>
-              <th>신청일자</th>
-              <th>상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(company, index) in companies"
-              :key="index"
-              class="list-row"
-              @click="goToCompanyDetail(company)"
-            >
-              <td>{{ company.name }}</td>
-              <td>{{ company.domain }}</td>
-              <td>{{ company.admin }}</td>
-              <td>{{ company.date }}</td>
-              <td>
-                {{ company.status }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </SuperLayout>
+  </div>
 </template>
 
 <style scoped>
@@ -202,30 +194,5 @@ const companies = [
 
 .controls-bar-button {
   @apply relative flex gap-1 cursor-pointer;
-}
-
-.checkboxes {
-  @apply flex gap-3 items-center;
-}
-
-.list-container {
-  @apply bg-white mt-3 max-h-[calc(100vh-200px)];
-}
-
-.list-row {
-  @apply border-t hover:bg-gray-50 cursor-pointer;
-}
-
-table {
-  @apply w-full text-center;
-}
-
-thead {
-  @apply bg-gray-50;
-}
-
-td,
-th {
-  @apply py-2 px-3;
 }
 </style>

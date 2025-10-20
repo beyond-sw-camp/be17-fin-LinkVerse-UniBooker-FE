@@ -1,6 +1,5 @@
 <script setup>
 import Button from '@/components/Button.vue'
-import SuperLayout from '@/components/SuperLayout.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -68,35 +67,33 @@ const companies = [
 </script>
 
 <template>
-  <SuperLayout>
-    <span class="components-page-title">신청 목록</span>
+  <span class="components-page-title">신청 목록</span>
 
-    <div class="components-white-container">
-      <div class="components-super-table-container">
-        <!-- header -->
-        <table class="components-super-table">
-          <thead>
-            <tr>
-              <th>번호</th>
-              <th>기업명</th>
-              <th>신청일자</th>
-              <th>관리자명</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(c, i) in companies" :key="i">
-              <td>{{ i + 1 }}</td>
-              <td>{{ c.companyName }}</td>
-              <td>{{ c.applicationDate }}</td>
-              <td>{{ c.administrator }}</td>
-              <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <div class="components-white-container">
+    <div class="components-super-table-container">
+      <!-- header -->
+      <table class="components-super-table">
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>기업명</th>
+            <th>신청일자</th>
+            <th>관리자명</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(c, i) in companies" :key="i">
+            <td>{{ i + 1 }}</td>
+            <td>{{ c.companyName }}</td>
+            <td>{{ c.applicationDate }}</td>
+            <td>{{ c.administrator }}</td>
+            <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </SuperLayout>
+  </div>
 </template>
 
 <style scoped></style>

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import UserHeader from '@/components/UserHeader.vue'
 import UserFooter from '@/components/UserFooter.vue'
+import SuperLayout from './components/SuperLayout.vue'
 
 const route = useRoute()
 
@@ -18,6 +19,11 @@ const layoutType = computed(() => route.meta.layout || null)
       <RouterView />
     </main>
     <UserFooter />
+  </div>
+
+  <!-- Super 레이아웃 -->
+  <div v-else-if="layoutType === 'super'">
+    <RouterView />
   </div>
 
   <!-- 레이아웃 없음: RouterView만 -->

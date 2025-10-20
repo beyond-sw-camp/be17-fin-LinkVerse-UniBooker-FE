@@ -7,7 +7,7 @@
  * - 기업 거절
  */
 
-import axiosInstance from '@/plugins/axiosInterceptor'
+import axiosInstance from '@/plugin/axiosInterceptor'
 
 /**
  * Company Slug 중복 확인

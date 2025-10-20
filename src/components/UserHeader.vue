@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 
@@ -19,6 +19,39 @@ onMounted(() => {
   })
 })
 
+// ===== 현재 페이지의 회사와 로그인한 회사가 일치하는지 확인 =====
+
+/**
+ * 유효한 로그인 상태 검증
+ * - 로그인 상태 && USER 권한 && 현재 URL의 companySlug와 저장된 companySlug 일치
+ */
+const isValidLogin = computed(() => {
+  // 로그인 상태가 아니면 false
+  if (!authStore.isLoggedIn || authStore.role !== 'USER') {
+    return false
+  }
+
+  // URL에서 현재 회사 slug 추출
+  const currentSlug = route.params.companySlug
+
+  // company 페이지가 아니면 false (헤더 비표시)
+  if (!currentSlug) {
+    return false
+  }
+
+  // 현재 URL의 slug와 저장된 slug 비교
+  const isValid = authStore.companySlug === currentSlug
+
+  if (!isValid) {
+    console.warn('⚠️ Header: 다른 회사 페이지 감지', {
+      saved: authStore.companySlug,
+      current: currentSlug,
+    })
+  }
+
+  return isValid
+})
+
 // ===== 로그인 상태 변경 감지 =====
 
 watch(
@@ -28,10 +61,24 @@ watch(
   },
 )
 
-// ===== 기업별 로그인 검증 (라우터 가드로 이동했으므로 제거 가능) =====
-// router.beforeEach에서 처리하므로 여기서는 불필요
-
 // ===== 네비게이션 핸들러 =====
+
+/**
+ * 홈/랜딩 페이지로 이동
+ * - 로그인 상태: /c/:companySlug/service/list
+ * - 비로그인 상태: /c/:companySlug
+ */
+const goToHome = () => {
+  const currentSlug = route.params.companySlug || authStore.companySlug || 'default'
+
+  if (isValidLogin.value) {
+    // 로그인 상태면 서비스 목록으로
+    router.push(`/c/${currentSlug}/service/list`)
+  } else {
+    // 비로그인 상태면 랜딩 페이지로
+    router.push(`/c/${currentSlug}`)
+  }
+}
 
 /**
  * 서비스 목록 페이지로 이동
@@ -72,7 +119,7 @@ const goToNotification = () => {
  * - Store의 companySlug를 사용하여 리다이렉트
  */
 const handleLogout = () => {
-  const targetSlug = authStore.companySlug || 'default'
+  const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
   authStore.logout()
   alert('로그아웃되었습니다.')
   router.push(`/c/${targetSlug}/`)
@@ -82,20 +129,20 @@ const handleLogout = () => {
 <template>
   <header class="user-header">
     <div class="user-header-container">
-      <!-- 로고 영역 -->
-      <div class="user-header-logo-wrapper">
+      <!-- 로고 영역 (클릭 시 홈으로 이동) -->
+      <div class="user-header-logo-wrapper" @click="goToHome">
         <img src="/assets/images/admin_logo.png" alt="로고" class="user-header-logo-img" />
       </div>
 
-      <!-- 로그인 후 네비게이션 메뉴 -->
-      <nav v-if="authStore.isLoggedIn && authStore.role === 'USER'" class="user-header-nav">
+      <!-- 로그인 후 네비게이션 메뉴 (유효한 로그인 상태일 때만 표시) -->
+      <nav v-if="isValidLogin" class="user-header-nav">
         <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
         <button @click="goToReservation" class="user-header-nav-item">예약 내역</button>
         <button @click="goToMypage" class="user-header-nav-item">내 계정</button>
       </nav>
 
-      <!-- 로그인 후 알림 + 로그아웃 버튼 -->
-      <div v-if="authStore.isLoggedIn && authStore.role === 'USER'" class="user-btn-container">
+      <!-- 로그인 후 알림 + 로그아웃 버튼 (유효한 로그인 상태일 때만 표시) -->
+      <div v-if="isValidLogin" class="user-btn-container">
         <button @click="goToNotification" class="notification-btn">
           <img src="/assets/icons/ic-no-notify.png" class="user-header-alam" alt="알림" />
         </button>
@@ -115,11 +162,11 @@ const handleLogout = () => {
 }
 
 .user-header-logo-wrapper {
-  @apply flex items-center;
+  @apply flex items-center cursor-pointer;
 }
 
 .user-header-logo-img {
-  @apply h-9 w-auto cursor-pointer;
+  @apply h-9 w-auto;
 }
 
 .user-header-nav {

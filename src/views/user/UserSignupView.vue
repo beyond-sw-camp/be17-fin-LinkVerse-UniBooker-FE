@@ -1,21 +1,29 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import { getCompanyBySlug, checkEmailDuplicate, signUpUser } from '@/services/user/user_api'
+import { loginUser } from '@/services/user/user_api'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
-// 중복확인 상태
+// ===== 상태 관리 =====
+
+/** 이메일 중복확인 완료 여부 */
 const emailChecked = ref(false)
 
-// 기업 정보
+/** 기업 정보 */
 const companyInfo = ref(null)
+
+/** 기업 정보 로딩 상태 */
 const isLoadingCompany = ref(false)
 
+/** 회원가입 폼 데이터 */
 const formData = reactive({
   email: '',
   password: '',
@@ -24,20 +32,22 @@ const formData = reactive({
   phone: '',
   gender: '',
   birthDate: '',
-  companyId: null, // URL에서 자동으로 설정됨 (사용자는 모름)
+  companyId: null,
 })
 
-// 성별 옵션
+/** 성별 옵션 */
 const genderOptions = [
   { label: '남성', value: 'MALE' },
   { label: '여성', value: 'FEMALE' },
 ]
 
-// ========== 컴포넌트 마운트 시 기업 정보 로드 ==========
+// ===== 컴포넌트 마운트 =====
 
 onMounted(async () => {
   await loadCompanyInfo()
 })
+
+// ===== 기업 정보 로드 =====
 
 /**
  * URL에서 companySlug 추출하여 기업 정보 로드
@@ -55,23 +65,15 @@ const loadCompanyInfo = async () => {
   try {
     const response = await getCompanyBySlug(companySlug)
 
-    // ========== 디버깅 로그 추가 ==========
-    console.log('🔍 전체 응답:', response)
-    console.log('✅ isSuccess:', response.isSuccess)
-    console.log('📦 result:', response.result)
-    // =====================================
-
     if (response.isSuccess && response.data) {
       companyInfo.value = response.data
-      formData.companyId = response.data.id
+      formData.companyId = response.data.id // ← companyId 설정
     } else {
-      console.error('❌ 실패 응답:', response)
       alert('기업 정보를 찾을 수 없습니다.')
       router.push('/')
     }
   } catch (error) {
-    console.error('💥 에러 발생:', error)
-    console.error('💥 에러 응답:', error.response?.data)
+    console.error('기업 정보 로드 실패:', error)
     alert('기업 정보를 불러오는데 실패했습니다.')
     router.push('/')
   } finally {
@@ -79,34 +81,45 @@ const loadCompanyInfo = async () => {
   }
 }
 
-// ========== 유효성 검사 computed ==========
+// ===== 유효성 검증 =====
 
-// 이메일 형식 검증
+/**
+ * 이메일 형식 검증
+ */
 const isEmailValid = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return formData.email && emailRegex.test(formData.email)
 })
 
-// 비밀번호 형식 검증 (8자 이상, 영문, 숫자, 특수문자 포함)
+/**
+ * 비밀번호 형식 검증 (8자 이상, 영문, 숫자, 특수문자 포함)
+ */
 const isPasswordValid = computed(() => {
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
   return formData.password && passwordRegex.test(formData.password)
 })
 
-// 비밀번호 확인 일치 검증
+/**
+ * 비밀번호 확인 일치 검증
+ */
 const isPasswordConfirmValid = computed(() => {
   return formData.passwordConfirm && formData.password === formData.passwordConfirm
 })
 
-// 전화번호 형식 검증 (010-XXXX-XXXX)
+/**
+ * 전화번호 형식 검증 (010-XXXX-XXXX)
+ */
 const isPhoneValid = computed(() => {
   if (!formData.phone) return true
   const phoneRegex = /^010-\d{4}-\d{4}$/
   return phoneRegex.test(formData.phone)
 })
 
-// ========== 전화번호 자동 하이픈 입력 ==========
+// ===== 전화번호 자동 포맷팅 =====
 
+/**
+ * 전화번호 자동 하이픈 삽입
+ */
 const formatPhone = (value) => {
   const numbers = value.replace(/[^\d]/g, '')
 
@@ -119,13 +132,19 @@ const formatPhone = (value) => {
   }
 }
 
+/**
+ * 전화번호 입력 핸들러
+ */
 const handlePhoneInput = (event) => {
   const formatted = formatPhone(event.target.value)
   formData.phone = formatted
 }
 
-// ========== 이메일 중복확인 ==========
+// ===== 이메일 중복확인 =====
 
+/**
+ * 이메일 중복확인
+ */
 const checkEmail = async () => {
   if (!isEmailValid.value) {
     return
@@ -158,13 +177,71 @@ const checkEmail = async () => {
   }
 }
 
-// 입력값 변경 시 중복확인 상태 초기화
+/**
+ * 이메일 입력 변경 시 중복확인 상태 초기화
+ */
 const resetEmailCheck = () => {
   emailChecked.value = false
 }
 
-// ========== 제출 ==========
+// ===== 자동 로그인 =====
 
+/**
+ * 회원가입 후 자동 로그인 처리
+ */
+const autoLogin = async (email, password) => {
+  try {
+    const loginData = {
+      email,
+      password,
+      companyId: formData.companyId,
+    }
+
+    const response = await loginUser(loginData)
+
+    if (response.isSuccess && response.data) {
+      const loginResult = response.data
+
+      if (!loginResult.accessToken) {
+        console.error('로그인 응답에 토큰이 없습니다.')
+        return false
+      }
+
+      const userData = {
+        userId: loginResult.userId,
+        name: loginResult.name,
+        email: loginResult.email,
+        role: loginResult.role,
+        companyId: loginResult.companyId,
+        token: loginResult.accessToken,
+      }
+
+      // Store에 로그인 정보 저장
+      authStore.login(
+        userData,
+        loginResult.role || 'USER',
+        loginResult.companyId,
+        companyInfo.value.companySlug,
+      )
+
+      localStorage.setItem('accessToken', loginResult.accessToken)
+      sessionStorage.setItem('accessToken', loginResult.accessToken)
+
+      return true
+    }
+
+    return false
+  } catch (error) {
+    console.error('자동 로그인 실패:', error)
+    return false
+  }
+}
+
+// ===== 회원가입 제출 =====
+
+/**
+ * 회원가입 제출 처리
+ */
 const handleSubmit = async () => {
   // 1. 기업 정보 확인
   if (!formData.companyId) {
@@ -217,7 +294,17 @@ const handleSubmit = async () => {
 
     if (response.isSuccess) {
       alert('회원가입이 완료되었습니다!')
-      router.push(`/c/${companyInfo.value.companySlug}/login`)
+
+      // 자동 로그인 시도
+      const loginSuccess = await autoLogin(formData.email, formData.password)
+
+      if (loginSuccess) {
+        // 자동 로그인 성공 → 서비스 목록으로 이동
+        router.push(`/c/${companyInfo.value.companySlug}/service/list`)
+      } else {
+        // 자동 로그인 실패 → 로그인 페이지로 이동
+        router.push(`/c/${companyInfo.value.companySlug}`)
+      }
     } else {
       alert(response.message || '회원가입에 실패했습니다.')
     }
