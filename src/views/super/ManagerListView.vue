@@ -1,19 +1,5 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
-import { useRoute, useRouter } from 'vue-router'
-
-const route = useRoute()
-const router = useRouter()
-
-const companyName = route.params.companyName
-
-const goToCompanies = () => {
-  router.push('/super/companies')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/companies/${encodeURIComponent(companyName)}`)
-}
+import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
 
 // 더미 관리자 & 매니저 데이터
 const managers = [
@@ -120,49 +106,35 @@ const managers = [
 </script>
 
 <template>
-  <SuperLayout>
-    <div class="path">
-      <span @click="goToCompanies">기업 목록</span> >
-      <span @click="goToCompanyDetail">{{ companyName }}</span> >
-      <span>관리자 계정 목록</span>
+  <SuperBreadcrumb />
+  <div class="components-white-container">
+    <div class="components-super-table-container">
+      <table class="components-super-table">
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>권한</th>
+            <th>이메일</th>
+            <th>연락처</th>
+            <th>상태</th>
+            <th>생성일시</th>
+            <th>수정일시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(m, i) in managers" :key="i">
+            <td>{{ m.name }}</td>
+            <td>{{ m.role }}</td>
+            <td>{{ m.email }}</td>
+            <td>{{ m.phone }}</td>
+            <td>{{ m.status }}</td>
+            <td>{{ m.createdAt }}</td>
+            <td>{{ m.updatedAt }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <div class="components-white-container">
-      <div class="components-super-table-container">
-        <table class="components-super-table">
-          <thead>
-            <tr>
-              <th>이름</th>
-              <th>권한</th>
-              <th>이메일</th>
-              <th>연락처</th>
-              <th>상태</th>
-              <th>생성일시</th>
-              <th>수정일시</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(m, i) in managers" :key="i">
-              <td>{{ m.name }}</td>
-              <td>{{ m.role }}</td>
-              <td>{{ m.email }}</td>
-              <td>{{ m.phone }}</td>
-              <td>{{ m.status }}</td>
-              <td>{{ m.createdAt }}</td>
-              <td>{{ m.updatedAt }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </SuperLayout>
+  </div>
 </template>
 
-<style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
-}
-.path span {
-  @apply cursor-pointer hover:underline;
-}
-</style>
+<style scoped></style>
