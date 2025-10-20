@@ -1,0 +1,65 @@
+/**
+ * 관리자(Admin) 관련 API 서비스
+ * - 관리자 회원가입
+ * - 사업자등록번호 중복 확인
+ * - Company Slug 중복 확인
+ * - 이메일 중복 확인
+ * - 회원가입 승인 상태 조회
+ */
+
+import axiosInstance from '@/plugin/axiosInterceptor'
+
+/**
+ * 관리자 회원가입 신청
+ */
+const signUpAdmin = async (formData) => {
+  return await axiosInstance.post('/api/admins/signup', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}
+
+/**
+ * 사업자등록번호 중복 확인
+ */
+const checkBusinessNumber = async (businessNumber) => {
+  return await axiosInstance.get('/api/companies/check-business-number', {
+    params: { businessNumber }
+  })
+}
+
+/**
+ * Company Slug 중복 확인
+ */
+const checkSlug = async (slug) => {
+  return await axiosInstance.get('/api/companies/check-slug', {
+    params: { slug }
+  })
+}
+
+/**
+ * 이메일 중복 확인
+ */
+const checkEmail = async (email) => {
+  return await axiosInstance.get('/api/admins/check-email', {
+    params: { email }
+  })
+}
+
+/**
+ * 회원가입 승인 상태 조회
+ */
+const getSignUpStatus = async (email) => {
+  return await axiosInstance.get('/api/admins/status', {
+    params: { email }
+  })
+}
+
+export default {
+  signUpAdmin,
+  checkBusinessNumber,
+  checkSlug,
+  checkEmail,
+  getSignUpStatus
+}
