@@ -1,5 +1,10 @@
 <script setup>
+import { useRouter } from 'vue-router';
 import AdminLayout from '@/components/AdminLayout.vue'
+
+const router = useRouter()
+
+const goEdit = () => { router.push('/admin/service-group-edit') }
 </script>
 
 <template>
@@ -31,7 +36,7 @@ import AdminLayout from '@/components/AdminLayout.vue'
             <p><span>3</span> / 5</p>
           </div>
 
-          <div class="resource-group-edit-button">
+          <div class="resource-group-edit-button" @click="goEdit">
             <img src="/public/assets/icons/ic-white-pencil.png" alt="수정" />
           </div>
         </div>
