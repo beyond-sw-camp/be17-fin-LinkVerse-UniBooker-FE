@@ -3,7 +3,6 @@ import Button from '@/components/Button.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import Input from '@/components/Input.vue'
 import Modal from '@/components/Modal.vue'
-import SuperLayout from '@/components/SuperLayout.vue'
 import { ref } from 'vue'
 
 // 모달 열림 상태
@@ -79,80 +78,78 @@ const removeField = (index) => {
 </script>
 
 <template>
-  <SuperLayout>
-    <!-- 페이지 타이틀 -->
-    <span class="components-page-title">커스텀 필드 관리</span>
+  <!-- 페이지 타이틀 -->
+  <span class="components-page-title">커스텀 필드 관리</span>
 
-    <div class="components-white-container">
-      <!-- 카테고리 선택 -->
-      <Dropdown
-        v-model="selectedCategory"
-        :options="categoryOptions"
-        placeholder="카테고리를 지정해주세요"
-        class="w-60"
-      />
+  <div class="components-white-container">
+    <!-- 카테고리 선택 -->
+    <Dropdown
+      v-model="selectedCategory"
+      :options="categoryOptions"
+      placeholder="카테고리를 지정해주세요"
+      class="w-60"
+    />
 
-      <!-- 기존 필드 리스트 -->
-      <div class="fields mt-4">
-        <div class="field-row" v-for="(field, index) in fields" :key="field.id">
-          <div class="field-name">{{ field.name }}</div>
-          <div class="field-type">{{ field.type }}</div>
-          <button class="remove-btn" @click="removeField(index)">－</button>
-        </div>
-        <!-- 필드 추가 버튼 -->
-        <button class="add-btn" @click="openModal">＋</button>
+    <!-- 기존 필드 리스트 -->
+    <div class="fields">
+      <div class="field-row" v-for="(field, index) in fields" :key="field.id">
+        <div class="field-name">{{ field.name }}</div>
+        <div class="field-type">{{ field.type }}</div>
+        <button class="remove-btn" @click="removeField(index)">－</button>
       </div>
-
-      <!-- 새 필드 추가 모달 -->
-      <Modal :open="showModal" :closeOnOverlay="false" @close="closeModal">
-        <div class="space-y-4">
-          <!-- 필드명 -->
-          <div>
-            <label class="flex items-center gap-1">
-              <span>항목명</span><span class="red-text">*</span>
-            </label>
-            <Input class="new-field-name" v-model="newFieldName" placeholder="필드명(1~10자)" />
-          </div>
-
-          <!-- 필드 설명 -->
-          <div>
-            <label class="flex items-center gap-1">
-              <span>설명</span><span class="red-text">*</span>
-            </label>
-            <textarea
-              v-model="newFieldDescription"
-              placeholder="항목 설명을 작성해주세요."
-            ></textarea>
-          </div>
-
-          <!-- 타입 선택 -->
-          <div>
-            <label class="flex items-center gap-1">
-              <span>타입</span><span class="red-text">*</span>
-            </label>
-            <Dropdown
-              v-model="newFieldType"
-              :options="typeOptions"
-              placeholder="타입"
-              class="new-field-type"
-            />
-          </div>
-
-          <!-- 버튼 -->
-          <div class="btn-container">
-            <Button class="cancel-btn" @click="closeModal">취소</Button>
-            <Button class="add-btn" @click="addField">추가</Button>
-          </div>
-        </div>
-      </Modal>
+      <!-- 필드 추가 버튼 -->
+      <button class="add-btn" @click="openModal">＋</button>
     </div>
-  </SuperLayout>
+
+    <!-- 새 필드 추가 모달 -->
+    <Modal :open="showModal" :closeOnOverlay="false" @close="closeModal">
+      <div class="space-y-4">
+        <!-- 필드명 -->
+        <div>
+          <label class="flex items-center gap-1">
+            <span>항목명</span><span class="red-text">*</span>
+          </label>
+          <Input class="new-field-name" v-model="newFieldName" placeholder="필드명(1~10자)" />
+        </div>
+
+        <!-- 필드 설명 -->
+        <div>
+          <label class="flex items-center gap-1">
+            <span>설명</span><span class="red-text">*</span>
+          </label>
+          <textarea
+            v-model="newFieldDescription"
+            placeholder="항목 설명을 작성해주세요."
+          ></textarea>
+        </div>
+
+        <!-- 타입 선택 -->
+        <div>
+          <label class="flex items-center gap-1">
+            <span>타입</span><span class="red-text">*</span>
+          </label>
+          <Dropdown
+            v-model="newFieldType"
+            :options="typeOptions"
+            placeholder="타입"
+            class="new-field-type"
+          />
+        </div>
+
+        <!-- 버튼 -->
+        <div class="btn-container">
+          <Button class="cancel-btn" @click="closeModal">취소</Button>
+          <Button class="add-btn" @click="addField">추가</Button>
+        </div>
+      </div>
+    </Modal>
+  </div>
 </template>
 
 <style scoped>
 /* 필드 리스트 간격 */
 .fields {
-  @apply space-y-2;
+  @apply space-y-2 mt-4 text-sm;
 }
 
 /* 필드 한 줄 배치 */

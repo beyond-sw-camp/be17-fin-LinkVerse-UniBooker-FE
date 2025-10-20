@@ -1,6 +1,5 @@
 <script setup>
 import CompanyDetail from '@/components/CompanyDetail.vue'
-import SuperLayout from '@/components/SuperLayout.vue'
 
 const company = {
   name: '한화시스템',
@@ -19,9 +18,7 @@ const company = {
 </script>
 
 <template>
-  <SuperLayout>
-    <CompanyDetail :company="company" />
-  </SuperLayout>
+  <CompanyDetail :company="company" />
 </template>
 
 <style scoped></style>
