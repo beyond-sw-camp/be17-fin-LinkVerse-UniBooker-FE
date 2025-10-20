@@ -30,7 +30,9 @@ const goToNotificationPage = () => {
 </script>
 
 <template>
-  <div class="notification-dropdown-container">
+  <div class="notification-dropdown-container relative">
+    <div class="notification-tail" />
+
     <div v-if="notifications.length > 0">
       <ul class="notification-dropdown-list">
         <li
@@ -45,7 +47,7 @@ const goToNotificationPage = () => {
     </div>
 
     <div v-else class="notification-dropdown-empty">
-      <p>새로운 알림이 없습니다.</p>
+      <p>No new notifications</p>
     </div>
 
     <div class="notification-dropdown-footer">
@@ -58,33 +60,48 @@ const goToNotificationPage = () => {
 
 <style scoped>
 .notification-dropdown-container {
-  @apply absolute top-full right-0 mt-2 w-60 bg-white rounded-md shadow-md z-10;
+  @apply absolute top-[110%] right-0 mt-2 w-64 bg-white rounded-md shadow-md z-50 border border-gray-100;
+  animation: dropdown-appear 0.2s ease-out;
+}
+
+.notification-tail {
+  @apply absolute top-[-6px] right-4 w-3 h-3 bg-white border-l border-t border-gray-200 rotate-45;
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .notification-dropdown-list {
   @apply max-h-[60vh] overflow-y-auto;
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  &::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
-  }
+}
+.notification-dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+.notification-dropdown-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded;
+}
+.notification-dropdown-list::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
 }
 
 .notification-dropdown-item {
-  @apply px-3 py-2.5 border-b border-gray-100 hover:bg-gray-100 cursor-pointer transition-colors;
+  @apply px-3 py-2.5 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors;
 }
 
 .notification-message {
-  @apply text-xs text-text truncate font-normal;
+  @apply text-xs text-gray-800 truncate font-normal;
 }
 
 .notification-time {
-  @apply text-xs text-gray-dark/40 mt-0.5 block font-normal;
+  @apply text-[11px] text-gray-400 mt-0.5 block font-normal;
 }
 
 .notification-dropdown-empty {
@@ -96,14 +113,6 @@ const goToNotificationPage = () => {
 }
 
 .notification-dropdown-button {
-  @apply w-full text-center py-2 text-xs font-medium text-white bg-gray-dark hover:bg-gray-dark transition-colors cursor-pointer;
-}
-
-.super-notify-btn {
-  @apply relative flex items-center justify-center w-8 h-8 bg-transparent border-none cursor-pointer;
-}
-
-.notify-icon {
-  @apply w-5 h-5 object-contain;
+  @apply w-full text-center py-2 text-xs font-medium text-white bg-gray-dark hover:bg-gray-700 transition-colors cursor-pointer;
 }
 </style>
