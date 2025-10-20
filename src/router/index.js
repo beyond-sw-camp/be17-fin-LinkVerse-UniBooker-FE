@@ -106,6 +106,11 @@ const router = createRouter({
       name: 'ServiceGroupCreate',
       component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
+    {
+      path: '/admin/service-group-managation',
+      name: 'ServiceGroupManagation',
+      component: () => import('../views/admin/ServiceGroupManagation.vue'),
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
