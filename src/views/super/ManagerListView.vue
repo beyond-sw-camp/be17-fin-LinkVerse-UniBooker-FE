@@ -1,19 +1,5 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
-import { useRoute, useRouter } from 'vue-router'
-
-const route = useRoute()
-const router = useRouter()
-
-const companyName = route.params.companyName
-
-const goToManagement = () => {
-  router.push('/super/management')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/management/${encodeURIComponent(companyName)}`)
-}
+import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
 
 // 더미 관리자 & 매니저 데이터
 const managers = [
@@ -120,15 +106,10 @@ const managers = [
 </script>
 
 <template>
-  <SuperLayout>
-    <div class="path">
-      <span @click="goToManagement">기업 목록</span> >
-      <span @click="goToCompanyDetail">{{ companyName }}</span> >
-      <span>관리자 계정 목록</span>
-    </div>
-
-    <div class="manager-list-container">
-      <table>
+  <SuperBreadcrumb />
+  <div class="components-white-container">
+    <div class="components-super-table-container">
+      <table class="components-super-table">
         <thead>
           <tr>
             <th>이름</th>
@@ -153,30 +134,7 @@ const managers = [
         </tbody>
       </table>
     </div>
-  </SuperLayout>
+  </div>
 </template>
 
-<style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
-}
-.path span {
-  @apply cursor-pointer hover:underline;
-}
-.manager-list-container {
-  @apply bg-white rounded-md shadow p-8 space-y-6 overflow-x-auto;
-}
-table {
-  @apply w-full border-collapse;
-}
-th,
-td {
-  @apply border-b border-gray-200 py-3 px-4 text-left;
-}
-th {
-  @apply text-gray-700 font-semibold;
-}
-tr:hover td {
-  @apply bg-gray-50;
-}
-</style>
+<style scoped></style>

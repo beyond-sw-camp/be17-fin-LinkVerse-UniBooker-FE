@@ -1,5 +1,5 @@
 <script setup>
-import SuperLayout from '@/components/SuperLayout.vue'
+import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -7,12 +7,8 @@ const router = useRouter()
 
 const companyName = route.params.companyName
 
-const goToManagement = () => {
-  router.push('/super/management')
-}
-
-const goToCompanyDetail = () => {
-  router.push(`/super/management/${encodeURIComponent(companyName)}`)
+const goToServiceList = (serviceGroupName) => {
+  router.push(`/super/companies/${encodeURIComponent(companyName)}/services/${serviceGroupName}`)
 }
 
 const serviceGroups = [
@@ -70,15 +66,11 @@ const serviceGroups = [
 </script>
 
 <template>
-  <SuperLayout>
-    <div class="path">
-      <span @click="goToManagement">기업 목록</span> >
-      <span @click="goToCompanyDetail">{{ companyName }}</span> >
-      <span>서비스 그룹 목록</span>
-    </div>
-
-    <div class="service-group-list-container">
-      <table>
+  <SuperBreadcrumb />
+  <span class="components-page-title">서비스 그룹 목록</span>
+  <div class="components-white-container">
+    <div class="components-super-table-container">
+      <table class="components-super-table">
         <thead>
           <tr>
             <th>그룹명</th>
@@ -94,7 +86,7 @@ const serviceGroups = [
         <tbody>
           <tr v-for="(s, i) in serviceGroups" :key="i">
             <td>
-              <div class="service-link">
+              <div class="service-link" @click="goToServiceList(s.groupName)">
                 {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
               </div>
             </td>
@@ -109,31 +101,12 @@ const serviceGroups = [
         </tbody>
       </table>
     </div>
-  </SuperLayout>
+  </div>
 </template>
 
 <style scoped>
-.path {
-  @apply text-sm text-gray-600 mb-2;
-}
-.path span {
-  @apply cursor-pointer hover:underline;
-}
 .service-group-list-container {
-  @apply bg-white rounded-md shadow p-8 space-y-6 overflow-x-auto;
-}
-table {
-  @apply w-full border-collapse;
-}
-th,
-td {
-  @apply border-b border-gray-200 py-3 px-4 text-left;
-}
-th {
-  @apply text-gray-700 font-semibold;
-}
-tr:hover td {
-  @apply bg-gray-50;
+  @apply bg-white rounded-md shadow p-8 mt-3 space-y-6 overflow-x-auto;
 }
 
 td img {

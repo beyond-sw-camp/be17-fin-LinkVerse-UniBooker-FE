@@ -53,6 +53,7 @@ onBeforeUnmount(() => {
   <div ref="dropdownRef" class="dropdown-container relative inline-block" :class="props.width">
     <!-- 버튼 -->
     <button
+      type="button"
       class="dropdown-selected-container flex justify-between items-center w-full"
       :class="props.bgColor === 'white' ? 'bg-white' : 'bg-gray-line'"
       @click="toggleDropdown"
