@@ -1,16 +1,4 @@
-import axios from 'axios'
-
-// API Base URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
-// Axios 인스턴스 생성
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000,
-})
+import axiosInstance from '@/plugin/axiosInterceptor'  // 변경!
 
 // ========== 일반 사용자 API ==========
 
@@ -20,7 +8,7 @@ const apiClient = axios.create({
  */
 export const getCompanyBySlug = async (companySlug) => {
   try {
-    const response = await apiClient.get(`/api/companies/slug/${companySlug}`)
+    const response = await axiosInstance.get(`/api/companies/slug/${companySlug}`)
     return response.data
   } catch (error) {
     console.error('기업 정보 조회 실패:', error)
@@ -36,7 +24,7 @@ export const getCompanyBySlug = async (companySlug) => {
  */
 export const checkEmailDuplicate = async (email, companyId) => {
   try {
-    const response = await apiClient.get('/api/users/check-email', {
+    const response = await axiosInstance.get('/api/users/check-email', {
       params: { email, companyId },
     })
     return response.data
@@ -59,7 +47,7 @@ export const checkEmailDuplicate = async (email, companyId) => {
  */
 export const signUpUser = async (signUpData) => {
   try {
-    const response = await apiClient.post('/api/users/signup', signUpData)
+    const response = await axiosInstance.post('/api/users/signup', signUpData)
     return response.data
   } catch (error) {
     console.error('회원가입 실패:', error)
@@ -73,7 +61,7 @@ export const signUpUser = async (signUpData) => {
  */
 export const getAccountsByEmail = async (email) => {
   try {
-    const response = await apiClient.get('/api/users/accounts', {
+    const response = await axiosInstance.get('/api/users/accounts', {
       params: { email },
     })
     return response.data
@@ -91,7 +79,7 @@ export const getAccountsByEmail = async (email) => {
  */
 export const loginUser = async (loginData) => {
   try {
-    const response = await apiClient.post('/api/users/login', loginData)
+    const response = await axiosInstance.post('/api/users/login', loginData)
     return response.data
   } catch (error) {
     console.error('로그인 실패:', error)

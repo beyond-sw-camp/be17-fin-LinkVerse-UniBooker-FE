@@ -202,30 +202,21 @@ const autoLogin = async (email, password) => {
     if (response.isSuccess && response.data) {
       const loginResult = response.data
 
-      if (!loginResult.accessToken) {
-        console.error('로그인 응답에 토큰이 없습니다.')
-        return false
-      }
-
       const userData = {
         userId: loginResult.userId,
         name: loginResult.name,
         email: loginResult.email,
         role: loginResult.role,
         companyId: loginResult.companyId,
-        token: loginResult.accessToken,
       }
 
-      // Store에 로그인 정보 저장
+      // Store에 로그인 정보 저장 (토큰은 쿠키로 자동 관리)
       authStore.login(
         userData,
         loginResult.role || 'USER',
         loginResult.companyId,
         companyInfo.value.companySlug,
       )
-
-      localStorage.setItem('accessToken', loginResult.accessToken)
-      sessionStorage.setItem('accessToken', loginResult.accessToken)
 
       return true
     }

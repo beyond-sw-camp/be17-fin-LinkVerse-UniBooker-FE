@@ -32,7 +32,7 @@ const handleLogin = async () => {
     const response = await adminApi.login(loginForm)
     const data = response.data.data
 
-    // Pinia store에 저장
+    // Pinia store에 저장 (토큰은 쿠키로 자동 관리)
     authStore.login(
       {
         userId: data.userId,
@@ -42,7 +42,6 @@ const handleLogin = async () => {
       data.role,
       data.companyId,
       null, // companySlug (필요시 추가)
-      data.accessToken,
     )
 
     // 첫 로그인이면 비밀번호 변경 페이지로

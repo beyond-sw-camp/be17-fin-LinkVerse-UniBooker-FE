@@ -101,7 +101,7 @@ const goToReservation = () => {
  */
 const goToMypage = () => {
   const slug = authStore.companySlug || 'default'
-  router.push(`/c/${slug}/mypage`)
+  router.push(`/c/${slug}/user/mypage`)
 }
 
 /**
@@ -116,13 +116,26 @@ const goToNotification = () => {
 
 /**
  * 로그아웃 처리
- * - Store의 companySlug를 사용하여 리다이렉트
+ * - 서버에 로그아웃 API 호출 (쿠키 삭제)
+ * - Store 초기화
  */
-const handleLogout = () => {
-  const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
-  authStore.logout()
-  alert('로그아웃되었습니다.')
-  router.push(`/c/${targetSlug}/`)
+const handleLogout = async () => {
+  try {
+    // 서버에 로그아웃 요청 (쿠키 삭제)
+    await axiosInstance.post('/api/users/logout')
+
+    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
+    authStore.logout()
+    alert('로그아웃되었습니다.')
+    router.push(`/c/${targetSlug}`)
+  } catch (error) {
+    console.error('로그아웃 실패:', error)
+    // 실패해도 클라이언트 측 로그아웃 진행
+    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
+    authStore.logout()
+    alert('로그아웃되었습니다.')
+    router.push(`/c/${targetSlug}`)
+  }
 }
 </script>
 
