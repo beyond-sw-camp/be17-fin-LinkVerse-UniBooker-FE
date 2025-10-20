@@ -85,7 +85,7 @@ const addFieldFromModal = () => {
 
       <div class="add-field-items-container">
         <div class="field-label-container">항목 데이터 타입 <span>*</span></div>
-        <Dropdown class="dropdown-style" :options="types" v-model="modalFieldType" placeholder="데이터 타입" bgColor="gray"/>
+        <Dropdown class="dropdown-style" :options="types" v-model="modalFieldType" placeholder="데이터 타입" bgColor="gray" :maxHeight="'20vh'"/>
       </div>
 
       <div class="button-container">
