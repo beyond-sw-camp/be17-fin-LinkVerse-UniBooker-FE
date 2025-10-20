@@ -101,6 +101,11 @@ const router = createRouter({
       name: 'AdminNotification',
       component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
+    {
+      path: '/admin/service-group-create',
+      name: 'ServiceGroupCreate',
+      component: () => import('../views/admin/ServiceGroupCreate.vue'),
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
