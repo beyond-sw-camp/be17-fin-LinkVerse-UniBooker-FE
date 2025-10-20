@@ -56,10 +56,18 @@ const goToSignup = () => {
         <!-- 로그인 버튼 -->
         <Button type="submit" class="admin-login-button"> 로그인 </Button>
 
-        <!-- 회원가입 안내 -->
-        <div class="admin-login-signup">
-          아직 계정이 없으신가요?
-          <span class="admin-login-signup-link" @click="goToSignup"> 사용 신청하기 </span>
+        <div class="admin-login-info">
+          <!-- 상태확인 안내 -->
+          <div class="admin-login-signup">
+            회원가입 승인 대기 중이신가요?
+            <span class="admin-login-signup-link" @click="goToSignup"> 승인 상태 확인하기 </span>
+          </div>
+
+          <!-- 회원가입 안내 -->
+          <div class="admin-login-signup">
+            아직 계정이 없으신가요?
+            <span class="admin-login-signup-link" @click="goToSignup"> 사용 신청하기 </span>
+          </div>
         </div>
       </form>
     </div>
@@ -79,11 +87,11 @@ const goToSignup = () => {
 
 /* 헤더 영역 */
 .admin-login-header {
-  @apply text-center mb-20;
+  @apply text-center;
 }
 
 .admin-login-title {
-  @apply text-[18px] font-semibold text-gray-600 mt-[50px];
+  @apply text-2xl font-bold text-gray-600 my-10;
 }
 
 /* 폼 영역 */
@@ -97,11 +105,7 @@ const goToSignup = () => {
 
 /* 입력 필드 */
 .admin-login-field {
-  @apply flex items-center mb-[20px];
-}
-
-.admin-login-field:last-child {
-  @apply mb-[90px];
+  @apply flex items-center mb-5;
 }
 
 .admin-login-label {
@@ -110,15 +114,19 @@ const goToSignup = () => {
 
 /* 로그인 버튼 */
 .admin-login-button {
-  @apply w-[310px] rounded-[50px] text-sm font-medium;
+  @apply w-[350px] rounded-[50px] text-sm font-medium mt-10;
 }
 
 /* 회원가입 안내 */
+.admin-login-info {
+  @apply flex flex-col pt-3 pb-10 gap-2;
+}
+
 .admin-login-signup {
-  @apply text-xs text-gray-400 mt-[10px] mb-[67px] w-[250px] flex justify-center;
+  @apply text-sm text-gray-400 w-[450px] flex justify-center;
 }
 
 .admin-login-signup-link {
-  @apply cursor-pointer hover:text-primary ml-2;
+  @apply text-gray-600 font-medium hover:text-primary-hover ml-2 underline cursor-pointer bg-transparent border-none;
 }
 </style>

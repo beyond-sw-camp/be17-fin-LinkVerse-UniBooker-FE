@@ -72,6 +72,11 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminSignupView.vue'),
     },
     {
+      path: '/admin/signup_status',
+      name: 'adminStatus',
+      component: () => import('@/views/admin/AdminSignupStatusView.vue'),
+    },
+    {
       path: '/admin/login',
       name: 'adminLogin',
       component: () => import('@/views/admin/AdminLoginView.vue'),
