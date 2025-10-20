@@ -60,7 +60,7 @@ const goToNotificationPage = () => {
 
 <style scoped>
 .notification-dropdown-container {
-  @apply absolute top-[110%] right-0 mt-2 w-64 bg-white rounded-md shadow-md z-50 border border-gray-100;
+  @apply absolute top-[110%] right-0 mt-2 w-60 bg-white rounded-md shadow-md z-50 border border-gray-100;
   animation: dropdown-appear 0.2s ease-out;
 }
 
