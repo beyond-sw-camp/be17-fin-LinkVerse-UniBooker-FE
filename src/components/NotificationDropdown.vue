@@ -6,13 +6,9 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  type: { // super / admin / user
+  type: { // super / admin
     type: String,
     required: true,
-  },
-  companySlug: { // user일 경우 필요
-    type: String,
-    default: '',
   },
 })
 
@@ -25,9 +21,6 @@ const goToNotificationPage = () => {
       break
     case 'admin':
       target = '/admin/notification'
-      break
-    case 'user':
-      if (props.companySlug) target = `/c/${props.companySlug}/notification`
       break
   }
 
