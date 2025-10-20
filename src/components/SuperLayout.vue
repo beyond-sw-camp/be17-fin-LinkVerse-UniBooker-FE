@@ -2,6 +2,9 @@
 import { RouterView, useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
+import NotificationDropdown from '@/components/NotificationDropdown.vue'
+
+
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +22,20 @@ const goMenu = (path) => {
   router.push(path)
   selectedMenu.value = path
 }
+
+// 알림 관련 상태, 예시
+const isDropdownOpen = ref(false)
+const notifications = ref([
+  { id: 1, message: '신규 기업 회원가입 요청이 도착했습니다.', time: '2분 전' },
+  { id: 2, message: '서버 점검이 내일 오전 9시에 예정되어 있습니다.', time: '1시간 전' },
+  { id: 3, message: '신청서가 검토 완료되었습니다.', time: '어제' },
+])
+// 알림 아이콘 클릭 토글
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
+
+
 </script>
 
 <template>
@@ -58,7 +75,10 @@ const goMenu = (path) => {
         <div class="super-badge">
           <img src="/public/assets/images/unibooker_blue_logo.svg" alt="기업 로고 이미지" />
           <span>홍서연 운영자님</span>
-          <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
+          <button @click.stop="toggleDropdown" class="super-notify-btn">
+            <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
+          </button>
+          <NotificationDropdown type="super" v-if="isDropdownOpen" :notifications="notifications" @close="isDropdownOpen = false" />
         </div>
       </div>
       <div class="content-slot">
@@ -136,7 +156,7 @@ const goMenu = (path) => {
 }
 
 .super-badge {
-  @apply bg-white flex items-center rounded-[20px] overflow-hidden px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer;
+  @apply bg-white flex items-center rounded-[20px] px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer relative;
 }
 
 .super-badge img:first-child {

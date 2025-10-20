@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import NotificationDropdown from '@/components/NotificationDropdown.vue'
 
 // 예시 서비스 그룹 목록입니다.
 const services = ref([
@@ -31,6 +32,19 @@ const toggleDropdown = (index) => {
 // 드롭다운 메뉴 선택
 const selectMenuItem = (serviceIndex, menu) => {
   selectedMenuItems.value[serviceIndex] = menu
+}
+
+// 알림 관련 상태, 예시
+const isDropdownOpen = ref(false)
+const notifications = ref([
+  { id: 1, message: '신규 기업 회원가입 요청이 도착했습니다.', time: '2분 전' },
+  { id: 2, message: '서버 점검이 내일 오전 9시에 예정되어 있습니다.', time: '1시간 전' },
+  { id: 3, message: '신청서가 검토 완료되었습니다.', time: '어제' },
+])
+
+// 알림 아이콘 클릭 토글
+const notiToggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value
 }
 </script>
 
@@ -98,7 +112,10 @@ const selectMenuItem = (serviceIndex, menu) => {
         <div class="admin-badge">
           <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
           <span>김아영 관리자님</span>
-          <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
+          <button @click.stop="notiToggleDropdown" class="super-notify-btn">
+            <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
+          </button>
+          <NotificationDropdown type="admin" v-if="isDropdownOpen" :notifications="notifications" @close="isDropdownOpen = false"/>
         </div>
       </div>
       <div class="content-slot">
@@ -176,7 +193,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .admin-badge {
-  @apply bg-white flex items-center rounded-[20px] overflow-hidden px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer;
+  @apply bg-white flex items-center rounded-[20px] px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer relative;
 }
 
 .admin-badge img:first-child {
