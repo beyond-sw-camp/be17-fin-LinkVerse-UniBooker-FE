@@ -1,17 +1,19 @@
 <script setup>
 import AdminLayout from '@/components/AdminLayout.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import { reactive, computed } from 'vue'
+import Button from '@/components/Button.vue'
+import Modal from '@/components/Modal.vue'
+import { reactive, computed, ref } from 'vue'
 import draggable from 'vuedraggable'
 
 const serviceGroupName = '회의실 예약'
 
 const breadcrumbItems = [
   { label: '서비스 그룹', path: `admin/service-group-managation` },
-  // 경로 설정
   { label: serviceGroupName, path: `` },
 ]
 
+// 더미 서비스 데이터
 const services = reactive([
   {
     serviceId: 1,
@@ -19,6 +21,11 @@ const services = reactive([
     serviceName: '회의실 B',
     updatedAt: '2025.10.03',
     status: 'upcoming',
+    startTime: '09:00',
+    endTime: '10:00',
+    capacity: 10,
+    location: 'B동 2층',
+    description: '회의실 B 예약',
   },
   {
     serviceId: 2,
@@ -26,6 +33,11 @@ const services = reactive([
     serviceName: '회의실 A',
     updatedAt: '2025.10.03',
     status: 'upcoming',
+    startTime: '10:30',
+    endTime: '11:30',
+    capacity: 8,
+    location: 'A동 1층',
+    description: '회의실 A 예약',
   },
   {
     serviceId: 3,
@@ -33,6 +45,11 @@ const services = reactive([
     serviceName: '회의실 C',
     updatedAt: '2025.10.04',
     status: 'in-progress',
+    startTime: '11:00',
+    endTime: '12:00',
+    capacity: 12,
+    location: 'C동 3층',
+    description: '회의실 C 예약',
   },
   {
     serviceId: 4,
@@ -40,14 +57,38 @@ const services = reactive([
     serviceName: '회의실 D',
     updatedAt: '2025.10.01',
     status: 'finished',
+    startTime: '13:00',
+    endTime: '14:00',
+    capacity: 5,
+    location: 'D동 4층',
+    description: '회의실 D 예약',
   },
 ])
 
-const goToServiceDetail = (id) => {
-  // 서비스 상세 관리로 이동
+const selectedService = reactive({
+  serviceId: null,
+  serviceName: '',
+  startTime: '',
+  endTime: '',
+  capacity: 0,
+  location: '',
+  description: '',
+})
+
+const showDetailModal = ref(false)
+
+// 모달 열기
+const viewServiceDetail = (id) => {
+  const service = services.find((s) => s.serviceId === id)
+  if (service) {
+    Object.assign(selectedService, service)
+    showDetailModal.value = true
+  }
 }
 
-// 상태별 computed 배열 + API 호출
+const goToEditService = () => {}
+
+// 상태별 computed 배열 + 상태 변경 시 로그(API 호출 시점)
 const createStatusComputed = (statusName) =>
   computed({
     get: () => services.filter((s) => s.status === statusName),
@@ -56,19 +97,34 @@ const createStatusComputed = (statusName) =>
         const original = services.find((s) => s.serviceId === item.serviceId)
         if (original && original.status !== statusName) {
           original.status = statusName
-          // 상태 변경 API 호출
           console.log(`${original.serviceName} 상태가 ${statusName}로 업데이트되었습니다.`)
+          // 실제 API 호출 위치
+          // axios.patch(`/api/services/${original.serviceId}/status`, { status: statusName })
         }
       })
     },
   })
 
-// 서비스 추가
-const createService = () => {}
-
 const upcomingServices = createStatusComputed('upcoming')
 const inProgressServices = createStatusComputed('in-progress')
 const finishedServices = createStatusComputed('finished')
+
+// 서비스 추가 (더미로 새로운 서비스 생성)
+const createService = () => {
+  const newId = services.length + 1
+  services.push({
+    serviceId: newId,
+    adminName: '신규 관리자',
+    serviceName: `회의실 ${String.fromCharCode(64 + newId)}`,
+    updatedAt: '2025.10.21',
+    status: 'upcoming',
+    startTime: '09:00',
+    endTime: '10:00',
+    capacity: 5,
+    location: `${String.fromCharCode(64 + newId)}동`,
+    description: '신규 서비스',
+  })
+}
 </script>
 
 <template>
@@ -98,9 +154,9 @@ const finishedServices = createStatusComputed('finished')
                 <span>{{ s.updatedAt }}</span>
               </div>
               <div>
-                <span class="service-name" @click="goToServiceDetail(s.serviceId)">{{
-                  s.serviceName
-                }}</span>
+                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
+                  {{ s.serviceName }}
+                </span>
               </div>
             </div>
           </template>
@@ -126,9 +182,9 @@ const finishedServices = createStatusComputed('finished')
                 <span>{{ s.updatedAt }}</span>
               </div>
               <div>
-                <span class="service-name" @click="goToServiceDetail(s.serviceId)">{{
-                  s.serviceName
-                }}</span>
+                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
+                  {{ s.serviceName }}
+                </span>
               </div>
             </div>
           </template>
@@ -154,15 +210,54 @@ const finishedServices = createStatusComputed('finished')
                 <span>{{ s.updatedAt }}</span>
               </div>
               <div>
-                <span class="service-name" @click="goToServiceDetail(s.serviceId)">{{
-                  s.serviceName
-                }}</span>
+                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
+                  {{ s.serviceName }}
+                </span>
               </div>
             </div>
           </template>
         </draggable>
       </div>
     </div>
+
+    <Modal :open="showDetailModal">
+      <div class="service-image mb-4"></div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">서비스명:</span>
+        <span>{{ selectedService.serviceName }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">시작시간:</span>
+        <span>{{ selectedService.startTime }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">종료시간:</span>
+        <span>{{ selectedService.endTime }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">인원수:</span>
+        <span>{{ selectedService.capacity }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">장소:</span>
+        <span>{{ selectedService.location }}</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label font-semibold">설명:</span>
+        <span>{{ selectedService.description }}</span>
+      </div>
+
+      <div class="modal-footer">
+        <Button class="modal-btn" :theme="'gray'" @click="showDetailModal = false">닫기</Button>
+        <Button class="modal-btn" @click="goToEditService">수정</Button>
+      </div>
+    </Modal>
   </AdminLayout>
 </template>
 
@@ -205,5 +300,20 @@ const finishedServices = createStatusComputed('finished')
 }
 .service-name {
   @apply text-blue-600 hover:underline cursor-pointer;
+}
+.service-image {
+  @apply w-full h-40 bg-gray-200 rounded-md;
+}
+.info-row {
+  @apply flex gap-2 mb-2 items-center  min-w-[300px];
+}
+.info-label {
+  @apply w-24 text-gray-700 text-sm;
+}
+.modal-footer {
+  @apply flex float-right gap-3 mt-2;
+}
+.modal-btn {
+  @apply w-[130px] text-sm;
 }
 </style>
