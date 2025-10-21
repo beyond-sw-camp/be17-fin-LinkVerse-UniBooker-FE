@@ -23,7 +23,7 @@ const router = createRouter({
       path: '/c/:companySlug/user/mypage',
       name: 'userMypage',
       component: () => import('@/views/user/UserMypageView.vue'),
-      meta: { layout: 'user', requiresAuth: true }
+      meta: { layout: 'user', requiresAuth: true },
     },
     {
       path: '/c/:companySlug/reservation/completed',
@@ -87,6 +87,11 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminLandingView.vue'),
     },
     {
+      path: '/admin/dashboard',
+      name: 'adminDashboard',
+      component: () => import('../views/admin/AdminDashboardView.vue'),
+    },
+    {
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('../views/admin/ServiceIntroView.vue'),
@@ -102,29 +107,37 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
     {
-      // 서비스 생성 페이지
+      // 서비스 그룹 생성 페이지
       path: '/admin/service-group-create',
       name: 'ServiceGroupCreate',
       component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
     {
-      // 서비스 관리 페이지
+      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
     },
     {
-      // 서비스 수정 페이지
+      // 서비스 그룹 수정 페이지
       path: '/admin/service-group-edit',
       name: 'ServiceGroupEdit',
       component: () => import('../views/admin/ServiceGroupEdit.vue'),
+    },
+    {
+      path: '/admin/seat-reservation-management',
+      name: 'SeatReservationManagement',
+      component: () => import('../views/admin/SeatReservationManagement.vue'),
+      // 서비스 생성 페이지
+      path: '/admin/service-create',
+      name: 'ServiceCreate',
+      component: () => import('../views/admin/ServiceCreate.vue'),
     },
     {
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('../views/admin/EventReservationManagement.vue'),
     },
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
@@ -240,7 +253,7 @@ router.beforeEach((to, from, next) => {
   // 2. company 페이지인 경우 companySlug 검증
   if (currentSlug) {
     const isValid = authStore.validateCompanyContext(currentSlug)
-    
+
     if (!isValid) {
       return next(`/c/${currentSlug}`)
     }

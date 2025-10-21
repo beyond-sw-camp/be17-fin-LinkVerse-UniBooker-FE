@@ -1,7 +1,7 @@
 <script setup>
 import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
-import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import SuperBreadcrumb from '@/components/Breadcrumb.vue'
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -9,6 +9,8 @@ const route = useRoute()
 const showModal = ref(false)
 
 const serviceName = route.params.serviceName
+const companyName = route.params.companyName
+const serviceGroupName = route.params.serviceGroupName
 
 // 서비스 정보
 const service = {
@@ -92,10 +94,19 @@ const filteredReservations = computed(() => {
     )
   })
 })
+
+// 브레드크럼 항목
+const breadcrumbItems = [
+  { label: '기업 목록', path: '/super/companies' },
+  { label: companyName, path: `/super/companies/${encodeURIComponent(companyName)}` },
+  { label: '서비스 그룹 목록', path: `/super/companies/${encodeURIComponent(companyName)}/services` },
+  { label: serviceGroupName, path: `/super/companies/${encodeURIComponent(companyName)}/services/${encodeURIComponent(serviceGroupName)}` },
+  { label: '서비스 상세'}
+]
 </script>
 
 <template>
-  <SuperBreadcrumb />
+  <SuperBreadcrumb :items="breadcrumbItems"/>
   <div class="components-page-title">서비스 상세</div>
 
   <!-- 서비스 정보 -->
