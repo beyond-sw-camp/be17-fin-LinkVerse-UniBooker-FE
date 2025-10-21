@@ -1,6 +1,5 @@
 <script setup>
 import { defineProps } from 'vue'
-import Button from './Button.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -88,7 +87,7 @@ const goToServiceGroupList = () => {
 
     <hr />
 
-    <!-- 플랫폼 이용 현황 -->
+    <!-- 플랫폼 이용 현황 (승인된 경우만) -->
     <section v-if="company.status" class="section-block relative">
       <h3 class="section-title">플랫폼 이용 현황</h3>
       <table>
@@ -113,17 +112,10 @@ const goToServiceGroupList = () => {
         <img src="/public/assets/icons/ic-arrow-outward.png" />
       </div>
     </section>
-    <div v-else>
-      <span class="section-title">추가 전달사항</span>
-      <span class="inline-note"
-        >승인/거절 시 해당 관리자에게 메일이 전송 됩니다. 관리자에게 보낼 메일에 추가적으로 전달할
-        사항이 있다면 입력해 주세요.</span
-      >
-      <textarea> </textarea>
-    </div>
-    <div class="button-container">
-      <Button class="deny-button">거절</Button>
-      <Button>승인</Button>
+
+    <!-- ✅ 추가 전달사항 영역 (slot으로 외부 주입) -->
+    <div v-if="!company.status">
+      <slot name="additional-section"></slot>
     </div>
   </div>
 </template>
@@ -141,9 +133,6 @@ const goToServiceGroupList = () => {
   @apply text-lg font-semibold text-gray-800 text-lg mb-2;
 }
 
-.inline-note {
-  @apply text-xs text-gray-dark ml-3;
-}
 table {
   @apply w-full text-left ml-3;
 }
@@ -170,21 +159,5 @@ td {
 
 .link-button img {
   @apply h-[16px];
-}
-
-textarea {
-  @apply bg-gray-line w-full h-[6rem] mt-3;
-}
-
-.button-container {
-  @apply flex justify-center gap-3;
-}
-
-.deny-button {
-  @apply bg-gray-line text-gray-dark;
-}
-
-.deny-button:hover {
-  @apply bg-gray-deep;
 }
 </style>
