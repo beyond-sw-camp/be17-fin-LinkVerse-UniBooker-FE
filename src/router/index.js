@@ -23,7 +23,7 @@ const router = createRouter({
       path: '/c/:companySlug/user/mypage',
       name: 'userMypage',
       component: () => import('@/views/user/UserMypageView.vue'),
-      meta: { layout: 'user', requiresAuth: true }
+      meta: { layout: 'user', requiresAuth: true },
     },
     {
       path: '/c/:companySlug/reservation/completed',
@@ -85,6 +85,11 @@ const router = createRouter({
       path: '/admin/home',
       name: 'adminHonme',
       component: () => import('@/views/admin/AdminLandingView.vue'),
+    },
+    {
+      path: '/admin/dashboard',
+      name: 'adminDashboard',
+      component: () => import('../views/admin/AdminDashboardView.vue'),
     },
     {
       path: '/admin/service',
@@ -234,7 +239,7 @@ router.beforeEach((to, from, next) => {
   // 2. company 페이지인 경우 companySlug 검증
   if (currentSlug) {
     const isValid = authStore.validateCompanyContext(currentSlug)
-    
+
     if (!isValid) {
       return next(`/c/${currentSlug}`)
     }
