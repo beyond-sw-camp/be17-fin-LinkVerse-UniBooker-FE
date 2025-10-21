@@ -115,7 +115,6 @@ const router = createRouter({
     },
     {
       // 서비스 그룹 관리 페이지
-      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
@@ -130,6 +129,8 @@ const router = createRouter({
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
       component: () => import('../views/admin/SeatReservationManagement.vue'),
+    },
+    {
       // 서비스 생성 페이지
       path: '/admin/service-create',
       name: 'ServiceCreate',
