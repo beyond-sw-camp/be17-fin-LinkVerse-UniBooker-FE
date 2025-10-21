@@ -107,22 +107,28 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
     {
-      // 서비스 생성 페이지
+      // 서비스 그룹 생성 페이지
       path: '/admin/service-group-create',
       name: 'ServiceGroupCreate',
       component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
     {
-      // 서비스 관리 페이지
+      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
     },
     {
-      // 서비스 수정 페이지
+      // 서비스 그룹 수정 페이지
       path: '/admin/service-group-edit',
       name: 'ServiceGroupEdit',
       component: () => import('../views/admin/ServiceGroupEdit.vue'),
+    },
+    {
+      // 서비스 생성 페이지
+      path: '/admin/service-create',
+      name: 'ServiceCreate',
+      component: () => import('../views/admin/ServiceCreate.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////

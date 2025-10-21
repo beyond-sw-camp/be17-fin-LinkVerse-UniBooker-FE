@@ -1,7 +1,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import CompanyDetail from '@/components/CompanyDetail.vue'
-import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import SuperBreadcrumb from '@/components/Breadcrumb.vue'
 
 const route = useRoute()
 
@@ -21,10 +21,16 @@ const company = {
   customers: 1234,
   lastLogin: '2025.10.14 12:30',
 }
+
+// 브레드크럼 항목
+const breadcrumbItems = [
+  { label: '기업 목록', path: '/super/companies' },
+  { label: companyName }, 
+]
 </script>
 
 <template>
-  <SuperBreadcrumb />
+  <SuperBreadcrumb :items="breadcrumbItems"/>
   <span class="components-page-title">기업 상세 페이지</span>
   <CompanyDetail :company="company" />
 </template>
