@@ -137,6 +137,14 @@ const router = createRouter({
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ===== 슈퍼 관리자 로그인 (추가) =====
+    {
+      path: '/super/login',
+      name: 'SuperLogin',
+      component: () => import('@/views/super/SuperLoginView.vue'),
+      meta: { requiresAuth: false }
+    },
+    
     {
       path: '/super',
       name: 'super',
@@ -206,7 +214,7 @@ const router = createRouter({
 
         // 특정 기업 신청 상세 페이지
         {
-          path: 'applications/:companyId/details',
+          path: 'applications/:companyId',
           name: 'superApplicationDetails',
           component: () => import('@/views/super/ApplicationDetailView.vue'),
           props: true,
@@ -253,6 +261,7 @@ router.beforeEach((to, from, next) => {
       return next(`/c/${currentSlug}`)
     }
   }
+
 
   next()
 })

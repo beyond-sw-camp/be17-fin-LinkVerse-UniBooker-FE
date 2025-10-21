@@ -1,99 +1,132 @@
 <script setup>
-import Button from '@/components/Button.vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Button from '@/components/Button.vue'
+import companyApi from '@/services/super/super_api'
 
 const router = useRouter()
-const goToApplicationDetail = (company) => {
-  router.push(`/super/applications/${company.companyId}/details`)
+
+// 상태 관리
+const companies = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+/**
+ * 승인 대기 기업 목록 조회
+ */
+const fetchPendingCompanies = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const response = await companyApi.getPendingCompanies()
+
+    if (response.isSuccess) {
+      companies.value = response.data
+    } else {
+      error.value = response.message || '데이터를 불러오는 데 실패했습니다.'
+    }
+  } catch (err) {
+    console.error('승인 대기 목록 조회 실패:', err)
+    error.value = '서버와의 연결에 실패했습니다.'
+  } finally {
+    loading.value = false
+  }
 }
 
-const companies = [
-  {
-    companyId: 1,
-    companyName: '넥스트테크',
-    applicationDate: '2025-10-10',
-    administrator: '김민수',
-  },
-  {
-    companyId: 2,
-    companyName: '에이아이랩스',
-    applicationDate: '2025-10-11',
-    administrator: '이서연',
-  },
-  {
-    companyId: 3,
-    companyName: '블루웨이브',
-    applicationDate: '2025-10-12',
-    administrator: '박지훈',
-  },
-  { companyId: 4, companyName: '오픈루프', applicationDate: '2025-10-12', administrator: '최윤아' },
-  {
-    companyId: 5,
-    companyName: '하이브소프트',
-    applicationDate: '2025-10-13',
-    administrator: '정우성',
-  },
-  {
-    companyId: 6,
-    companyName: '메타브릿지',
-    applicationDate: '2025-10-13',
-    administrator: '홍지민',
-  },
-  {
-    companyId: 7,
-    companyName: '코드크래프트',
-    applicationDate: '2025-10-14',
-    administrator: '한지호',
-  },
-  {
-    companyId: 8,
-    companyName: '데이터버스',
-    applicationDate: '2025-10-14',
-    administrator: '유지연',
-  },
-  {
-    companyId: 9,
-    companyName: '그로스앤컴퍼니',
-    applicationDate: '2025-10-15',
-    administrator: '김도현',
-  },
-  {
-    companyId: 10,
-    companyName: '인사이트랩',
-    applicationDate: '2025-10-15',
-    administrator: '오세은',
-  },
-]
+/**
+ * 신청 상세로 이동
+ */
+const goToApplicationDetail = (company) => {
+  router.push(`/super/applications/${company.companyId}`)
+}
+
+/**
+ * 날짜 포맷팅 (YYYY.MM.DD)
+ */
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+}
+
+onMounted(() => {
+  fetchPendingCompanies()
+})
 </script>
 
 <template>
-  <span class="components-page-title">신청 목록</span>
+  <div class="super-app-container">
+    <span class="components-page-title">신청 목록</span>
 
-  <div class="components-white-container">
-    <div class="components-super-table-container">
-      <!-- header -->
-      <table class="components-super-table">
-        <thead>
-          <tr>
-            <th>번호</th>
-            <th>기업명</th>
-            <th>신청일자</th>
-            <th>관리자명</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(c, i) in companies" :key="i">
-            <td>{{ i + 1 }}</td>
-            <td>{{ c.companyName }}</td>
-            <td>{{ c.applicationDate }}</td>
-            <td>{{ c.administrator }}</td>
-            <td><Button @click="goToApplicationDetail(c)">상세 보기</Button></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="components-white-container">
+      <!-- 로딩 상태 -->
+      <div v-if="loading" class="loading-container">
+        <p>로딩 중...</p>
+      </div>
+
+      <!-- 에러 상태 -->
+      <div v-else-if="error" class="error-container">
+        <p class="error-message">{{ error }}</p>
+        <Button @click="fetchPendingCompanies">다시 시도</Button>
+      </div>
+
+      <!-- 데이터 없음 -->
+      <div v-else-if="companies.length === 0" class="empty-container">
+        <p>승인 대기 중인 신청이 없습니다.</p>
+      </div>
+
+      <!-- 테이블 -->
+      <div v-else class="components-super-table-container">
+        <table class="components-super-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>기업명</th>
+              <th>신청일자</th>
+              <th>관리자명</th>
+              <th>처리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(company, index) in companies" :key="company.companyId">
+              <td>{{ index + 1 }}</td>
+              <td>{{ company.companyName }}</td>
+              <td>{{ formatDate(company.createdAt) }}</td>
+              <td>{{ company.adminName }}</td>
+              <td>
+                <Button @click="goToApplicationDetail(company)" class="super-app-btn"
+                  >상세 보기</Button
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.loading-container,
+.error-container,
+.empty-container {
+  @apply text-center py-12;
+}
+
+.super-app-container {
+  @apply mb-40;
+}
+
+.error-message {
+  @apply text-red-600 mb-4;
+}
+
+.empty-container p {
+  @apply text-gray-400 text-lg;
+}
+
+.super-app-btn {
+  @apply w-20 px-1 py-2 font-medium;
+}
+</style>
