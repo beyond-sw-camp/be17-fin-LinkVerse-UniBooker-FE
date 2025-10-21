@@ -141,6 +141,11 @@ const router = createRouter({
       name: 'ServiceManagement',
       component: () => import('../views/admin/ServiceManagement.vue'),
     },
+    {
+      path: '/admin/event-reservation-management',
+      name: 'EventReservationManagement',
+      component: () => import('../views/admin/EventReservationManagement.vue'),
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
