@@ -24,6 +24,7 @@ const router = createRouter({
       name: 'userMypage',
       component: () => import('@/views/user/UserMypageView.vue'),
       meta: { layout: 'user', requiresAuth: true },
+      meta: { layout: 'user', requiresAuth: true },
     },
     {
       path: '/c/:companySlug/reservation/completed',
@@ -114,6 +115,7 @@ const router = createRouter({
     },
     {
       // 서비스 그룹 관리 페이지
+      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
@@ -134,6 +136,12 @@ const router = createRouter({
       component: () => import('../views/admin/ServiceCreate.vue'),
     },
     {
+      // 서비스 관리 페이지
+      path: '/admin/service-management',
+      name: 'ServiceManagement',
+      component: () => import('../views/admin/ServiceManagement.vue'),
+    },
+    {
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('../views/admin/EventReservationManagement.vue'),
@@ -142,6 +150,14 @@ const router = createRouter({
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ===== 슈퍼 관리자 로그인 (추가) =====
+    {
+      path: '/super/login',
+      name: 'SuperLogin',
+      component: () => import('@/views/super/SuperLoginView.vue'),
+      meta: { requiresAuth: false }
+    },
+    
     {
       path: '/super',
       name: 'super',
@@ -211,7 +227,7 @@ const router = createRouter({
 
         // 특정 기업 신청 상세 페이지
         {
-          path: 'applications/:companyId/details',
+          path: 'applications/:companyId',
           name: 'superApplicationDetails',
           component: () => import('@/views/super/ApplicationDetailView.vue'),
           props: true,
@@ -258,6 +274,7 @@ router.beforeEach((to, from, next) => {
       return next(`/c/${currentSlug}`)
     }
   }
+
 
   next()
 })
