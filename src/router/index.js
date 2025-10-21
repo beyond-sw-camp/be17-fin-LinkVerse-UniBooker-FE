@@ -71,21 +71,32 @@ const router = createRouter({
       path: '/admin/signup',
       name: 'adminSignup',
       component: () => import('@/views/admin/AdminSignupView.vue'),
+      meta: { showAdminNav: true }
     },
     {
       path: '/admin/signup/status',
       name: 'adminStatus',
       component: () => import('@/views/admin/AdminSignupStatusView.vue'),
+      meta: { showAdminNav: true }
     },
     {
       path: '/admin/login',
       name: 'adminLogin',
       component: () => import('@/views/admin/AdminLoginView.vue'),
+      meta: { showAdminNav: true }
+    },
+    {
+      path: '/admin/firstPassword',
+      name: 'firstPassword',
+      component: () => import('@/views/admin/AdminPasswordResetView.vue'),
+      meta: { showAdminNav: true },
+      meta: { requiresAuth: false }
     },
     {
       path: '/admin/home',
       name: 'adminHonme',
       component: () => import('@/views/admin/AdminLandingView.vue'),
+      meta: { showAdminNav: true }
     },
     {
       path: '/admin/dashboard',
@@ -96,6 +107,7 @@ const router = createRouter({
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('../views/admin/ServiceIntroView.vue'),
+      meta: { showAdminNav: true }
     },
     {
       path: '/admin/manager-management',
@@ -114,7 +126,6 @@ const router = createRouter({
       component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
     {
-      // 서비스 그룹 관리 페이지
       // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',

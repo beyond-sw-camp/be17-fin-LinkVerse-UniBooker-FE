@@ -47,7 +47,7 @@ const handleLogin = async () => {
     // 첫 로그인이면 비밀번호 변경 페이지로
     if (data.passwordChangeRequired) {
       alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
-      router.push('/admin/password-change')
+      router.push('/admin/firstPassword') // ✅ 수정: 올바른 URL로 변경
       return
     }
 
@@ -93,6 +93,7 @@ const goToStatus = () => {
               type="email"
               placeholder="이메일을 입력해주세요."
               :disabled="isLoading"
+              class="admin-login-input"
             />
           </div>
 
@@ -104,6 +105,7 @@ const goToStatus = () => {
               type="password"
               placeholder="비밀번호를 입력해주세요."
               :disabled="isLoading"
+              class="admin-login-input"
             />
           </div>
         </div>
@@ -160,16 +162,20 @@ const goToStatus = () => {
 }
 
 .admin-login-inputs {
-  @apply w-[300px] flex flex-col text-sm ml-[20px];
+  @apply max-w-[330px] w-full flex flex-col items-center text-sm;
 }
 
 /* 입력 필드 */
 .admin-login-field {
-  @apply flex items-center mb-5;
+  @apply w-full flex justify-center items-center  mb-5;
+}
+
+.admin-login-input {
+  @apply w-full pr-3;
 }
 
 .admin-login-label {
-  @apply min-w-[68px] text-center text-[14px] text-gray-600 font-medium mr-2;
+  @apply min-w-[55px] text-center text-sm text-gray-600 font-medium mr-3;
 }
 
 /* 로그인 버튼 */

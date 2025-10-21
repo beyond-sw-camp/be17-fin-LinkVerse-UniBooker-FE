@@ -39,11 +39,21 @@ axiosInstance.interceptors.response.use(
     // 401 Unauthorized: 토큰 만료 또는 인증 실패
     if (error.response?.status === 401) {
       const authStore = useAuthStore()
-      authStore.logout()
       
-      // 로그인 페이지로 리다이렉트
-      alert('로그인이 필요합니다.')
-      window.location.href = '/'
+      // ✅ 현재 페이지가 비밀번호 재설정 페이지가 아닐 때만 로그아웃 처리
+      const currentPath = window.location.pathname
+      
+      if (!currentPath.includes('/admin/firstPassword')) {
+        authStore.logout()
+        alert('로그인이 필요합니다.')
+        
+        // 관리자 페이지면 관리자 로그인으로, 아니면 홈으로
+        if (currentPath.startsWith('/admin')) {
+          window.location.href = '/admin/login'
+        } else {
+          window.location.href = '/'
+        }
+      }
     }
 
     // 403 Forbidden: 권한 없음
