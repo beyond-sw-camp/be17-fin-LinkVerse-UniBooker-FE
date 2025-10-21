@@ -87,6 +87,11 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminLandingView.vue'),
     },
     {
+      path: '/admin/dashboard',
+      name: 'adminDashboard',
+      component: () => import('../views/admin/AdminDashboardView.vue'),
+    },
+    {
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('../views/admin/ServiceIntroView.vue'),
@@ -102,19 +107,19 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
     {
-      // 서비스 생성 페이지
+      // 서비스 그룹 생성 페이지
       path: '/admin/service-group-create',
       name: 'ServiceGroupCreate',
       component: () => import('../views/admin/ServiceGroupCreate.vue'),
     },
     {
-      // 서비스 관리 페이지
+      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
     },
     {
-      // 서비스 수정 페이지
+      // 서비스 그룹 수정 페이지
       path: '/admin/service-group-edit',
       name: 'ServiceGroupEdit',
       component: () => import('../views/admin/ServiceGroupEdit.vue'),
@@ -123,6 +128,10 @@ const router = createRouter({
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
       component: () => import('../views/admin/SeatReservationManagement.vue'),
+      // 서비스 생성 페이지
+      path: '/admin/service-create',
+      name: 'ServiceCreate',
+      component: () => import('../views/admin/ServiceCreate.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////

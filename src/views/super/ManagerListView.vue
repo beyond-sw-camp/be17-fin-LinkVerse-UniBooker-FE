@@ -1,5 +1,5 @@
 <script setup>
-import SuperBreadcrumb from '@/components/SuperBreadcrumb.vue'
+import Breadcrumb from '@/components/Breadcrumb.vue'
 
 // 더미 관리자 & 매니저 데이터
 const managers = [
@@ -106,7 +106,14 @@ const managers = [
 </script>
 
 <template>
-  <SuperBreadcrumb />
+  <Breadcrumb
+    :items="[
+      { label: '기업 목록', path: '/admin/companies' },
+      { label: '스타트업A', path: '/admin/companies/startupA' },
+      { label: '서비스 그룹', path: '/admin/companies/startupA/groups' },
+      { label: '예약 관리' }, // path가 없으면 클릭 불가 (현재 위치)
+    ]"
+  />
   <div class="components-white-container">
     <div class="components-super-table-container">
       <table class="components-super-table">

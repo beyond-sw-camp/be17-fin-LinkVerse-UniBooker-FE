@@ -58,15 +58,21 @@ const notiToggleDropdown = () => {
       </div>
 
       <!-- 리소스 그룹 생성 버튼 -->
-      <router-link to="/admin/service-group-create" class="service-group-create-button-container">서비스 그룹 생성</router-link>
+      <router-link to="/admin/service-group-create" class="service-group-create-button-container"
+        >서비스 그룹 생성</router-link
+      >
 
       <!-- Control 섹션 -->
       <div class="sub-menu-section">
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
-          <router-link class="sub-menu-item" to="#!">전체 현황</router-link>
-          <router-link class="sub-menu-item" to="/admin/manager-management">관리자 관리</router-link>
-          <router-link class="sub-menu-item" to="/admin/service-group-managation">서비스 그룹 관리</router-link>
+          <router-link class="sub-menu-item" to="/admin/dashboard">전체 현황</router-link>
+          <router-link class="sub-menu-item" to="/admin/manager-management"
+            >관리자 관리</router-link
+          >
+          <router-link class="sub-menu-item" to="/admin/service-group-managation"
+            >서비스 그룹 관리</router-link
+          >
         </div>
       </div>
 
@@ -115,7 +121,12 @@ const notiToggleDropdown = () => {
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
-          <NotificationDropdown type="admin" v-if="isDropdownOpen" :notifications="notifications" @close="isDropdownOpen = false"/>
+          <NotificationDropdown
+            type="admin"
+            v-if="isDropdownOpen"
+            :notifications="notifications"
+            @close="isDropdownOpen = false"
+          />
         </div>
       </div>
       <div class="content-slot">
