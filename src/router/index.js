@@ -24,6 +24,7 @@ const router = createRouter({
       name: 'userMypage',
       component: () => import('@/views/user/UserMypageView.vue'),
       meta: { layout: 'user', requiresAuth: true },
+      meta: { layout: 'user', requiresAuth: true },
     },
     {
       path: '/c/:companySlug/reservation/completed',
@@ -114,6 +115,7 @@ const router = createRouter({
     },
     {
       // 서비스 그룹 관리 페이지
+      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
       component: () => import('../views/admin/ServiceGroupManagation.vue'),
@@ -129,6 +131,12 @@ const router = createRouter({
       path: '/admin/service-create',
       name: 'ServiceCreate',
       component: () => import('../views/admin/ServiceCreate.vue'),
+    },
+    {
+      // 서비스 관리 페이지
+      path: '/admin/service-management',
+      name: 'ServiceManagement',
+      component: () => import('../views/admin/ServiceManagement.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
