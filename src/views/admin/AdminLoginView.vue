@@ -144,7 +144,7 @@ const goToStatus = () => {
 
 /* 로그인 카드 */
 .admin-login-card {
-  @apply bg-white shadow-md rounded-[20px] w-full max-w-[1194px] p-10 mt-[30px] mb-[50px];
+  @apply bg-white shadow-md rounded-[20px] w-full max-w-7xl p-10 mt-[30px] mb-[50px];
 }
 
 /* 헤더 영역 */

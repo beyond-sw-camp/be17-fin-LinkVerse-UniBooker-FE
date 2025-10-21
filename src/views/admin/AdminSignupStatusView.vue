@@ -208,11 +208,11 @@ const formatDate = (dateString) => {
 <style scoped>
 /* 컨테이너 */
 .admin-status-container {
-  @apply min-h-screen bg-gray-line flex items-center justify-center px-4;
+  @apply bg-gray-line flex items-center justify-center px-4 mt-0;
 }
 
 .admin-status-card {
-  @apply bg-white shadow-md rounded-xl w-full max-w-md p-10;
+  @apply bg-white shadow-md rounded-xl w-full max-w-7xl py-20 mt-10;
 }
 
 /* 헤더 */

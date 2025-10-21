@@ -17,11 +17,6 @@ const goToSignup = () => {
 
 <template>
   <div class="admin-landing-container">
-    <!-- 네비게이션 -->
-    <div class="admin-landing-navbar">
-      <AdminNavbar />
-    </div>
-
     <!-- 히어로 섹션 -->
     <section class="admin-landing-hero">
       <h1 class="admin-landing-title">
