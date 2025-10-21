@@ -130,6 +130,8 @@ const router = createRouter({
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
       component: () => import('../views/admin/SeatReservationManagement.vue'),
+    },
+    {
       // 서비스 생성 페이지
       path: '/admin/service-create',
       name: 'ServiceCreate',
@@ -145,6 +147,11 @@ const router = createRouter({
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('../views/admin/EventReservationManagement.vue'),
+    },
+    {
+      path: '/admin/event-reservation-status',
+      name: 'EventReservationStatus',
+      component: () => import('../views/admin/EventReservationStatus.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
