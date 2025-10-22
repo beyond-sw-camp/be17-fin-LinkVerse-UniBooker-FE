@@ -121,20 +121,52 @@ const removeSlot = (idx) => {
         </button>
       </div>
 
-    <!-- 시간 선택 + 간격 + 모달 열기 -->
-    <div class="flex items-center space-x-3">
-      <Dropdown v-model="startHour" :options="hourOptions" placeholder="시" width="w-20" />
-      <Dropdown v-model="startMinute" :options="minuteOptions" placeholder="분" width="w-20" />
-      <span>~</span>
-      <Dropdown v-model="endHour" :options="hourOptions" placeholder="시" width="w-20" />
-      <Dropdown v-model="endMinute" :options="minuteOptions" placeholder="분" width="w-20" />
+      <!-- 시간 선택 + 간격 + 모달 열기 -->
+      <div class="time-select-section">
+        <div>
+          <Dropdown
+            v-model="startHour"
+            :options="hourOptions"
+            placeholder="시"
+            width="w-20"
+            class="dropdown-style"
+          />
+          <Dropdown
+            v-model="startMinute"
+            :options="minuteOptions"
+            placeholder="분"
+            width="w-20"
+            class="dropdown-style"
+          />
+        </div>
+        <span>~</span>
+        <div>
+          <Dropdown
+            v-model="endHour"
+            :options="hourOptions"
+            placeholder="시"
+            width="w-20"
+            class="dropdown-style"
+          />
+          <Dropdown
+            v-model="endMinute"
+            :options="minuteOptions"
+            placeholder="분"
+            width="w-20"
+            class="dropdown-style"
+          />
+        </div>
+        <Dropdown
+          v-model="interval"
+          :options="intervalOptions"
+          width="w-24"
+          placeholder="간격"
+          class="dropdown-style"
+        />
 
-      <Dropdown v-model="interval" :options="intervalOptions" width="w-24" placeholder="간격" />
-
-      <button @click="openModal" class="bg-blue-600 text-white px-3 py-1 rounded">+</button>
+        <button @click="openModal" class="bg-blue-600 text-white px-3 py-1 rounded">+</button>
+      </div>
     </div>
-    </div>
-
 
     <!-- 모달 -->
     <div
@@ -190,5 +222,17 @@ const removeSlot = (idx) => {
 
 .day-time-term-select-section {
   @apply flex items-center gap-5;
+}
+
+.dropdown-style {
+  @apply text-[14px];
+}
+
+.time-select-section {
+  @apply flex gap-2 items-center;
+}
+
+.time-select-section > div {
+  @apply flex gap-1
 }
 </style>
