@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import NotificationDropdown from '@/components/NotificationDropdown.vue'
 
 // 예시 서비스 그룹 목록입니다.
 const services = ref([
@@ -32,6 +33,19 @@ const toggleDropdown = (index) => {
 const selectMenuItem = (serviceIndex, menu) => {
   selectedMenuItems.value[serviceIndex] = menu
 }
+
+// 알림 관련 상태, 예시
+const isDropdownOpen = ref(false)
+const notifications = ref([
+  { id: 1, message: '신규 기업 회원가입 요청이 도착했습니다.', time: '2분 전' },
+  { id: 2, message: '서버 점검이 내일 오전 9시에 예정되어 있습니다.', time: '1시간 전' },
+  { id: 3, message: '신청서가 검토 완료되었습니다.', time: '어제' },
+])
+
+// 알림 아이콘 클릭 토글
+const notiToggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value
+}
 </script>
 
 <template>
@@ -44,15 +58,21 @@ const selectMenuItem = (serviceIndex, menu) => {
       </div>
 
       <!-- 리소스 그룹 생성 버튼 -->
-      <div class="service-group-create-button-container">서비스 그룹 생성</div>
+      <router-link to="/admin/service-group-create" class="service-group-create-button-container"
+        >서비스 그룹 생성</router-link
+      >
 
       <!-- Control 섹션 -->
       <div class="sub-menu-section">
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
-          <div class="sub-menu-item">전체 현황</div>
-          <div class="sub-menu-item">관리자 관리</div>
-          <div class="sub-menu-item">서비스 그룹 관리</div>
+          <router-link class="sub-menu-item" to="/admin/dashboard">전체 현황</router-link>
+          <router-link class="sub-menu-item" to="/admin/manager-management"
+            >관리자 관리</router-link
+          >
+          <router-link class="sub-menu-item" to="/admin/service-group-managation"
+            >서비스 그룹 관리</router-link
+          >
         </div>
       </div>
 
@@ -61,23 +81,25 @@ const selectMenuItem = (serviceIndex, menu) => {
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
           <div v-for="(item, index) in services" :key="index">
-            <div
+            <router-link
+              to="#!"
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
               @click="toggleDropdown(index)"
             >
               {{ item.label }}
-            </div>
+            </router-link>
             <div v-if="openDropdown === index">
-              <div
+              <router-link
                 v-for="child in dropdownItems"
+                to="#!"
                 :key="child"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"
               >
                 {{ child }}
-              </div>
+              </router-link>
             </div>
           </div>
         </div>
@@ -96,7 +118,15 @@ const selectMenuItem = (serviceIndex, menu) => {
         <div class="admin-badge">
           <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
           <span>김아영 관리자님</span>
-          <img src="/public/assets/icons/ic-new-notify.png" alt="알림 이미지" />
+          <button @click.stop="notiToggleDropdown" class="super-notify-btn">
+            <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
+          </button>
+          <NotificationDropdown
+            type="admin"
+            v-if="isDropdownOpen"
+            :notifications="notifications"
+            @close="isDropdownOpen = false"
+          />
         </div>
       </div>
       <div class="content-slot">
@@ -129,7 +159,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .sub-menu-item {
-  @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer
+  @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer block
     hover:border-l-4
     hover:border-white
     hover:bg-[rgba(255,255,255,0.44)];
@@ -152,7 +182,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .service-group-menu-item {
-  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0]
+  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0] block
   hover:text-white
   hover:font-medium;
 }
@@ -174,7 +204,7 @@ const selectMenuItem = (serviceIndex, menu) => {
 }
 
 .admin-badge {
-  @apply bg-white flex items-center rounded-[20px] overflow-hidden px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer;
+  @apply bg-white flex items-center rounded-[20px] px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer relative;
 }
 
 .admin-badge img:first-child {

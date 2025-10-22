@@ -6,6 +6,8 @@ const props = defineProps({
   modelValue: { type: [String, Number], default: null },
   placeholder: { type: String, default: 'Select...' },
   width: { type: String, default: 'w-48' },
+  bgColor: { type: String, default: 'white' }, // white 또는 gray
+  maxHeight: { type: String, default: '60vh' }, // 20vh 또는 60vh
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -52,7 +54,9 @@ onBeforeUnmount(() => {
   <div ref="dropdownRef" class="dropdown-container relative inline-block" :class="props.width">
     <!-- 버튼 -->
     <button
+      type="button"
       class="dropdown-selected-container flex justify-between items-center w-full"
+      :class="props.bgColor === 'white' ? 'bg-white' : 'bg-gray-line'"
       @click="toggleDropdown"
     >
       <span>{{ selectedLabel || placeholder }}</span>
@@ -60,7 +64,7 @@ onBeforeUnmount(() => {
     </button>
 
     <!-- 옵션 리스트 -->
-    <ul v-if="isOpen" class="dropdown-list">
+    <ul v-if="isOpen" class="dropdown-list" :style="{ maxHeight: props.maxHeight }">
       <li
         v-for="option in options"
         :key="option.value"
@@ -88,7 +92,7 @@ onBeforeUnmount(() => {
 }
 
 .dropdown-list {
-  @apply absolute left-0 pb-1 overflow-y-auto max-h-[60vh] bg-white rounded-md shadow-md w-full z-10;
+  @apply absolute left-0 pb-1 overflow-y-auto bg-white rounded-md shadow-md w-full z-10;
 
   /* 웹킷 스크롤바 */
   &::-webkit-scrollbar {

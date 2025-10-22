@@ -1,73 +1,165 @@
 <script setup>
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
-// 페이지 로드 시 인증 상태 확인
+// ===== 페이지 로드 시 인증 상태 확인 =====
+
 onMounted(() => {
   authStore.checkAuth()
+  console.log('🎯 UserHeader 마운트:', {
+    isLoggedIn: authStore.isLoggedIn,
+    role: authStore.role,
+    companyId: authStore.companyId,
+    companySlug: authStore.companySlug,
+  })
 })
 
-// 네비게이션 핸들러
+// ===== 현재 페이지의 회사와 로그인한 회사가 일치하는지 확인 =====
+
+/**
+ * 유효한 로그인 상태 검증
+ * - 로그인 상태 && USER 권한 && 현재 URL의 companySlug와 저장된 companySlug 일치
+ */
+const isValidLogin = computed(() => {
+  // 로그인 상태가 아니면 false
+  if (!authStore.isLoggedIn || authStore.role !== 'USER') {
+    return false
+  }
+
+  // URL에서 현재 회사 slug 추출
+  const currentSlug = route.params.companySlug
+
+  // company 페이지가 아니면 false (헤더 비표시)
+  if (!currentSlug) {
+    return false
+  }
+
+  // 현재 URL의 slug와 저장된 slug 비교
+  const isValid = authStore.companySlug === currentSlug
+
+  if (!isValid) {
+    console.warn('⚠️ Header: 다른 회사 페이지 감지', {
+      saved: authStore.companySlug,
+      current: currentSlug,
+    })
+  }
+
+  return isValid
+})
+
+// ===== 로그인 상태 변경 감지 =====
+
+watch(
+  () => authStore.isLoggedIn,
+  (newValue) => {
+    console.log('👀 로그인 상태 변경:', newValue, 'role:', authStore.role)
+  },
+)
+
+// ===== 네비게이션 핸들러 =====
+
+/**
+ * 홈/랜딩 페이지로 이동
+ * - 로그인 상태: /c/:companySlug/service/list
+ * - 비로그인 상태: /c/:companySlug
+ */
+const goToHome = () => {
+  const currentSlug = route.params.companySlug || authStore.companySlug || 'default'
+
+  if (isValidLogin.value) {
+    // 로그인 상태면 서비스 목록으로
+    router.push(`/c/${currentSlug}/service/list`)
+  } else {
+    // 비로그인 상태면 랜딩 페이지로
+    router.push(`/c/${currentSlug}`)
+  }
+}
+
+/**
+ * 서비스 목록 페이지로 이동
+ */
 const goToService = () => {
-  router.push('/service')
+  const slug = authStore.companySlug || 'default'
+  router.push(`/c/${slug}/service/list`)
 }
 
+/**
+ * 예약 내역 페이지로 이동
+ */
 const goToReservation = () => {
-  router.push('/reservation')
+  const slug = authStore.companySlug || 'default'
+  router.push(`/c/${slug}/myReservation`)
 }
 
+/**
+ * 내 계정 페이지로 이동
+ */
 const goToMypage = () => {
-  router.push('/mypage')
+  const slug = authStore.companySlug || 'default'
+  router.push(`/c/${slug}/user/mypage`)
 }
 
-// 인증 핸들러
-const handleLogin = () => {
-  router.push('/login')
+/**
+ * 알림 페이지로 이동
+ */
+const goToNotification = () => {
+  const slug = authStore.companySlug || 'default'
+  router.push(`/c/${slug}/notification`)
 }
 
-const handleSignup = () => {
-  router.push('/signup')
-}
+// ===== 로그아웃 핸들러 =====
 
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/')
+/**
+ * 로그아웃 처리
+ * - 서버에 로그아웃 API 호출 (쿠키 삭제)
+ * - Store 초기화
+ */
+const handleLogout = async () => {
+  try {
+    // 서버에 로그아웃 요청 (쿠키 삭제)
+    await axiosInstance.post('/api/users/logout')
+
+    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
+    authStore.logout()
+    alert('로그아웃되었습니다.')
+    router.push(`/c/${targetSlug}`)
+  } catch (error) {
+    console.error('로그아웃 실패:', error)
+    // 실패해도 클라이언트 측 로그아웃 진행
+    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
+    authStore.logout()
+    alert('로그아웃되었습니다.')
+    router.push(`/c/${targetSlug}`)
+  }
 }
 </script>
 
 <template>
   <header class="user-header">
     <div class="user-header-container">
-      <!-- 로고 영역 -->
-      <div class="user-header-logo-wrapper">
-        <img
-          src="/assets/images/admin_logo.png"
-          alt="한화시스템 로고"
-          class="user-header-logo-img"
-        />
+      <!-- 로고 영역 (클릭 시 홈으로 이동) -->
+      <div class="user-header-logo-wrapper" @click="goToHome">
+        <img src="/assets/images/admin_logo.png" alt="로고" class="user-header-logo-img" />
       </div>
 
-      <!-- 로그인 후 네비게이션 메뉴 -->
-      <nav v-if="authStore.isLoggedIn" class="user-header-nav">
+      <!-- 로그인 후 네비게이션 메뉴 (유효한 로그인 상태일 때만 표시) -->
+      <nav v-if="isValidLogin" class="user-header-nav">
         <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
         <button @click="goToReservation" class="user-header-nav-item">예약 내역</button>
-        <button @click="goToMypage" class="user-header-nav-item">마이페이지</button>
+        <button @click="goToMypage" class="user-header-nav-item">내 계정</button>
       </nav>
 
-      <!-- 로그인 전: LOGIN | SIGNUP -->
-      <div v-if="!authStore.isLoggedIn" class="user-btn-container">
-        <button @click="handleLogin" class="user-header-btn">LOGIN</button>
-        <span class="user-btn-divider">|</span>
-        <button @click="handleSignup" class="user-header-btn">SIGNUP</button>
-      </div>
-
-      <!-- 로그인 후: LOGOUT -->
-      <div v-else class="user-btn-container">
-        <button @click="handleLogout" class="user-header-btn">LOGOUT</button>
+      <!-- 로그인 후 알림 + 로그아웃 버튼 (유효한 로그인 상태일 때만 표시) -->
+      <div v-if="isValidLogin" class="user-btn-container">
+        <button @click="goToNotification" class="notification-btn">
+          <img src="/assets/icons/ic-no-notify.png" class="user-header-alam" alt="알림" />
+        </button>
+        <button @click="handleLogout" class="logout-btn">로그아웃</button>
       </div>
     </div>
   </header>
@@ -83,7 +175,7 @@ const handleLogout = () => {
 }
 
 .user-header-logo-wrapper {
-  @apply flex items-center;
+  @apply flex items-center cursor-pointer;
 }
 
 .user-header-logo-img {
@@ -91,22 +183,30 @@ const handleLogout = () => {
 }
 
 .user-header-nav {
-  @apply flex items-center gap-12 ml-10;
+  @apply flex items-center gap-20 mr-5;
 }
 
 .user-header-nav-item {
   @apply text-base font-medium text-gray-500 hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none;
 }
 
+.notification-btn {
+  @apply inline-flex items-center bg-transparent border-none cursor-pointer;
+}
+
+.user-header-alam {
+  @apply w-6 h-auto cursor-pointer hover:opacity-80 transition-opacity ml-20;
+}
+
 .user-btn-container {
   @apply flex items-center gap-5;
 }
 
-.user-btn-divider {
-  @apply text-gray-400;
+.login-btn {
+  @apply px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all cursor-pointer border-none text-sm font-medium;
 }
 
-.user-header-btn {
-  @apply text-base font-normal text-gray-400 hover:text-primary-hover hover:font-medium transition-colors cursor-pointer bg-transparent border-none;
+.logout-btn {
+  @apply px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all cursor-pointer border-none text-sm font-medium;
 }
 </style>

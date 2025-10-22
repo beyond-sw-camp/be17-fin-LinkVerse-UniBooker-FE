@@ -13,11 +13,16 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "apexcharts": "^5.3.5",
+    "axios": "^1.12.2",
     "pinia": "^3.0.3",
     "vue": "^3.5.22",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "vue3-apexcharts": "^1.8.0",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@vitejs/plugin-vue": "^6.0.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",

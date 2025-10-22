@@ -39,3 +39,48 @@
     background: #555;
   }
 }
+
+@layer components {
+  .components-page-title {
+    @apply text-[20px] font-medium w-full mb-2 flex justify-between;
+  }
+
+  .components-white-container {
+    @apply bg-white p-3 mt-3 mb-3 rounded-md;
+  }
+
+  /* 플랫폼 관리자 페이지 테이블 스타일 */
+  .components-super-table-container {
+    @apply w-full h-full  overflow-y-auto border border-gray-200 rounded-lg;
+  }
+
+  .components-super-table {
+    @apply w-full border-collapse table-auto text-sm;
+  }
+
+  .components-super-table thead th {
+    @apply bg-gray-100 text-gray-700 font-semibold py-3 px-4 text-center border-b border-gray-300;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .components-super-table tbody td {
+    @apply border-b border-gray-200 py-3 px-4 text-center;
+  }
+
+  .components-super-table tbody tr:hover td {
+    @apply bg-gray-100;
+  }
+
+  /* 스크롤바 */
+  .components-super-table-container::-webkit-scrollbar {
+    width: 8px;
+  }
+  .components-super-table-container::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-[4px];
+  }
+  .components-super-table-container::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}

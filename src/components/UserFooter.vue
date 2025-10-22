@@ -30,14 +30,14 @@ const goToContact = () => {
 
       <!-- 저작권 정보 -->
       <div class="user-footer-copyright">
-        <p class="user-footer-copyright-text">
+        <div class="user-footer-copyright-text">
           Copyright LinkVerse. All rights reserved.
           <img
             src="/public/assets/images/unibooker_blue_logo.svg"
             alt="UniBooker"
             class="user-footer-logo"
           />
-        </p>
+        </div>
       </div>
     </div>
   </footer>
