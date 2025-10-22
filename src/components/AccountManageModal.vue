@@ -8,7 +8,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
-const mode = ref('view') // view | edit | password
+const mode = ref('view') // view | edit | password | withdraw
 
 // 프로필 정보 수정용 임시 데이터
 const editInfo = ref({
@@ -23,8 +23,34 @@ const editInfo = ref({
 const passwordInfo = ref({
   currentPassword: '',
   newPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
+
+// 탈퇴용 임시 데이터
+const withdrawInfo = ref({
+  password: '',
+  reason: '',
+})
+
+// 탈퇴 요청
+const handleWithdrawSubmit = async () => {
+  if (!withdrawInfo.value.password) {
+    alert('비밀번호를 입력해주세요.')
+    return
+  }
+  try {
+    // 예시: 실제 서버 API 호출
+    await adminApi.resetPassword({
+      password: withdrawInfo.value.password,
+      reason: withdrawInfo.value.reason,
+    })
+    alert('탈퇴 완료되었습니다.')
+    emit('close')
+  } catch (err) {
+    console.error(err)
+    alert('탈퇴에 실패했습니다.')
+  }
+}
 
 // props.userData가 바뀌면 editInfo에 반영 (모달 열 때 초기화용)
 watch(
@@ -90,7 +116,7 @@ const handlePasswordSubmit = async () => {
     await adminApi.resetPassword({
       currentPassword: passwordInfo.value.currentPassword,
       newPassword: passwordInfo.value.newPassword,
-      confirmPassword: passwordInfo.value.confirmPassword
+      confirmPassword: passwordInfo.value.confirmPassword,
     })
     alert('비밀번호가 변경되었습니다.')
     passwordInfo.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
@@ -98,14 +124,6 @@ const handlePasswordSubmit = async () => {
   } catch (err) {
     console.error(err)
     alert('비밀번호 변경에 실패했습니다.')
-  }
-}
-
-// 서비스 탈퇴
-const handleWithdraw = () => {
-  if (confirm('정말 탈퇴하시겠습니까?')) {
-    alert('탈퇴 완료되었습니다.')
-    emit('close')
   }
 }
 
@@ -216,12 +234,31 @@ const formatPhoneNumber = (e) => {
         </div>
         <div class="modal-input-section">
           <label>새 비밀번호 확인</label>
-          <input  v-model="passwordInfo.confirmPassword" type="password" class="modal-input" />
+          <input v-model="passwordInfo.confirmPassword" type="password" class="modal-input" />
         </div>
 
         <div class="modal-button-container">
           <Button theme="gray" size="sm" @click="mode = 'view'">취소</Button>
           <Button size="sm" @click="handlePasswordSubmit">변경하기</Button>
+        </div>
+      </template>
+
+      <!-- 탈퇴 모드 -->
+      <template v-else-if="mode === 'withdraw'">
+        <div class="modal-header">
+          <h3>서비스 탈퇴</h3>
+        </div>
+        <div class="modal-input-section">
+          <label>비밀번호 확인</label>
+          <input v-model="withdrawInfo.password" type="password" class="modal-input" />
+        </div>
+        <div class="modal-input-section">
+          <label>탈퇴 사유 (선택)</label>
+          <input v-model="withdrawInfo.reason" type="text" class="modal-input" />
+        </div>
+        <div class="modal-button-container">
+          <Button theme="gray" size="sm" @click="mode = 'view'">취소</Button>
+          <Button size="sm" @click="handleWithdrawSubmit">탈퇴하기</Button>
         </div>
       </template>
     </div>

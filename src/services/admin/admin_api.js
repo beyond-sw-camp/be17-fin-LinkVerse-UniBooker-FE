@@ -102,6 +102,19 @@ const managerInfoEdit = async (managerInfo) => {
   }
 }
 
+/**
+ * 탈퇴하기
+ */
+const managerInfoDelete = async (managerInfo) => {
+  try {
+    const response = await axiosInstance.delete('/api/admins/me', managerInfo)
+    return response.data
+  } catch (error) {
+    console.error('프로필 수정 실패', error)
+    throw error
+  }
+}
+
 
 export default {
   signUpAdmin,
