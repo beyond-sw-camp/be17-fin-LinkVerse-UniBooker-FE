@@ -70,6 +70,33 @@ const resetPassword = async (passwordData) => {
   return await axiosInstance.patch('/api/admins/password/reset', passwordData)
 }
 
+/**
+ * 내 정보 조회
+ */
+export const getManagerInfo = async (email, companyId) => {
+  try {
+    const response = await axiosInstance.get('/api/admins/me')
+    return response.data
+  } catch (error) {
+    console.error('프로필 조회 실패', error)
+    throw error
+  }
+}
+
+/**
+ * 내 정보 수정
+ */
+export const managerInfoEdit = async (managerInfo) => {
+  try {
+    const response = await axiosInstance.patch('/api/admins/me', managerInfo)
+    return response.data
+  } catch (error) {
+    console.error('프로필 수정 실패', error)
+    throw error
+  }
+}
+
+
 export default {
   signUpAdmin,
   checkBusinessNumber,
@@ -77,5 +104,5 @@ export default {
   checkEmail,
   getSignUpStatus,
   login,
-  resetPassword
+  resetPassword,
 }
