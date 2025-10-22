@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { managerInfoEdit, getManagerInfo } from '@/services/admin/admin_api'
+import adminApi from '@/services/admin/admin_api'
 
 const props = defineProps({
   open: Boolean,
@@ -58,10 +58,10 @@ const handleEditSubmit = async () => {
     }
 
     // 서버에 수정 요청
-    await managerInfoEdit(payload)
+    await adminApi.managerInfoEdit(payload)
 
     // 서버에서 최신 데이터 가져오기
-    const response = await getManagerInfo()
+    const response = await adminApi.getManagerInfo()
     Object.assign(props.userData, response.data) // props.userData 직접 업데이트
 
     // 모드 전환

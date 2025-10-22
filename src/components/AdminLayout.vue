@@ -2,13 +2,13 @@
 import { ref } from 'vue'
 import AccountManageModal from './AccountManageModal.vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
-import { getManagerInfo } from '@/services/admin/admin_api'
+import adminApi from '@/services/admin/admin_api'
 
 const isModalOpen = ref(false)
 const userData = ref(null)  
 async function openModal() {
   try {
-    const response = await getManagerInfo()
+    const response = await adminApi.getManagerInfo()
     userData.value = response.data 
     isModalOpen.value = true
   } catch (err) {
