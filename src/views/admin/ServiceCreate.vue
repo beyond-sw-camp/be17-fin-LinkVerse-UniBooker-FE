@@ -4,7 +4,7 @@ import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import DayAndTimeAdd from '@/components/DayAndTimeAdd.vue'
+import TimeSlotModal from '@/components/TimeSlotModal.vue'
 
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
@@ -74,7 +74,7 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
 
       <!-- 예약/신청 기간 -->
       <div class="service-info-section">
-        <div class="service-info-form-item-label-container">
+        <div class="service-info-form-item-label-container !mt-[5px]">
           <span>예약/신청 기간</span>
           <p>해당 서비스의 예약/신청이 가능한 기간을 입력해 주세요.</p>
         </div>
@@ -92,7 +92,7 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
           <span>시간 간격 선택</span>
         </div>
 
-        <div class="service-info-form-inputs">
+        <div class="service-info-form-radio">
           <Input class="text-input" type="radio" placeholder="시작 날짜" label="1시간"/>
           <Input class="text-input" type="radio" placeholder="종료 날짜" label="30분"/>
         </div>
@@ -101,12 +101,12 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
       <!-- 서비스 이용 시간  -->
        <div class="service-info-section">
         <div class="service-info-form-item-label-container">
-          <span>시간 간격 선택</span>
+          <span>서비스 이용 시간</span>
           <p>해당 서비스의 이용 가능한 시간을 입력해 주세요. 휴게 시간을 포함한 전체 시간을 입력하신 뒤 휴게 시간을 제거하시면 됩니다.</p>
         </div>
 
         <div class="service-info-form-inputs">
-          <DayAndTimeAdd />
+          <TimeSlotModal />
         </div>
       </div>
     </section>
@@ -200,5 +200,29 @@ textarea {
 
 .resource-create-question-container:hover .category-description-box {
   display: block;
+}
+
+.service-info-form-item-label-container {
+  @apply flex gap-3 items-center mt-[20px] mb-[6px];
+}
+
+.service-info-form-item-label-container span {
+  @apply text-[14px];
+}
+
+.service-info-form-item-label-container p {
+  @apply text-[12px] text-[#929292];
+}
+
+.service-info-form-inputs {
+  @apply flex gap-2 items-center max-w-[400px];
+}
+
+.service-info-section {
+  @apply ml-[4px];
+}
+
+.service-info-form-radio {
+  @apply flex flex-col gap-3 pt-[8px] pb-[15px];
 }
 </style>
