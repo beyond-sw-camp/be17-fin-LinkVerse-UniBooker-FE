@@ -154,10 +154,15 @@ const router = createRouter({
       name: 'ServiceManagement',
       component: () => import('../views/admin/ServiceManagement.vue'),
     },
-    {
+    { // 신청형 예약 관리
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('../views/admin/EventReservationManagement.vue'),
+    },
+    { // 신청형 예약 현황
+      path: '/admin/event-reservation-status',
+      name: 'EventReservationStatus',
+      component: () => import('../views/admin/EventReservationStatus.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
