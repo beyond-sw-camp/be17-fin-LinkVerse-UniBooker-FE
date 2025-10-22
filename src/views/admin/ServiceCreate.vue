@@ -4,7 +4,7 @@ import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import DayAndTimeAdd from '@/components/DayAndTimeAdd.vue'
+import TimeSlotModal from '@/components/TimeSlotModal.vue'
 
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
@@ -106,7 +106,7 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
         </div>
 
         <div class="service-info-form-inputs">
-          <DayAndTimeAdd />
+          <TimeSlotModal />
         </div>
       </div>
     </section>
@@ -200,5 +200,21 @@ textarea {
 
 .resource-create-question-container:hover .category-description-box {
   display: block;
+}
+
+.service-info-form-item-label-container {
+  @apply flex gap-3 items-center;
+}
+
+.service-info-form-item-label-container span {
+  @apply text-[14px]
+}
+
+.service-info-form-item-label-container p {
+  @apply text-[12px] text-[#929292]
+}
+
+.service-info-form-inputs {
+  @apply flex gap-2 items-center max-w-[400px]
 }
 </style>
