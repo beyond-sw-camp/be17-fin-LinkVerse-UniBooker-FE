@@ -1,10 +1,30 @@
 <script setup>
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/AdminLayout.vue'
+import serviceApi from '@/services/admin/service_api'
+import { onMounted, reactive } from 'vue'
 
 const router = useRouter()
+const serviceGroups = reactive([])
+const getServiceGroups = async () => {
+  try {
+    const response = await serviceApi.getServiceGroups(1)
+    const data = response.data.data
 
-const goEdit = () => { router.push('/admin/service-group-edit') }
+    Object.assign(serviceGroups, data.resourceGroups)
+    console.log(serviceGroups)
+  } catch (error) {
+    console.log('서비스 그룹 목록 조회 실패: ', error)
+  }
+}
+
+const goEdit = () => {
+  router.push('/admin/service-group-edit')
+}
+
+onMounted(() => {
+  getServiceGroups()
+})
 </script>
 
 <template>
@@ -17,23 +37,25 @@ const goEdit = () => { router.push('/admin/service-group-edit') }
     </div>
 
     <div class="service-group-list">
-      <div class="service-group-container">
+      <div v-for="s in serviceGroups" class="service-group-container">
         <div class="service-group-container-top">
           <div class="create-by-info">
-            <span>회의실 예약</span>
-            <p>유현경 관리자 | 2025.10.13</p>
+            <span>{{ s.name }}</span>
+            <p>{{ s.administrator }} 관리자 | {{ new Date(s.createdAt).toLocaleDateString() }}</p>
           </div>
           <img src="/assets/icons/ic-dark-gray-plus.png" alt="삭제하기" />
         </div>
 
         <div class="service-group-description">
-          여의도 본사에서 근무하시는 분들 중 회의실 대여가 필요하시면 예약하세요.
+          {{ s.description }}
         </div>
 
         <div class="service-group-container-bottom">
           <div class="in-progress-service-group">
             <img src="/public/assets/icons/ic-in-progress.png" alt="진행 중" />
-            <p><span>3</span> / 5</p>
+            <p>
+              <span>{{ s.activeServiceCount }}</span> / {{ s.serviceCount }}
+            </p>
           </div>
 
           <div class="resource-group-edit-button" @click="goEdit">
@@ -67,46 +89,46 @@ const goEdit = () => { router.push('/admin/service-group-edit') }
 }
 
 .create-by-info > span {
-    @apply font-medium;
+  @apply font-medium;
 }
 
 .create-by-info > p {
-    @apply text-[12px] text-[#ABABAB];
+  @apply text-[12px] text-[#ABABAB];
 }
 
 .service-group-description {
-    @apply text-[14px] text-text;
+  @apply text-[14px] text-text;
 }
 
 .in-progress-service-group {
-    @apply flex items-center gap-2;
+  @apply flex items-center gap-2;
 }
 
 .in-progress-service-group > img {
-    @apply w-[20px] h-[20px];
+  @apply w-[20px] h-[20px];
 }
 
 .in-progress-service-group p {
-    @apply text-[14px] text-[#8E8E8E];
+  @apply text-[14px] text-[#8E8E8E];
 }
 
 .in-progress-service-group span {
-    @apply text-text;
+  @apply text-text;
 }
 
 .resource-group-edit-button {
-    @apply bg-black rounded-[50%] w-[36px] h-[36px] flex justify-center items-center cursor-pointer;
+  @apply bg-black rounded-[50%] w-[36px] h-[36px] flex justify-center items-center cursor-pointer;
 }
 
 .resource-group-edit-button > img {
-    @apply w-[15px] h-[15px];
+  @apply w-[15px] h-[15px];
 }
 
 .service-group-container-bottom {
-    @apply flex justify-between
+  @apply flex justify-between;
 }
 
 .service-group-list {
-    @apply flex flex-wrap gap-3 mt-[15px]
+  @apply flex flex-wrap gap-3 mt-[15px];
 }
 </style>
