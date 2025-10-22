@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import Modal from './Modal.vue'
+import Button from './Button.vue'
 
-const isEditModalOpen = ref(false)
 const isProfileModalOpen = ref(false)
+const isEditModalOpen = ref(false)
 
 const openEditModal = () => {
   isEditModalOpen.value = true
@@ -239,7 +240,7 @@ const notiToggleDropdown = () => {
 }
 
 .admin-layout {
-  @apply flex flex-row;
+  @apply flex;
 }
 
 .content-body {
