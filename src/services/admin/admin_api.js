@@ -68,7 +68,7 @@ const login = async (loginData) => {
  */
 const resetPassword = async (payload) => {
   try {
-    const response = await axiosInstance.post('/api/admins/password', payload)
+    const response = await axiosInstance.patch('/api/admins/password/reset', payload)
     return response.data
   } catch (error) {
     console.error('비밀번호 변경 실패', error)

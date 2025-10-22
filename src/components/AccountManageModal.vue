@@ -10,13 +10,20 @@ const emit = defineEmits(['close'])
 
 const mode = ref('view') // view | edit | password
 
-// 수정용 임시 데이터 (수정 모드에서 사용)
+// 프로필 정보 수정용 임시 데이터
 const editInfo = ref({
   businessNumber: '',
   name: '',
   phone: '',
   logoFile: null,
   logoUrl: '', // 기존 로고 URL
+})
+
+// 비밀번호 변경용 임시 데이터
+const passwordInfo = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
 // props.userData가 바뀌면 editInfo에 반영 (모달 열 때 초기화용)
@@ -70,6 +77,27 @@ const handleEditSubmit = async () => {
   } catch (err) {
     alert('수정에 실패했습니다.')
     console.error(err)
+  }
+}
+
+// 비밀번호 변경 완료
+const handlePasswordSubmit = async () => {
+  if (passwordInfo.value.newPassword !== passwordInfo.value.confirmPassword) {
+    alert('새 비밀번호와 확인이 일치하지 않습니다.')
+    return
+  }
+  try {
+    await adminApi.resetPassword({
+      currentPassword: passwordInfo.value.currentPassword,
+      newPassword: passwordInfo.value.newPassword,
+      confirmPassword: passwordInfo.value.confirmPassword
+    })
+    alert('비밀번호가 변경되었습니다.')
+    passwordInfo.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
+    mode.value = 'view'
+  } catch (err) {
+    console.error(err)
+    alert('비밀번호 변경에 실패했습니다.')
   }
 }
 
@@ -180,20 +208,20 @@ const formatPhoneNumber = (e) => {
 
         <div class="modal-input-section">
           <label>기존 비밀번호</label>
-          <input type="password" class="modal-input" />
+          <input v-model="passwordInfo.currentPassword" type="password" class="modal-input" />
         </div>
         <div class="modal-input-section">
           <label>새 비밀번호</label>
-          <input type="password" class="modal-input" />
+          <input v-model="passwordInfo.newPassword" type="password" class="modal-input" />
         </div>
         <div class="modal-input-section">
           <label>새 비밀번호 확인</label>
-          <input type="password" class="modal-input" />
+          <input  v-model="passwordInfo.confirmPassword" type="password" class="modal-input" />
         </div>
 
         <div class="modal-button-container">
           <Button theme="gray" size="sm" @click="mode = 'view'">취소</Button>
-          <Button size="sm">변경하기</Button>
+          <Button size="sm" @click="handlePasswordSubmit">변경하기</Button>
         </div>
       </template>
     </div>
