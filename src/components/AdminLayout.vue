@@ -1,6 +1,20 @@
 <script setup>
 import { ref } from 'vue'
+import AccountManageModal from './AccountManageModal.vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import { getManagerInfo } from '@/services/admin/admin_api'
+
+const isModalOpen = ref(false)
+const userData = ref(null)  
+async function openModal() {
+  try {
+    const response = await getManagerInfo()
+    userData.value = response.data 
+    isModalOpen.value = true
+  } catch (err) {
+    console.error('프로필 조회 실패', err)
+  }
+}
 
 // 예시 서비스 그룹 목록입니다.
 const services = ref([
@@ -116,8 +130,12 @@ const notiToggleDropdown = () => {
     <div class="content-body">
       <div class="content-top">
         <div class="admin-badge">
-          <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
-          <span>김아영 관리자님</span>
+          <img
+            @click="openModal"
+            src="/public/assets/images/admin_logo.png"
+            alt="기업 로고 이미지"
+          />
+          <span @click="openModal">김아영 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
@@ -135,6 +153,7 @@ const notiToggleDropdown = () => {
       </div>
     </div>
   </div>
+  <AccountManageModal :open="isModalOpen" :userData="userData" @close="isModalOpen = false" />
 </template>
 
 <style scoped>
