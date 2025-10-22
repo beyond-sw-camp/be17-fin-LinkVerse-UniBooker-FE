@@ -18,9 +18,14 @@ const editServiceGroup = async (resourceGroupId, formdata) => {
   return await axiosInstance.put(`api/resource-group/${resourceGroupId}`, formdata)
 }
 
+const deleteServiceGroup = async (resourceGroupId) => {
+  return await axiosInstance.delete(`api/resource-group/${resourceGroupId}`)
+}
+
 export default {
   createServiceGroup,
   getServiceGroups,
   getServiceGroupInfo,
   editServiceGroup,
+  deleteServiceGroup,
 }

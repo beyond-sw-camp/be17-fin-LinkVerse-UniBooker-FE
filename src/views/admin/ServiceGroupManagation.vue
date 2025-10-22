@@ -18,6 +18,18 @@ const getServiceGroups = async () => {
   }
 }
 
+const deleteServiceGroup = async (serviceGroupId) => {
+  try {
+    const response = await serviceApi.deleteServiceGroup(serviceGroupId)
+    const data = response.data.data
+    console.log(data)
+    const index = serviceGroups.findIndex((s) => s.id === serviceGroupId)
+    if (index !== -1) serviceGroups.splice(index, 1)
+  } catch (error) {
+    console.log('서비스 그룹 삭제 실패: ', error)
+  }
+}
+
 const goEdit = (serviceGroupId) => {
   router.push(`/admin/service-group-edit/${serviceGroupId}`)
 }
@@ -43,7 +55,11 @@ onMounted(() => {
             <span>{{ s.name }}</span>
             <p>{{ s.administrator }} 관리자 | {{ new Date(s.createdAt).toLocaleDateString() }}</p>
           </div>
-          <img src="/assets/icons/ic-dark-gray-plus.png" alt="삭제하기" />
+          <img
+            @click="deleteServiceGroup(s.id)"
+            src="/assets/icons/ic-dark-gray-plus.png"
+            alt="삭제하기"
+          />
         </div>
 
         <div class="service-group-description">
