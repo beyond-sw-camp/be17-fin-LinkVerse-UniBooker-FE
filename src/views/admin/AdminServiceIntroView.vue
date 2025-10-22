@@ -257,11 +257,11 @@ const scrollToSection = (sectionId) => {
 }
 
 .service-page-feature-text-l {
-  @apply space-y-4 text-left ml-10 flex flex-col items-start;
+  @apply space-y-4 text-left ml-20 flex flex-col items-start;
 }
 
 .service-page-feature-text-r {
-  @apply space-y-4 text-right mr-10 flex flex-col items-end;
+  @apply space-y-4 text-right mr-20 flex flex-col items-end;
 }
 
 .service-page-feature-title {
