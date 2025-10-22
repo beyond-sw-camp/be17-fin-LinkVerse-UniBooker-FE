@@ -141,6 +141,8 @@ const router = createRouter({
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
       component: () => import('../views/admin/SeatReservationManagement.vue'),
+    },
+    {
       // 서비스 생성 페이지
       path: '/admin/service-create',
       name: 'ServiceCreate',
