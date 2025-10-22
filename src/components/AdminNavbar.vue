@@ -1,12 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import Button from '@/components/Button.vue'
 
 const router = useRouter()
 
 // 네비게이션 핸들러
 const goToHome = () => {
-  router.push('/')
+  router.push('/admin/home')
 }
 
 const goToServiceIntro = () => {
@@ -64,16 +65,14 @@ const inquiryEmailLink = computed(() => {
         <a class="navbar-link" :href="inquiryEmailLink">문의하기</a>
       </div>
 
-      <Button class="h-9 rounded-[50px] px-5 text-[12px] font-medium" @click="goToLogin">
-        로그인
-      </Button>
+      <Button class="navbar-button" @click="goToLogin"> 로그인 </Button>
     </div>
   </nav>
 </template>
 
 <style scoped>
 .navbar {
-  @apply w-full rounded-[25px] shadow-md;
+  @apply w-full max-w-7xl rounded-[25px] shadow-md;
   background-color: #f5f5f5;
 }
 
@@ -90,7 +89,11 @@ const inquiryEmailLink = computed(() => {
 }
 
 .navbar-link {
-  @apply text-gray-700 hover:text-primary text-sm font-normal hover:font-medium duration-300 cursor-pointer;
+  @apply text-gray-500 hover:text-primary hover:scale-105 text-sm font-medium hover:font-medium duration-200 cursor-pointer;
+}
+
+.navbar-button {
+  @apply rounded-full text-sm font-medium py-2 px-4 hover:bg-primary-hover;
 }
 
 /* 이메일 링크 특별 스타일 */

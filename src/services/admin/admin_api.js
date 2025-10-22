@@ -63,11 +63,19 @@ const login = async (loginData) => {
   return await axiosInstance.post('/api/admins/login', loginData)
 }
 
+/**
+ * 비밀번호 재설정
+ */
+const resetPassword = async (passwordData) => {
+  return await axiosInstance.patch('/api/admins/password/reset', passwordData)
+}
+
 export default {
   signUpAdmin,
   checkBusinessNumber,
   checkSlug,
   checkEmail,
   getSignUpStatus,
-  login
+  login,
+  resetPassword
 }
