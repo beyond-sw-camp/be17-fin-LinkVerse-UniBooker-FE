@@ -71,32 +71,32 @@ const router = createRouter({
       path: '/admin/signup',
       name: 'adminSignup',
       component: () => import('@/views/admin/AdminSignupView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/signup/status',
       name: 'adminStatus',
       component: () => import('@/views/admin/AdminSignupStatusView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/login',
       name: 'adminLogin',
       component: () => import('@/views/admin/AdminLoginView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/firstPassword',
       name: 'firstPassword',
       component: () => import('@/views/admin/AdminPasswordResetView.vue'),
       meta: { showAdminNav: true },
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
       path: '/admin/home',
       name: 'adminHonme',
       component: () => import('@/views/admin/AdminLandingView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/dashboard',
@@ -107,7 +107,7 @@ const router = createRouter({
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('../views/admin/ServiceIntroView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/manager-management',
@@ -136,6 +136,11 @@ const router = createRouter({
       path: '/admin/service-group-edit',
       name: 'ServiceGroupEdit',
       component: () => import('../views/admin/ServiceGroupEdit.vue'),
+    },
+    {
+      path: '/admin/reservation-management',
+      name: 'ReservationManagement',
+      component: () => import('../views/admin/ReservationManagement.vue'),
     },
     {
       path: '/admin/seat-reservation-management',
@@ -168,9 +173,9 @@ const router = createRouter({
       path: '/super/login',
       name: 'SuperLogin',
       component: () => import('@/views/super/SuperLoginView.vue'),
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
-    
+
     {
       path: '/super',
       name: 'super',
@@ -287,7 +292,6 @@ router.beforeEach((to, from, next) => {
       return next(`/c/${currentSlug}`)
     }
   }
-
 
   next()
 })
