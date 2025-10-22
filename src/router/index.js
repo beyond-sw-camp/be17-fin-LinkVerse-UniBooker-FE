@@ -24,7 +24,6 @@ const router = createRouter({
       name: 'userMypage',
       component: () => import('@/views/user/UserMypageView.vue'),
       meta: { layout: 'user', requiresAuth: true },
-      meta: { layout: 'user', requiresAuth: true },
     },
     {
       path: '/c/:companySlug/reservation/completed',
@@ -89,30 +88,29 @@ const router = createRouter({
       path: '/admin/firstPassword',
       name: 'firstPassword',
       component: () => import('@/views/admin/AdminPasswordResetView.vue'),
-      meta: { showAdminNav: true },
-      meta: { requiresAuth: false },
+      meta: { showAdminNav: true, requiresAuth: false }
     },
     {
       path: '/admin/home',
-      name: 'adminHonme',
+      name: 'adminHome',
       component: () => import('@/views/admin/AdminLandingView.vue'),
       meta: { showAdminNav: true },
     },
     {
       path: '/admin/dashboard',
       name: 'adminDashboard',
-      component: () => import('../views/admin/AdminDashboardView.vue'),
+      component: () => import('@/views/admin/AdminDashboardView.vue'),
     },
     {
       path: '/admin/service',
       name: 'serviceIntro',
-      component: () => import('../views/admin/ServiceIntroView.vue'),
-      meta: { showAdminNav: true },
+      component: () => import('@/views/admin/AdminServiceIntroView.vue'),
+      meta: { showAdminNav: true }
     },
     {
       path: '/admin/manager-management',
       name: 'ManagerManagement',
-      component: () => import('../views/admin/ManagerManagement.vue'),
+      component: () => import('@/views/admin/ManagerManagement.vue'),
     },
     {
       path: '/admin/notification',
@@ -120,22 +118,19 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminNotificationView.vue'),
     },
     {
-      // 서비스 그룹 생성 페이지
       path: '/admin/service-group-create',
       name: 'ServiceGroupCreate',
-      component: () => import('../views/admin/ServiceGroupCreate.vue'),
+      component: () => import('@/views/admin/ServiceGroupCreate.vue'),
     },
     {
-      // 서비스 그룹 관리 페이지
       path: '/admin/service-group-managation',
       name: 'ServiceGroupManagation',
-      component: () => import('../views/admin/ServiceGroupManagation.vue'),
+      component: () => import('@/views/admin/ServiceGroupManagation.vue'),
     },
     {
-      // 서비스 그룹 수정 페이지
       path: '/admin/service-group-edit',
       name: 'ServiceGroupEdit',
-      component: () => import('../views/admin/ServiceGroupEdit.vue'),
+      component: () => import('@/views/admin/ServiceGroupEdit.vue'),
     },
     {
       path: '/admin/reservation-management',
@@ -145,121 +140,101 @@ const router = createRouter({
     {
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
-      component: () => import('../views/admin/SeatReservationManagement.vue'),
+      component: () => import('@/views/admin/SeatReservationManagement.vue'),
     },
     {
-      // 서비스 생성 페이지
       path: '/admin/service-create',
       name: 'ServiceCreate',
-      component: () => import('../views/admin/ServiceCreate.vue'),
+      component: () => import('@/views/admin/ServiceCreate.vue'),
     },
     {
-      // 서비스 관리 페이지
       path: '/admin/service-management',
       name: 'ServiceManagement',
-      component: () => import('../views/admin/ServiceManagement.vue'),
+      component: () => import('@/views/admin/ServiceManagement.vue'),
     },
-    {
+    { // 신청형 예약 관리
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
-      component: () => import('../views/admin/EventReservationManagement.vue'),
+      component: () => import('@/views/admin/EventReservationManagement.vue'),
+    },
+    { // 신청형 예약 현황
+      path: '/admin/event-reservation-status',
+      name: 'EventReservationStatus',
+      component: () => import('../views/admin/EventReservationStatus.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 플랫폼 관리자 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // ===== 슈퍼 관리자 로그인 (추가) =====
     {
       path: '/super/login',
       name: 'SuperLogin',
       component: () => import('@/views/super/SuperLoginView.vue'),
       meta: { requiresAuth: false },
     },
-
     {
       path: '/super',
       name: 'super',
       component: () => import('@/components/SuperLayout.vue'),
       children: [
-        // 대시보드 페이지: 전체 현황, 통계, 알림 등 요약 화면
         {
           path: 'dashboard',
           name: 'superDashboard',
           component: () => import('@/views/super/DashboardView.vue'),
         },
-
-        // 기업 목록 페이지
         {
           path: 'companies',
           name: 'superCompanyList',
           component: () => import('@/views/super/CompanyListView.vue'),
         },
-
-        // 특정 기업 상세 페이지
         {
           path: 'companies/:companyName',
           name: 'superCompanyDetail',
           component: () => import('@/views/super/CompanyDetailView.vue'),
           props: true,
         },
-
-        // 특정 기업 관리자 목록 페이지
         {
           path: 'companies/:companyName/managers',
           name: 'superManagerList',
           component: () => import('@/views/super/ManagerListView.vue'),
           props: true,
         },
-
-        // 특정 기업 서비스 그룹 목록 페이지
         {
           path: 'companies/:companyName/services',
           name: 'superServiceGroupList',
           component: () => import('@/views/super/ServiceGroupListView.vue'),
           props: true,
         },
-
-        // 특정 서비스 그룹 상세 페이지
         {
           path: 'companies/:companyName/services/:serviceGroupName',
           name: 'superServiceGroupDetail',
           component: () => import('@/views/super/ServiceGroupDetailView.vue'),
           props: true,
         },
-
-        // 특정 서비스 상세 페이지
         {
           path: 'companies/:companyName/services/:serviceGroupName/:serviceName',
           name: 'superServiceDetail',
           component: () => import('@/views/super/ServiceDetailView.vue'),
           props: true,
         },
-
-        // 신청 목록 페이지
         {
           path: 'applications',
           name: 'superApplicationList',
           component: () => import('@/views/super/ApplicationListView.vue'),
           props: true,
         },
-
-        // 특정 기업 신청 상세 페이지
         {
           path: 'applications/:companyId',
           name: 'superApplicationDetails',
           component: () => import('@/views/super/ApplicationDetailView.vue'),
           props: true,
         },
-
-        // 시스템 관리 페이지: 권한, 환경설정 등
         {
           path: 'system-management',
           name: 'superSystemManagement',
           component: () => import('@/views/super/SystemManagementView.vue'),
           props: true,
         },
-
-        // 플랫폼 관리자 알림 이력 페이지
         {
           path: 'notification',
           name: 'superNotification',
@@ -268,26 +243,34 @@ const router = createRouter({
       ],
     },
   ],
+  
+  /**
+   * 스크롤 동작 설정
+   */
+  scrollBehavior(to, from, savedPosition) {
+    if (to.query.section) {
+      return false
+    }
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  }
 })
 
 /**
  * 전역 네비게이션 가드
- * - 로그인 상태에서 랜딩 페이지 접근 시 서비스 목록으로 리다이렉트
- * - 회사별 페이지 접근 시 companySlug 검증
  */
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const currentSlug = to.params.companySlug
 
-  // 1. 로그인 상태에서 랜딩 페이지 접근 시 서비스 목록으로 리다이렉트
   if (to.name === 'UserLanding' && authStore.isLoggedIn && currentSlug === authStore.companySlug) {
     return next(`/c/${currentSlug}/service/list`)
   }
 
-  // 2. company 페이지인 경우 companySlug 검증
   if (currentSlug) {
     const isValid = authStore.validateCompanyContext(currentSlug)
-
     if (!isValid) {
       return next(`/c/${currentSlug}`)
     }
