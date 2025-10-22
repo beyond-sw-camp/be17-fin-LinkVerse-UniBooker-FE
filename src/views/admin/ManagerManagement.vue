@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
+import Modal from '@/components/Modal.vue'
 
 const isEditModalOpen = ref(false)
 const isAddModalOpen = ref(false)

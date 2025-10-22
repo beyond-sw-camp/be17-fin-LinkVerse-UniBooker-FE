@@ -1,6 +1,22 @@
 <script setup>
 import { ref } from 'vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import Modal from './Modal.vue'
+
+const isEditModalOpen = ref(false)
+const isProfileModalOpen = ref(false)
+
+const openEditModal = () => {
+  isEditModalOpen.value = true
+}
+
+const openProfileModal = () => {
+  isProfileModalOpen.value = true
+}
+
+const closeAddModal = () => {
+  isProfileModalOpen.value = false
+}
 
 // 예시 서비스 그룹 목록입니다.
 const services = ref([
@@ -117,7 +133,7 @@ const notiToggleDropdown = () => {
       <div class="content-top">
         <div class="admin-badge">
           <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
-          <span>김아영 관리자님</span>
+          <span @click="openProfileModal">김아영 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
@@ -135,6 +151,37 @@ const notiToggleDropdown = () => {
       </div>
     </div>
   </div>
+
+  <!-- 관리자 추가 버튼 클릭 시 뜨는 모달 -->
+  <Modal :open="isProfileModalOpen" @close="isProfileModalOpen = false">
+    <div class="add-modal-container">
+      <h3>관리자 추가</h3>
+      <p>
+        기업의 관리자를 추가할 수 있습니다. 입력하신 이메일로 가입에 필요한 계정 정보(이메일 및
+        비밀번호)가 발송됩니다. 정확한 안내를 위해 이메일 주소를 신중하게 입력해주세요.
+      </p>
+
+      <div class="input-field-container">
+        <div class="input-field-item">
+          <label>이름 <span>*</span></label>
+          <input type="text" placeholder="관리자의 이름을 입력해주세요." />
+        </div>
+        <div class="input-field-item">
+          <label>이메일 <span>*</span></label>
+          <input type="email" placeholder="관리자의 이메일을 입력해주세요." />
+        </div>
+        <div class="input-field-item">
+          <label>연락처 <span>*</span></label>
+          <input type="phone" placeholder="관리자의 연락처를 입력해주세요." />
+        </div>
+      </div>
+
+      <div class="add-modal-button-container">
+        <Button class="button-px" theme="gray" @click="closeAddModal">취소</Button>
+        <Button class="button-px">추가하기</Button>
+      </div>
+    </div>
+  </Modal>
 </template>
 
 <style scoped>
@@ -221,5 +268,50 @@ const notiToggleDropdown = () => {
 
 .content-slot {
   @apply mt-[10px] w-full;
+}
+
+/* 관리자 추가 모달 스타일 */
+.add-modal-container {
+  @apply px-[30px] py-[20px] flex flex-col;
+}
+
+h3 {
+  @apply text-[18px] font-medium mb-[3px];
+}
+
+.add-modal-container p {
+  @apply text-[12px] text-gray-dark;
+}
+
+.input-field-container {
+  @apply mt-[35px] flex flex-col gap-6;
+}
+
+.input-field-item {
+  @apply flex flex-col gap-1;
+}
+
+label {
+  @apply text-[14px];
+}
+
+.input-field-item span {
+  @apply text-[#FF2222];
+}
+
+.add-modal-container input {
+  @apply bg-gray-line px-[14px] py-[10px] text-[14px] rounded-[3px];
+}
+
+.add-modal-button-container {
+  @apply flex gap-3 mt-[70px];
+}
+
+.add-modal-button-container button {
+  @apply py-[10px];
+}
+
+.button-px {
+  @apply px-0;
 }
 </style>
