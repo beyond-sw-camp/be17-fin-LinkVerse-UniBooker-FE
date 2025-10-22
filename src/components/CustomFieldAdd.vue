@@ -13,6 +13,7 @@ const emit = defineEmits(['add-field', 'delete-field'])
 
 const modalFieldName = ref('')
 const modalFieldType = ref('')
+const modalFieldDescription = ref('')
 const isModalOpen = ref(false)
 
 const openModal = () => {
@@ -35,11 +36,13 @@ const types = ref([
 const addFieldFromModal = () => {
   if (!modalFieldName.value) return
   emit('add-field', {
-    name: modalFieldName.value,
-    type: modalFieldType.value,
+    fieldName: modalFieldName.value,
+    dataType: modalFieldType.value,
+    description: modalFieldDescription.value,
   })
   modalFieldName.value = ''
   modalFieldType.value = 'TEXT'
+  modalFieldDescription.value = ''
   closeModal()
 }
 </script>
@@ -50,14 +53,14 @@ const addFieldFromModal = () => {
     <Input
       class="input-style"
       type="text"
-      v-model="field.name"
+      v-model="field.fieldName"
       placeholder="항목명"
       :disabled="true"
     />
     <Input
       class="input-style !w-[150px]"
       :options="types"
-      v-model="field.type"
+      v-model="field.dataType"
       placeholder="데이터 타입"
       :disabled="true"
     />
@@ -95,7 +98,10 @@ const addFieldFromModal = () => {
 
       <div class="add-field-items-container">
         <div class="field-label-container">항목 설명 <span>*</span></div>
-        <textarea placeholder="항목 설명을 작성해주세요."></textarea>
+        <textarea
+          v-model="modalFieldDescription"
+          placeholder="항목 설명을 작성해주세요."
+        ></textarea>
       </div>
 
       <div class="add-field-items-container">

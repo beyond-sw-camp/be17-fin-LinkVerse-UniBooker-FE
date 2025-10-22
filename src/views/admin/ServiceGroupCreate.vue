@@ -5,7 +5,7 @@ import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
 import serviceApi from '@/services/admin/service_api'
 
-
+// --- 카테고리 ---
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
   { label: '좌석형', value: 'SEAT' },
@@ -21,14 +21,25 @@ const isAlwaysAvailable = ref(false)
 const companyId = ref(1)
 const userId = ref(5)
 
-// 커스텀 필드
-// 서비스용
+// --- 커스텀 필드 ---
 const serviceCustomFields = ref([])
-
-// 유저용
 const userCustomFields = ref([])
 
-// 생성 API 호출
+// --- 문자열 → Enum 변환 함수 ---
+const mapToEnum = (type) => {
+  switch(type) {
+    case 'TEXT': return 'TEXT'
+    case 'NUMBER': return 'NUMBER'
+    case 'DATE': return 'DATE'
+    case 'TIME': return 'TIME'
+    case 'RADIO': return 'RADIO'
+    case 'CHECKBOX': return 'CHECKBOX'
+    case 'BOOLEAN': return 'BOOLEAN'
+    default: return 'TEXT'
+  }
+}
+
+// --- 생성 API 호출 ---
 const createServiceGroup = async () => {
   try {
     const formData = {
@@ -39,22 +50,28 @@ const createServiceGroup = async () => {
       category: selectedCategory.value,
       isAlwaysAvailable: isAlwaysAvailable.value,
       companyId: companyId.value,
-customFields: [
+      customFields: [
         ...serviceCustomFields.value.map(f => ({
-          ...f,
-          targetType: 'RESOURCE'
+          fieldName: f.fieldName,                // name → fieldName
+          description: f.description || '', // description 그대로
+          dataType: mapToEnum(f.dataType),      // 문자열 → Enum
+          targetType: 'RESOURCE',
+          required: f.required || false
         })),
         ...userCustomFields.value.map(f => ({
-          ...f,
-          targetType: 'USER'
+          fieldName: f.fieldName,
+          description: f.description || '',
+          dataType: mapToEnum(f.dataType),
+          targetType: 'USER',
+          required: f.required || false
         }))
-      ]    }
+      ]
+    }
 
     console.log('보내는 데이터:', formData)
 
     const response = await serviceApi.createServiceGroup(formData)
     console.log('✅ 서비스 그룹 생성 성공:', response.data)
-
     alert('서비스 그룹이 성공적으로 생성되었습니다!')
   } catch (error) {
     console.error('❌ 서비스 그룹 생성 실패:', error)
@@ -62,6 +79,7 @@ customFields: [
   }
 }
 </script>
+
 
 
 <template>

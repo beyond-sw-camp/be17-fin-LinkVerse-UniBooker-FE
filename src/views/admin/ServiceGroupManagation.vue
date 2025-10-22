@@ -18,8 +18,8 @@ const getServiceGroups = async () => {
   }
 }
 
-const goEdit = () => {
-  router.push('/admin/service-group-edit')
+const goEdit = (serviceGroupId) => {
+  router.push(`/admin/service-group-edit/${serviceGroupId}`)
 }
 
 onMounted(() => {
@@ -58,7 +58,7 @@ onMounted(() => {
             </p>
           </div>
 
-          <div class="resource-group-edit-button" @click="goEdit">
+          <div class="resource-group-edit-button" @click="goEdit(s.id)">
             <img src="/public/assets/icons/ic-white-pencil.png" alt="수정" />
           </div>
         </div>
