@@ -70,19 +70,19 @@ const router = createRouter({
       path: '/admin/signup',
       name: 'adminSignup',
       component: () => import('@/views/admin/AdminSignupView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/signup/status',
       name: 'adminStatus',
       component: () => import('@/views/admin/AdminSignupStatusView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/login',
       name: 'adminLogin',
       component: () => import('@/views/admin/AdminLoginView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/firstPassword',
@@ -94,7 +94,7 @@ const router = createRouter({
       path: '/admin/home',
       name: 'adminHome',
       component: () => import('@/views/admin/AdminLandingView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/dashboard',
@@ -133,6 +133,11 @@ const router = createRouter({
       component: () => import('@/views/admin/ServiceGroupEdit.vue'),
     },
     {
+      path: '/admin/reservation-management',
+      name: 'ReservationManagement',
+      component: () => import('../views/admin/ReservationManagement.vue'),
+    },
+    {
       path: '/admin/seat-reservation-management',
       name: 'SeatReservationManagement',
       component: () => import('@/views/admin/SeatReservationManagement.vue'),
@@ -147,10 +152,15 @@ const router = createRouter({
       name: 'ServiceManagement',
       component: () => import('@/views/admin/ServiceManagement.vue'),
     },
-    {
+    { // 신청형 예약 관리
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('@/views/admin/EventReservationManagement.vue'),
+    },
+    { // 신청형 예약 현황
+      path: '/admin/event-reservation-status',
+      name: 'EventReservationStatus',
+      component: () => import('../views/admin/EventReservationStatus.vue'),
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -160,7 +170,7 @@ const router = createRouter({
       path: '/super/login',
       name: 'SuperLogin',
       component: () => import('@/views/super/SuperLoginView.vue'),
-      meta: { requiresAuth: false }
+      meta: { requiresAuth: false },
     },
     {
       path: '/super',

@@ -239,7 +239,7 @@ const notiToggleDropdown = () => {
 }
 
 .admin-layout {
-  @apply flex;
+  @apply flex flex-row;
 }
 
 .content-body {

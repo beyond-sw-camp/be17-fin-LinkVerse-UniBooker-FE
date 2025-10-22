@@ -1,23 +1,29 @@
 <script setup>
 const props = defineProps({
-  theme: { default: 'primary' }
+  theme: { default: 'primary' },
+  size: { default: 'md' }, 
 })
 
-// 모든 버튼에 공통으로 적용될 기본 클래스
-const baseClasses = 'px-12 py-2.5 rounded-md'
-
-// 테마별로 달라지는 부분만 정의
-const themeClasses = {
-  primary: 'text-white bg-[#00008C] hover:bg-primary-hover',
-  light: 'text-[#00008C] bg-white border border-[#00008C] hover:bg-[#DDDDDD]',
-  gray: 'text-text bg-gray-deep hover:bg-[#c8c8c8]'
+// 크기별 공통 클래스
+const sizeClasses = {
+  sm: 'px-3 py-1 text-sm',
+  md: 'px-6 py-2 text-base', 
+  lg: 'px-12 py-2.5 text-lg',
 }
+
+// 테마별 클래스
+const themeClasses = {
+  primary: 'text-white bg-primary hover:bg-primary-hover',
+  light: 'text-primary bg-white border border-primary hover:bg-gray-deep/50',
+  gray: 'text-text bg-gray-deep hover:bg-[#c8c8c8]',
+}
+
+// 최종 클래스 조합
+const baseClasses = 'rounded-md font-medium transition-colors duration-200'
 </script>
 
 <template>
-  <button :class="[baseClasses, themeClasses[theme]]">
+  <button :class="[baseClasses, sizeClasses[size], themeClasses[theme]]">
     <slot>버튼</slot>
   </button>
 </template>
-
-
