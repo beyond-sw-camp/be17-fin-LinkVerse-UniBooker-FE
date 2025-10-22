@@ -1,24 +1,27 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref } from 'vue'
 import Input from './Input.vue'
 import Dropdown from './Dropdown.vue'
 
+const props = defineProps({
+  customFields: {
+    type: Array,
+    default: () => [],
+  },
+})
+const emit = defineEmits(['add-field', 'delete-field'])
+
 const modalFieldName = ref('')
 const modalFieldType = ref('')
-
-// 모달
 const isModalOpen = ref(false)
+
 const openModal = () => {
   isModalOpen.value = true
 }
 const closeModal = () => {
-    isModalOpen.value = false
+  isModalOpen.value = false
 }
 
-// 커스텀 필드 배열
-const customFields = ref([])
-
-// 데이터 타입 옵션
 const types = ref([
   { label: '숫자', value: 'NUMBER' },
   { label: '텍스트', value: 'TEXT' },
@@ -29,16 +32,12 @@ const types = ref([
   { label: '여부확인', value: 'BOOLEAN' },
 ])
 
-// 모달 확인 버튼 클릭 시 customFields 배열에 추가
 const addFieldFromModal = () => {
-  if (!modalFieldName.value) return // 항목명 필수 체크
-
-  customFields.value.push({
+  if (!modalFieldName.value) return
+  emit('add-field', {
     name: modalFieldName.value,
     type: modalFieldType.value,
   })
-
-  // 초기화 후 모달 닫기
   modalFieldName.value = ''
   modalFieldType.value = 'TEXT'
   closeModal()
@@ -46,13 +45,24 @@ const addFieldFromModal = () => {
 </script>
 
 <template>
-
   <!-- 커스텀 필드 반복 -->
   <div class="field-box" v-for="(field, index) in customFields" :key="index">
-    <Input class="input-style" type="text" v-model="field.name" placeholder="항목명" :disabled="true"/>
-    <Input class="input-style !w-[150px]" :options="types" v-model="field.type" placeholder="데이터 타입" :disabled="true"/>
+    <Input
+      class="input-style"
+      type="text"
+      v-model="field.name"
+      placeholder="항목명"
+      :disabled="true"
+    />
+    <Input
+      class="input-style !w-[150px]"
+      :options="types"
+      v-model="field.type"
+      placeholder="데이터 타입"
+      :disabled="true"
+    />
     <div class="field-delete-button">
-        <img src="/public/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
+      <img src="/public/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
     </div>
   </div>
 
@@ -75,7 +85,12 @@ const addFieldFromModal = () => {
 
       <div class="add-field-items-container">
         <div class="field-label-container">항목명 <span>*</span></div>
-        <input class="modal-input-focus-style" type="text" v-model="modalFieldName" placeholder="항목명을 작성해주세요." />
+        <input
+          class="modal-input-focus-style"
+          type="text"
+          v-model="modalFieldName"
+          placeholder="항목명을 작성해주세요."
+        />
       </div>
 
       <div class="add-field-items-container">
@@ -85,7 +100,14 @@ const addFieldFromModal = () => {
 
       <div class="add-field-items-container">
         <div class="field-label-container">항목 데이터 타입 <span>*</span></div>
-        <Dropdown class="dropdown-style" :options="types" v-model="modalFieldType" placeholder="데이터 타입" bgColor="gray" :maxHeight="'20vh'"/>
+        <Dropdown
+          class="dropdown-style"
+          :options="types"
+          v-model="modalFieldType"
+          placeholder="데이터 타입"
+          bgColor="gray"
+          :maxHeight="'20vh'"
+        />
       </div>
 
       <div class="button-container">
@@ -138,11 +160,11 @@ h3 {
 }
 
 .field-label-container {
-    @apply text-[14px];
+  @apply text-[14px];
 }
 
 .field-label-container span {
-    @apply text-[#FF2222];
+  @apply text-[#FF2222];
 }
 
 .add-field-items-container input,
@@ -150,8 +172,9 @@ h3 {
   @apply bg-gray-line px-[10px] py-[10px] text-[14px] rounded-[3px];
 }
 
-.modal-input-focus-style, textarea {
-    @apply border-b-2 focus:border-primary;
+.modal-input-focus-style,
+textarea {
+  @apply border-b-2 focus:border-primary;
 }
 
 textarea {
@@ -159,22 +182,22 @@ textarea {
 }
 
 .dropdown-style {
-    @apply text-[14px];
+  @apply text-[14px];
 }
 
 .button-container {
-    @apply mt-[50px] w-full flex gap-2;
+  @apply mt-[50px] w-full flex gap-2;
 }
 
 .button-container button {
-    @apply flex-1
+  @apply flex-1;
 }
 
 .field-delete-button {
-    @apply rounded-[3px] flex justify-center items-center w-[22px] h-[22px] cursor-pointer;
+  @apply rounded-[3px] flex justify-center items-center w-[22px] h-[22px] cursor-pointer;
 }
 
 .field-delete-button img {
-    @apply w-[10px]
+  @apply w-[10px];
 }
 </style>
