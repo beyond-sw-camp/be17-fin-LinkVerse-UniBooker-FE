@@ -37,6 +37,15 @@ const weekDates = computed(() => {
   })
 })
 
+/* 현재 주간 범위 표시용 computed */
+const currentWeekRange = computed(() => {
+  if (!weekDates.value || weekDates.value.length < 7) return ''
+  const startDate = weekDates.value[0]
+  const endDate = weekDates.value[6]
+  // formatDate 함수 재활용 (기본 포맷이 'YYYY/MM/DD'임)
+  return `${formatDate(startDate)} ~ ${formatDate(endDate)}`
+})
+
 /* 주간 이동 함수 */
 const goPrevWeek = () => currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() - 7))
 const goNextWeek = () => currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() + 7))
@@ -155,7 +164,7 @@ const goToReservationPage = () => {
   router.push('/admin/event-reservation-management')
 }
 
-/* ✅ 색상 통일 함수 */
+/* 색상 통일 함수 */
 const getBarColor = (svc) => {
   return svc.isFull
     ? 'bg-gray-200 border-gray-300 text-gray-500'
@@ -166,22 +175,22 @@ const getBarColor = (svc) => {
 <template>
   <AdminLayout>
     <div class="space-y-6">
-      <!-- 상단 컨트롤 -->
       <div class="flex items-center justify-between">
         <h1 class="page-title">예약 현황</h1>
         <div class="flex items-center gap-2">
           <button @click="goPrevWeek" class="nav-btn">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-          </button>
+          </button>          
+          <span class="text-sm font-medium text-gray-500 hidden sm:block">
+            {{ currentWeekRange }}
+          </span>
           <button @click="goNextWeek" class="nav-btn">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
 
-      <!-- 캘린더 패널 -->
       <div class="bg-white rounded-xl border border-gray-200 p-4">
-        <!-- 헤더 -->
         <div class="grid grid-cols-7 text-center text-sm text-gray-500 mb-2">
         <div
           v-for="d in weekDates"
@@ -195,7 +204,6 @@ const getBarColor = (svc) => {
 
         </div>
 
-        <!-- 타임라인 영역 -->
         <div 
           class="relative h-[450px] rounded-lg timeline-bg overflow-hidden"
           :class="{ 'cursor-grabbing': isDragging }"
@@ -204,7 +212,6 @@ const getBarColor = (svc) => {
           @mouseup="onMouseUp"
           @mouseleave="onMouseLeave"
         >
-          <!-- 막대들을 감싸는 컨테이너 (ref로 참조) -->
           <div ref="timelineEl" class="absolute inset-0">
             <div
               v-for="(svc, idx) in sortedServices"
@@ -248,5 +255,4 @@ const getBarColor = (svc) => {
   @apply w-2 h-2 rounded-full flex-shrink-0;
   background-color: currentColor;
 }
-</style>
-
+</style>  
