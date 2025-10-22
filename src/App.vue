@@ -55,7 +55,7 @@ const showAdminNav = computed(() => route.meta.showAdminNav === true)
 
 /* Admin 레이아웃 스타일 추가 */
 .admin-layout {
-  @apply min-h-screen flex flex-col bg-gray-line;
+  @apply min-h-screen flex bg-gray-line;
 }
 
 .admin-nav {

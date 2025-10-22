@@ -1,17 +1,49 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import AdminNavbar from '@/components/AdminNavbar.vue'
+import { onMounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
+import { SECTION_IDS } from '@/constants/section-ids'
 
-const router = useRouter()
+const route = useRoute()
+
+onMounted(() => {
+  const sectionId = route.query.section
+  if (sectionId) {
+    scrollToSection(sectionId)
+  }
+})
+
+/**
+ * 지정된 섹션으로 부드럽게 스크롤
+ */
+const scrollToSection = (sectionId) => {
+  nextTick(() => {
+    setTimeout(() => {
+      const element = document.getElementById(sectionId)
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        })
+
+        setTimeout(() => {
+          element.setAttribute('tabindex', '-1')
+          element.focus({ preventScroll: true })
+        }, 1000)
+      } else {
+        console.warn(`섹션을 찾을 수 없습니다: ${sectionId}`)
+      }
+    }, 200)
+  })
+}
 </script>
 
 <template>
   <div class="service-page-container">
-    <!-- 히어로 섹션 (네비게이션 포함) -->
+    <!-- 히어로 섹션 -->
     <section class="service-page-hero-section">
-      <!-- 히어로 콘텐츠 그리드 -->
       <div class="service-page-hero-grid">
-        <!-- 왼쪽: 텍스트 -->
         <div class="service-page-hero-text">
           <p class="service-page-hero-subtitle">대규모 예약의 새로운 기준</p>
           <h1 class="service-page-hero-title">UniBooker</h1>
@@ -21,10 +53,9 @@ const router = useRouter()
           </p>
         </div>
 
-        <!-- 오른쪽: 이미지 -->
         <div class="service-page-main-image">
           <img
-            src="/public/assets/images/6c43f219c30ef9799c70a95471f2a836.gif"
+            src="/assets/images/6c43f219c30ef9799c70a95471f2a836.gif"
             alt="서비스소개 배경"
             class="service-page-gif"
           />
@@ -47,9 +78,10 @@ const router = useRouter()
     <!-- 기능 섹션 1: 커스텀 예약 설정 -->
     <section class="service-page-feature">
       <div class="service-page-feature-container">
-        <!-- 텍스트 (왼쪽) -->
         <div class="service-page-feature-text-l">
-          <h2 class="service-page-feature-title">커스텀 예약 설정</h2>
+          <h2 :id="SECTION_IDS.CUSTOM_RESERVATION" class="service-page-feature-title">
+            커스텀 예약 설정
+          </h2>
           <p class="service-page-feature-description">
             하나의 틀에 맞추지 않습니다.<br />
             기업마다 다른 운영 방식, 유연하게 대응하세요.
@@ -61,7 +93,6 @@ const router = useRouter()
           </p>
         </div>
 
-        <!-- 이미지 (오른쪽) -->
         <div class="service-page-feature-image">
           <div class="service-page-placeholder"></div>
         </div>
@@ -71,14 +102,14 @@ const router = useRouter()
     <!-- 기능 섹션 2: 실시간 예약 관리 -->
     <section class="service-page-feature service-page-feature-reverse">
       <div class="service-page-feature-container">
-        <!-- 이미지 (왼쪽) -->
         <div class="service-page-feature-image">
           <div class="service-page-placeholder service-page-placeholder-blue"></div>
         </div>
 
-        <!-- 텍스트 (오른쪽) -->
         <div class="service-page-feature-text-r">
-          <h2 class="service-page-feature-title">실시간 예약 관리</h2>
+          <h2 :id="SECTION_IDS.REALTIME_MANAGEMENT" class="service-page-feature-title">
+            실시간 예약 관리
+          </h2>
           <p class="service-page-feature-description">
             동시 접속 1만 명도 문제없습니다.<br />
             정확하고 빠른 예약 처리, 지금 경험하세요.
@@ -95,9 +126,10 @@ const router = useRouter()
     <!-- 기능 섹션 3: 스마트 고객 관리 -->
     <section class="service-page-feature">
       <div class="service-page-feature-container">
-        <!-- 텍스트 (왼쪽) -->
         <div class="service-page-feature-text-l">
-          <h2 class="service-page-feature-title">스마트 고객 관리</h2>
+          <h2 :id="SECTION_IDS.SMART_CUSTOMER" class="service-page-feature-title">
+            스마트 고객 관리
+          </h2>
           <p class="service-page-feature-description">
             예약하는 순간부터 데이터가 쌓입니다.<br />
             고객을 이해하고, 더 나은 서비스를 제공하세요.
@@ -109,7 +141,6 @@ const router = useRouter()
           </p>
         </div>
 
-        <!-- 이미지 (오른쪽) -->
         <div class="service-page-feature-image">
           <div class="service-page-placeholder"></div>
         </div>
@@ -119,14 +150,14 @@ const router = useRouter()
     <!-- 기능 섹션 4: 실시간 통계 & 분석 -->
     <section class="service-page-feature service-page-feature-reverse">
       <div class="service-page-feature-container">
-        <!-- 이미지 (왼쪽) -->
         <div class="service-page-feature-image">
           <div class="service-page-placeholder service-page-placeholder-blue"></div>
         </div>
 
-        <!-- 텍스트 (오른쪽) -->
         <div class="service-page-feature-text-r">
-          <h2 class="service-page-feature-title">실시간 통계 & 분석</h2>
+          <h2 :id="SECTION_IDS.STATISTICS_ANALYTICS" class="service-page-feature-title">
+            실시간 통계 & 분석
+          </h2>
           <p class="service-page-feature-description">
             어떤 서비스가 인기 있나요? 언제 가장 바쁜가요?<br />
             한눈에 보는 운영 인사이트.
@@ -142,9 +173,10 @@ const router = useRouter()
     <!-- 기능 섹션 5: 유연한 권한 관리 -->
     <section class="service-page-feature">
       <div class="service-page-feature-container">
-        <!-- 텍스트 (왼쪽) -->
         <div class="service-page-feature-text-l">
-          <h2 class="service-page-feature-title">유연한 권한 관리</h2>
+          <h2 :id="SECTION_IDS.PERMISSION_MANAGEMENT" class="service-page-feature-title">
+            유연한 권한 관리
+          </h2>
           <p class="service-page-feature-description">
             누가 무엇을 할 수 있는지 명확하게<br />
             보안과 효율, 두 마리 토끼를 잡으세요.
@@ -156,7 +188,6 @@ const router = useRouter()
           </p>
         </div>
 
-        <!-- 이미지 (오른쪽) -->
         <div class="service-page-feature-image">
           <div class="service-page-placeholder"></div>
         </div>
@@ -166,12 +197,11 @@ const router = useRouter()
 </template>
 
 <style scoped>
-/* 컨테이너 */
 .service-page-container {
   @apply min-h-screen bg-gray-line flex flex-col items-center;
+  scroll-behavior: smooth;
 }
 
-/* 히어로 섹션 전체 (네비게이션 포함) */
 .service-page-hero-section {
   @apply w-full bg-gray-line flex flex-col items-center;
 }
@@ -183,11 +213,6 @@ const router = useRouter()
 
 .service-page-main-image {
   @apply w-full flex items-center;
-}
-
-/* 히어로 콘텐츠 */
-.service-page-hero {
-  @apply w-full flex flex-col items-start text-left max-w-7xl pt-40 pb-20 w-full;
 }
 
 .service-page-hero-subtitle {
@@ -202,7 +227,6 @@ const router = useRouter()
   @apply text-base text-gray-dark leading-relaxed;
 }
 
-/* UniBooker 소개 섹션 */
 .service-page-intro {
   @apply w-full bg-primary py-20 px-6;
 }
@@ -222,6 +246,8 @@ const router = useRouter()
 /* 기능 섹션 */
 .service-page-feature {
   @apply w-full py-20 px-6;
+  /* ✅ scroll-margin-top으로 헤더 높이만큼 오프셋 */
+  scroll-margin-top: 80px;
 }
 
 .service-page-feature-container {
@@ -230,17 +256,22 @@ const router = useRouter()
          gap-12 items-center;
 }
 
-/* 텍스트 영역 */
 .service-page-feature-text-l {
-  @apply space-y-4 text-left ml-10 flex flex-col items-start;
+  @apply space-y-4 text-left ml-20 flex flex-col items-start;
 }
 
 .service-page-feature-text-r {
-  @apply space-y-4 text-right mr-10 flex flex-col items-end;
+  @apply space-y-4 text-right mr-20 flex flex-col items-end;
 }
 
 .service-page-feature-title {
   @apply text-3xl font-bold text-text mb-4;
+  scroll-margin-top: 200px;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.service-page-feature-title:focus {
+  @apply outline-none;
 }
 
 .service-page-feature-description {
@@ -251,7 +282,6 @@ const router = useRouter()
   @apply text-sm text-gray-dark leading-relaxed;
 }
 
-/* 이미지 영역 */
 .service-page-feature-image {
   @apply w-full;
 }
@@ -264,12 +294,11 @@ const router = useRouter()
   @apply bg-[#B8D4FF];
 }
 
-/* 역방향 레이아웃 */
 .service-page-feature-reverse .service-page-feature-container {
   @apply lg:grid-flow-dense;
 }
 
-.service-page-feature-reverse .service-page-feature-text {
+.service-page-feature-reverse .service-page-feature-text-r {
   @apply lg:col-start-2;
 }
 
@@ -277,7 +306,6 @@ const router = useRouter()
   @apply lg:col-start-1 lg:row-start-1;
 }
 
-/* 반응형 */
 @media (max-width: 1023px) {
   .service-page-hero-title {
     @apply text-4xl;

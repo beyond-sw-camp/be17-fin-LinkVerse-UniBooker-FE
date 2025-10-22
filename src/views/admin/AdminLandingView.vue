@@ -1,23 +1,55 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import Button from '@/components/Button.vue'
 import FeatureCard from '@/components/FeatureCard.vue'
-import AdminNavbar from '@/components/AdminNavbar.vue'
+import { SECTION_IDS } from '@/constants/section-ids'
 
 const router = useRouter()
 
-const goToLogin = () => {
-  router.push('/admin/login')
-}
+const featureCards = [
+  {
+    id: SECTION_IDS.CUSTOM_RESERVATION,
+    title: '커스텀 예약',
+    icon: 'landing_icon_custom.png',
+    bgColor: 'bg-[#B8D4FF]',
+  },
+  {
+    id: SECTION_IDS.REALTIME_MANAGEMENT,
+    title: '실시간 예약관리',
+    icon: 'landing_icon_reservation.png',
+    bgColor: 'bg-white',
+  },
+  {
+    id: SECTION_IDS.SMART_CUSTOMER,
+    title: '고객관리',
+    icon: 'landing_icon_customer.png',
+    bgColor: 'bg-[#B8D4FF]',
+  },
+  {
+    id: SECTION_IDS.STATISTICS_ANALYTICS,
+    title: '통계 분석',
+    icon: 'landing_icon_statistic.png',
+    bgColor: 'bg-white',
+  },
+  {
+    id: SECTION_IDS.PERMISSION_MANAGEMENT,
+    title: '권한관리',
+    icon: 'landing_icon_auth.png',
+    bgColor: 'bg-[#B8D4FF]',
+  },
+]
 
-const goToSignup = () => {
-  router.push('/admin/signup')
+const handleFeatureClick = (sectionId) => {
+  router.push({
+    name: 'serviceIntro',
+    query: {
+      section: sectionId,
+    },
+  })
 }
 </script>
 
 <template>
   <div class="admin-landing-container">
-    <!-- 히어로 섹션 -->
     <section class="admin-landing-hero">
       <h1 class="admin-landing-title">
         예약의 모든 데이터를 잡다<br />
@@ -29,87 +61,41 @@ const goToSignup = () => {
       </p>
     </section>
 
-    <!-- 기능 섹션 -->
     <section class="admin-landing-features">
       <div class="admin-landing-grid">
-        <!-- 커스텀 예약 -->
-        <a href="/service">
-          <FeatureCard title="커스텀 예약" bg-color="bg-[#B8D4FF]">
+        <div
+          v-for="feature in featureCards"
+          :key="feature.id"
+          @click="handleFeatureClick(feature.id)"
+          @keypress.enter="handleFeatureClick(feature.id)"
+          @keypress.space.prevent="handleFeatureClick(feature.id)"
+          tabindex="0"
+          role="button"
+          :aria-label="`${feature.title} 상세보기`"
+        >
+          <FeatureCard :title="feature.title" :bg-color="feature.bgColor">
             <template #icon>
               <img
-                src="/assets/images/landing_icon_custom.png"
-                alt="커스텀 예약 아이콘"
+                :src="`/assets/images/${feature.icon}`"
+                :alt="`${feature.title} 아이콘`"
                 class="w-[120px]"
               />
             </template>
           </FeatureCard>
-        </a>
-
-        <!-- 실시간 예약관리 -->
-        <a href="/service">
-          <FeatureCard title="실시간 예약관리" bg-color="bg-white">
-            <template #icon>
-              <img
-                src="/assets/images/landing_icon_reservation.png"
-                alt="실시간 예약관리 아이콘"
-                class="w-[120px]"
-              />
-            </template>
-          </FeatureCard>
-        </a>
-
-        <!-- 고객관리 -->
-        <a href="/service">
-          <FeatureCard title="고객관리" bg-color="bg-[#B8D4FF]">
-            <template #icon>
-              <img
-                src="/assets/images/landing_icon_customer.png"
-                alt="고객관리 아이콘"
-                class="w-[120px]"
-              />
-            </template>
-          </FeatureCard>
-        </a>
-
-        <!-- 통계 분석 -->
-        <a href="/service">
-          <FeatureCard title="통계 분석" bg-color="bg-white">
-            <template #icon>
-              <img
-                src="/assets/images/landing_icon_statistic.png"
-                alt="통계 분석 아이콘"
-                class="w-[120px]"
-              />
-            </template>
-          </FeatureCard>
-        </a>
-
-        <!-- 권한관리 -->
-        <a href="/service">
-          <FeatureCard title="권한관리" bg-color="bg-[#B8D4FF]">
-            <template #icon>
-              <img
-                src="/assets/images/landing_icon_auth.png"
-                alt="권한관리 아이콘"
-                class="w-[120px]"
-              />
-            </template>
-          </FeatureCard>
-        </a>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <style scoped>
-/* 컨테이너 */
 .admin-landing-container {
   @apply min-h-screen bg-gray-line flex flex-col items-center px-4;
 }
 
 /* 네비게이션 */
 .admin-landing-navbar {
-  @apply w-full max-w-[1194px] mt-8;
+  @apply w-full max-w-[1194px] mt-[30px];
 }
 
 /* 히어로 섹션 */
@@ -125,7 +111,6 @@ const goToSignup = () => {
   @apply text-sm text-gray-dark leading-relaxed;
 }
 
-/* 기능 섹션 */
 .admin-landing-features {
   @apply py-12 px-6;
 }
@@ -134,5 +119,21 @@ const goToSignup = () => {
   @apply container mx-auto 
          grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 
          gap-6 max-w-7xl;
+}
+
+.admin-landing-grid > div {
+  @apply cursor-pointer transition-all duration-300;
+}
+
+.admin-landing-grid > div:hover {
+  @apply transform scale-105;
+}
+
+.admin-landing-grid > div:focus {
+  @apply outline-none ring-2 ring-primary ring-offset-2 rounded-3xl;
+}
+
+.admin-landing-grid > div:active {
+  @apply transform scale-100;
 }
 </style>
