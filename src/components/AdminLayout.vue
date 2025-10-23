@@ -6,21 +6,33 @@ import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/admin/service_api'
 import adminApi from '@/services/admin/admin_api'
 
-
 const isModalOpen = ref(false)
-const userData = ref(null)  
+const userData = ref(null)
 const authStore = useAuthStore()
 
 async function openModal() {
   try {
     const response = await adminApi.getManagerInfo()
-    userData.value = response.data 
+    console.log('🔍 전체 응답:', response)
+    console.log('🔍 response.data:', response.data)
+    
+    // BaseResponse 구조: { code, message, data: {...}, isSuccess }
+    // response.data가 이미 BaseResponse이므로 response.data.data가 실제 데이터
+    if (response.data && response.data.data) {
+      userData.value = response.data.data
+    } else {
+      // 만약 response.data가 직접 데이터라면
+      userData.value = response.data
+    }
+    
+    console.log('🔍 최종 userData:', userData.value)
     isModalOpen.value = true
   } catch (err) {
-    console.error('프로필 조회 실패', err)
+    console.error('❌ 프로필 조회 실패:', err)
+    console.error('❌ 에러 응답:', err.response)
+    alert('프로필 조회에 실패했습니다.')
   }
 }
-
 
 // 서비스 그룹 목록 조회
 const serviceGroups = reactive([])
