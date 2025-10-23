@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import adminApi from '@/services/admin/admin_api'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   open: Boolean,
@@ -9,6 +10,7 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const mode = ref('view') // view | edit | password | withdraw
+const router = useRouter()
 
 // 프로필 정보 수정용 임시 데이터
 const editInfo = ref({
@@ -32,6 +34,12 @@ const withdrawInfo = ref({
   reason: '',
 })
 
+// 탈퇴 모드 진입
+const enterWithdrawMode = () => {
+  withdrawInfo.value = { password: '', reason: '' }
+  mode.value = 'withdraw'
+}
+
 // 탈퇴 요청
 const handleWithdrawSubmit = async () => {
   if (!withdrawInfo.value.password) {
@@ -39,13 +47,16 @@ const handleWithdrawSubmit = async () => {
     return
   }
   try {
-    // 예시: 실제 서버 API 호출
-    await adminApi.resetPassword({
+    const payload = {
       password: withdrawInfo.value.password,
       reason: withdrawInfo.value.reason,
-    })
+    }
+    const response = await adminApi.managerInfoDelete(payload)
+
+    // 서버에서 성공 여부 확인
     alert('탈퇴 완료되었습니다.')
     emit('close')
+    router.replace('/admin/home')
   } catch (err) {
     console.error(err)
     alert('탈퇴에 실패했습니다.')
@@ -183,7 +194,7 @@ const formatPhoneNumber = (e) => {
         </div>
 
         <div class="modal-button-container">
-          <Button @click="handleWithdraw" theme="gray" size="sm">서비스 탈퇴</Button>
+          <Button @click="enterWithdrawMode" theme="gray" size="sm">서비스 탈퇴</Button>
           <Button size="sm" @click="mode = 'password'">비밀번호 변경</Button>
         </div>
       </template>
@@ -248,13 +259,13 @@ const formatPhoneNumber = (e) => {
         <div class="modal-header">
           <h3>서비스 탈퇴</h3>
         </div>
-        <div class="modal-input-section">
+        <div class="modal-input-section secession">
           <label>비밀번호 확인</label>
           <input v-model="withdrawInfo.password" type="password" class="modal-input" />
         </div>
-        <div class="modal-input-section">
-          <label>탈퇴 사유 (선택)</label>
-          <input v-model="withdrawInfo.reason" type="text" class="modal-input" />
+        <div class="modal-input-section secession">
+          <label>탈퇴 사유</label>
+          <textarea v-model="withdrawInfo.reason" type="text" class="modal-textarea"></textarea>
         </div>
         <div class="modal-button-container">
           <Button theme="gray" size="sm" @click="mode = 'view'">취소</Button>
@@ -304,11 +315,28 @@ label,
 }
 
 .modal-input,
-.modal-input-file {
+.modal-input-file,
+.modal-textarea {
   @apply bg-gray-line px-[12px] py-[8px] text-[14px] rounded-[3px];
 }
 
 .modal-input-file {
   @apply w-[193px] text-[12px] cursor-pointer;
+}
+
+.modal-textarea {
+  @apply h-[100px] w-[400px] align-top outline-none resize-none;
+}
+
+.secession {
+  @apply flex items-start gap-5;
+}
+
+.secession label {
+  @apply mt-[9px];
+}
+
+.secession input {
+  @apply w-[400px];
 }
 </style>
