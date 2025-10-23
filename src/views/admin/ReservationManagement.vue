@@ -763,7 +763,7 @@ const getCellHeight = (cellReservations) => {
 }
 
 .calendar-container {
-  @apply flex-1 bg-white rounded-lg border border-gray-200 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-200px)];
+  @apply flex-1 bg-white rounded-lg border border-gray-200 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-50px)];
 }
 
 /* ========== Week 뷰 ========== */
