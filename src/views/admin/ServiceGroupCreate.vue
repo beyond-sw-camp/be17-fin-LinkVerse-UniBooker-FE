@@ -18,8 +18,6 @@ const description = ref('')
 const thumbnail = ref('')
 const selectedCategory = ref('')
 const isAlwaysAvailable = ref(false)
-const companyId = ref(1)
-const userId = ref(5)
 
 // --- 커스텀 필드 ---
 const serviceCustomFields = ref([])
@@ -43,13 +41,11 @@ const mapToEnum = (type) => {
 const createServiceGroup = async () => {
   try {
     const formData = {
-      userId: userId.value,
       name: name.value,
       description: description.value,
       thumbnail: thumbnail.value,
       category: selectedCategory.value,
       isAlwaysAvailable: isAlwaysAvailable.value,
-      companyId: companyId.value,
       customFields: [
         ...serviceCustomFields.value.map(f => ({
           fieldName: f.fieldName,                // name → fieldName
