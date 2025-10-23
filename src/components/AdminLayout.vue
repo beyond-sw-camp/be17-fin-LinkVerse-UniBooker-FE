@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue'
-import AccountManageModal from './AccountManageModal.vue'
+import { onMounted, reactive, ref } from 'vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import serviceApi from '@/services/admin/service_api'
 import adminApi from '@/services/admin/admin_api'
+
 
 const isModalOpen = ref(false)
 const userData = ref(null)  
+
 async function openModal() {
   try {
     const response = await adminApi.getManagerInfo()
@@ -16,22 +18,42 @@ async function openModal() {
   }
 }
 
-// 예시 서비스 그룹 목록입니다.
-const services = ref([
-  { label: '동아리 모집' },
-  { label: '회의실 예약' },
-  { label: '통근버스 신청' },
-  { label: '캠핑카 이용 신청' },
-])
+
+// 서비스 그룹 목록 조회
+const serviceGroups = reactive([])
+const getServiceGroups = async () => {
+  try {
+    const response = await serviceApi.getServiceGroups(1)
+    const data = response.data.data
+
+    Object.assign(serviceGroups, data.resourceGroups)
+    console.log(serviceGroups)
+  } catch (error) {
+    console.log('서비스 그룹 목록 조회 실패: ', error)
+  }
+}
 
 // 서비스 그룹의 드롭다운 메뉴 항목
 const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
-
+const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
+  switch (menu) {
+    case '서비스 관리':
+      return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 관리':
+      return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 현황':
+      return '#'
+    case '전체 분석':
+      return '#'
+    default:
+      return '#'
+  }
+}
 const openDropdown = ref(null) // 열려있는 서비스 그룹
 const selectedMenuItems = ref(
   // 드롭다운 메뉴 항목의 초기값은 첫 번째 메뉴인 '전체 분석'
   // 이후에는 마지막으로 머물렀던 메뉴 항목을 유지
-  Object.fromEntries(services.value.map((_, i) => [i, dropdownItems[0]])),
+  Object.fromEntries(serviceGroups.map((_, i) => [i, dropdownItems[0]])),
 )
 
 // 드롭다운 토글
@@ -60,6 +82,10 @@ const notifications = ref([
 const notiToggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
+
+onMounted(() => {
+  getServiceGroups()
+})
 </script>
 
 <template>
@@ -94,20 +120,20 @@ const notiToggleDropdown = () => {
       <div class="sub-menu-section flex-1">
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
-          <div v-for="(item, index) in services" :key="index">
+          <div v-for="(item, index) in serviceGroups" :key="index">
             <router-link
               to="#!"
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
               @click="toggleDropdown(index)"
             >
-              {{ item.label }}
+              {{ item.name }}
             </router-link>
             <div v-if="openDropdown === index">
               <router-link
                 v-for="child in dropdownItems"
-                to="#!"
                 :key="child"
+                :to="getMenuLink(child, item.id, item.name)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"
@@ -211,7 +237,7 @@ const notiToggleDropdown = () => {
 }
 
 .admin-layout {
-  @apply flex flex-row;
+  @apply flex;
 }
 
 .content-body {
@@ -240,5 +266,50 @@ const notiToggleDropdown = () => {
 
 .content-slot {
   @apply mt-[10px] w-full;
+}
+
+/* 관리자 추가 모달 스타일 */
+.add-modal-container {
+  @apply px-[30px] py-[20px] flex flex-col;
+}
+
+h3 {
+  @apply text-[18px] font-medium mb-[3px];
+}
+
+.add-modal-container p {
+  @apply text-[12px] text-gray-dark;
+}
+
+.input-field-container {
+  @apply mt-[35px] flex flex-col gap-6;
+}
+
+.input-field-item {
+  @apply flex flex-col gap-1;
+}
+
+label {
+  @apply text-[14px];
+}
+
+.input-field-item span {
+  @apply text-[#FF2222];
+}
+
+.add-modal-container input {
+  @apply bg-gray-line px-[14px] py-[10px] text-[14px] rounded-[3px];
+}
+
+.add-modal-button-container {
+  @apply flex gap-3 mt-[70px];
+}
+
+.add-modal-button-container button {
+  @apply py-[10px];
+}
+
+.button-px {
+  @apply px-0;
 }
 </style>

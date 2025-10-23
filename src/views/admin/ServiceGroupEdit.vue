@@ -1,31 +1,131 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
+import Input from '@/components/Input.vue'
+import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
+import Button from '@/components/Button.vue'
+import Modal from '@/components/Modal.vue'
+import serviceApi from '@/services/admin/service_api'
 
+// 라우터
 const router = useRouter()
+const route = useRoute()
+const serviceGroupId = ref(route.params.id)
+const userId = ref(5)
 
-const category = ref([
+// --- 폼 데이터 상태 ---
+const name = ref('')
+const description = ref('')
+const thumbnail = ref('')
+const selectedCategory = ref('')
+const isAlwaysAvailable = ref(false)
+
+// 커스텀 필드
+const serviceCustomFields = ref([])
+const userCustomFields = ref([])
+
+// 카테고리
+const categoryOptions = ref([
   { label: '예약형', value: 'RESERVATION' },
   { label: '좌석형', value: 'SEAT' },
   { label: '신청형', value: 'EVENT' },
 ])
 
-const goBack = () => { router.back() }
-</script>
+// 문자열 → Enum 변환 함수
+const mapToEnum = (type) => {
+  switch (type) {
+    case 'TEXT':
+      return 'TEXT'
+    case 'NUMBER':
+      return 'NUMBER'
+    case 'DATE':
+      return 'DATE'
+    case 'TIME':
+      return 'TIME'
+    case 'RADIO':
+      return 'RADIO'
+    case 'CHECKBOX':
+      return 'CHECKBOX'
+    case 'BOOLEAN':
+      return 'BOOLEAN'
+    default:
+      return 'TEXT'
+  }
+}
 
+// 기존 서비스 그룹 정보 조회
+const getServiceGroupInfo = async () => {
+  try {
+    const res = await serviceApi.getServiceGroupInfo(serviceGroupId.value)
+    const data = res.data.data
+
+    name.value = data.name
+    description.value = data.description
+    thumbnail.value = data.thumbnail
+    selectedCategory.value = data.category
+    isAlwaysAvailable.value = data.isAlwaysAvailable
+
+    serviceCustomFields.value = data.customFields?.filter((f) => f.targetType === 'RESOURCE') || []
+    userCustomFields.value = data.customFields?.filter((f) => f.targetType === 'USER') || []
+  } catch (err) {
+    console.error('서비스 그룹 정보 조회 실패:', err)
+  }
+}
+
+// 수정 API 호출
+const saveServiceGroup = async () => {
+  if (!serviceGroupId.value) {
+    alert('유효한 서비스 그룹 ID가 없습니다.')
+    return
+  }
+
+  try {
+    const formData = {
+      userId: userId.value,
+      name: name.value,
+      description: description.value,
+      thumbnail: thumbnail.value,
+      category: selectedCategory.value,
+      isAlwaysAvailable: isAlwaysAvailable.value,
+      customFields: [
+        ...serviceCustomFields.value.map((f) => ({
+          fieldName: f.fieldName || '',
+          description: f.description || '',
+          dataType: mapToEnum(f.dataType || 'TEXT'),
+          targetType: 'RESOURCE',
+          required: f.required ?? false,
+        })),
+        ...userCustomFields.value.map((f) => ({
+          fieldName: f.fieldName || '',
+          description: f.description || '',
+          dataType: mapToEnum(f.dataType || 'TEXT'),
+          targetType: 'USER',
+          required: f.required ?? false,
+        })),
+      ],
+    }
+
+    await serviceApi.editServiceGroup(serviceGroupId.value, formData)
+    alert('서비스 그룹 정보가 수정되었습니다!')
+    router.back()
+  } catch (err) {
+    console.error('서비스 그룹 정보 수정 실패:', err)
+    alert('수정 중 오류가 발생했습니다.')
+  }
+}
+
+const goBack = () => router.back()
+
+onMounted(() => getServiceGroupInfo())
+</script>
 
 <template>
   <AdminLayout>
-    <!-- 페이지 헤더 -->
-    <div class="components-page-title">
-      <span>서비스 그룹 수정</span>
-    </div>
+    <div class="components-page-title"><span>서비스 그룹 수정</span></div>
 
-    <!-- 서비스 그룹 정보 입력 폼 -->
-    <!-- 서비스 그룹 이미지 -->
+    <!-- 이미지 업로드 -->
     <section>
       <div class="form-label-container">
         <div>커버 이미지</div>
@@ -37,35 +137,49 @@ const goBack = () => { router.back() }
       </div>
     </section>
 
-    <!-- 서비스 그룹 이름 -->
+    <!-- 이름 -->
     <section>
       <div class="form-label-container">
         <div>서비스 그룹 이름 <span>*</span></div>
-        <p>어떤 종류의 서비스인가요? ( ex. 회의실 예약, 사내 동아리 모집 등등 )</p>
+        <p>어떤 종류의 서비스인가요? ( ex. 회의실 예약, 사내 동아리 모집 등 )</p>
       </div>
-      <Input class="text-input" type="text" placeholder="서비스 이름을 작성해주세요." />
+      <Input
+        v-model="name"
+        class="text-input"
+        type="text"
+        placeholder="서비스 이름을 작성해주세요."
+      />
     </section>
 
-    <!-- 서비스 그룹 설명 -->
+    <!-- 설명 -->
     <section>
       <div class="form-label-container">
         <div>서비스 그룹 설명 <span>*</span></div>
       </div>
-      <textarea placeholder="서비스 그룹 설명을 작성해주세요."></textarea>
+      <textarea v-model="description" placeholder="서비스 그룹 설명을 작성해주세요."></textarea>
     </section>
 
-    <!-- 상시 모집 여부 확인 -->
+    <!-- 상시 모집 -->
     <section>
       <div class="form-label-container">
         <div>상시모집인가요? <span>*</span></div>
-        <p>
-          상시모집일 경우 서비스를 생성함과 동시에 예약/신청을 받게 됩니다. 상시모집이 아닐 경우
-          서비스의 시작 날짜와 종료 날짜를 설정할 수 있습니다.
-        </p>
+        <p>상시모집일 경우 서비스를 생성함과 동시에 예약/신청을 받게 됩니다.</p>
       </div>
       <div class="radio-button-container">
-        <Input class="radio-style" type="radio" label="예" />
-        <Input class="radio-style" type="radio" label="아니오" />
+        <Input
+          v-model="isAlwaysAvailable"
+          class="radio-style"
+          type="radio"
+          label="예"
+          :value="true"
+        />
+        <Input
+          v-model="isAlwaysAvailable"
+          class="radio-style"
+          type="radio"
+          label="아니오"
+          :value="false"
+        />
       </div>
     </section>
 
@@ -73,59 +187,41 @@ const goBack = () => { router.back() }
     <section>
       <div class="form-label-container">
         <div>카테고리 <span>*</span></div>
-        <p>
-          서비스 그룹의 예약/신청 유형에 맞는 카테고리를 선택해 주세요.
-          <div class="resource-create-question-container">
-            <img class="question-icon" src="/public/assets/icons/ic-question.png" alt="추가안내" />
-            <div class="category-description-box">
-              각 카테고리 별로 아래의 필수 입력 항목이 자동으로 생성됩니다. <br/><br/>
-
-              - RESERVATION(예약형) - 서비스 이용 기간, 이용 시간, 인원수 <br/>
-              - SEAT(좌석형) - 서비스 이용 기간, 이용 시간, 인원수, 좌석 구조(행, 열) <br/>
-              - EVENT(신청형) - 서비스 이용 기간, 인원수 <br/>
-            </div>
-          </div>
-        </p>
+        <Dropdown
+          v-model="selectedCategory"
+          class="dropdown-style"
+          :options="categoryOptions"
+          placeholder="카테고리를 선택해주세요."
+        />
       </div>
-      <Dropdown class="dropdown-style" :options="category" placeholder="카테고리를 선택해주세요." width="w-48" />
     </section>
 
     <!-- 서비스 입력 항목 -->
     <section>
       <div class="form-label-container">
         <div>서비스 입력 항목</div>
-        <p>
-          예약/신청 서비스 생성 시 기재해야 할 항목이 있다면 추가해주세요. ( 서비스 생성 후 수정 및
-          추가 가능합니다. )
-        </p>
       </div>
-      <div class="service-custom-field-container">
-        <CustomFieldAdd />
-      </div>
+      <CustomFieldAdd
+        :customFields="serviceCustomFields"
+        @add-field="serviceCustomFields.push($event)"
+      />
     </section>
 
     <!-- 고객 입력 항목 -->
     <section>
       <div class="form-label-container">
         <div>고객 입력 항목</div>
-        <p>
-          예약/신청 고객에게 받아야 정보가 있다면 추가해주세요. ( 서비스 생성 후 수정 및 추가
-          가능합니다. )
-        </p>
       </div>
-      <div class="service-custom-field-container">
-        <CustomFieldAdd />
-      </div>
+      <CustomFieldAdd :customFields="userCustomFields" @add-field="userCustomFields.push($event)" />
     </section>
 
-    <!-- 버튼 컨테이너 -->
+    <!-- 버튼 -->
     <div class="button-container">
-      <Button theme="gray" @click="goBack">돌아가기</button>
-      <Button>수정하기</Button>
+      <Button theme="gray" @click="goBack">돌아가기</Button>
+      <Button @click="saveServiceGroup">수정하기</Button>
     </div>
   </AdminLayout>
 </template>
-
 <style scoped>
 .form-label-container:first-child {
   @apply mt-[20px];
@@ -180,7 +276,7 @@ textarea {
 }
 
 .dropdown-style {
-  @apply text-[14px] 
+  @apply text-[14px];
 }
 
 .button-container {
@@ -188,7 +284,7 @@ textarea {
 }
 
 .button-container button {
-  @apply text-[14px] px-[22px]
+  @apply text-[14px] px-[22px];
 }
 
 .resource-create-question-container {

@@ -88,7 +88,7 @@ const router = createRouter({
       path: '/admin/firstPassword',
       name: 'firstPassword',
       component: () => import('@/views/admin/AdminPasswordResetView.vue'),
-      meta: { showAdminNav: true, requiresAuth: false }
+      meta: { showAdminNav: true, requiresAuth: false },
     },
     {
       path: '/admin/home',
@@ -105,7 +105,7 @@ const router = createRouter({
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('@/views/admin/AdminServiceIntroView.vue'),
-      meta: { showAdminNav: true }
+      meta: { showAdminNav: true },
     },
     {
       path: '/admin/manager-management',
@@ -128,12 +128,12 @@ const router = createRouter({
       component: () => import('@/views/admin/ServiceGroupManagation.vue'),
     },
     {
-      path: '/admin/service-group-edit',
+      path: '/admin/service-group-edit/:id',
       name: 'ServiceGroupEdit',
       component: () => import('@/views/admin/ServiceGroupEdit.vue'),
     },
     {
-      path: '/admin/reservation-management',
+      path: '/admin/reservation-management/:serviceId',
       name: 'ReservationManagement',
       component: () => import('../views/admin/ReservationManagement.vue'),
     },
@@ -143,21 +143,23 @@ const router = createRouter({
       component: () => import('@/views/admin/SeatReservationManagement.vue'),
     },
     {
-      path: '/admin/service-create',
+      path: '/admin/service-create/:serviceGroupId',
       name: 'ServiceCreate',
       component: () => import('@/views/admin/ServiceCreate.vue'),
     },
     {
-      path: '/admin/service-management',
+      path: '/admin/service-management/:serviceGroupId',
       name: 'ServiceManagement',
       component: () => import('@/views/admin/ServiceManagement.vue'),
     },
-    { // 신청형 예약 관리
+    {
+      // 신청형 예약 관리
       path: '/admin/event-reservation-management',
       name: 'EventReservationManagement',
       component: () => import('@/views/admin/EventReservationManagement.vue'),
     },
-    { // 신청형 예약 현황
+    {
+      // 신청형 예약 현황
       path: '/admin/event-reservation-status',
       name: 'EventReservationStatus',
       component: () => import('../views/admin/EventReservationStatus.vue'),
@@ -243,7 +245,7 @@ const router = createRouter({
       ],
     },
   ],
-  
+
   /**
    * 스크롤 동작 설정
    */
@@ -255,7 +257,7 @@ const router = createRouter({
       return savedPosition
     }
     return { top: 0 }
-  }
+  },
 })
 
 /**
