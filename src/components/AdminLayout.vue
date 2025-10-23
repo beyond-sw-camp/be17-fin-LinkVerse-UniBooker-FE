@@ -24,7 +24,7 @@ const closeAddModal = () => {
 const serviceGroups = reactive([])
 const getServiceGroups = async () => {
   try {
-    const response = await serviceApi.getServiceGroups(1)
+    const response = await serviceApi.getServiceGroups()
     const data = response.data.data
 
     Object.assign(serviceGroups, data.resourceGroups)
