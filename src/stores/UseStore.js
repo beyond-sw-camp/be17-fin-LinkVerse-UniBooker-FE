@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
   // ===== 상태 =====
-  
+
   const isLoggedIn = ref(false)
   const user = ref(null)
   const role = ref(null)
@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   const companySlug = ref(null)
 
   // ===== 로그인 액션 =====
-  
+
   /**
    * 로그인 처리
    * - 사용자 정보 저장 (토큰은 쿠키로 자동 관리됨)
@@ -27,25 +27,49 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('isLoggedIn', 'true')
     localStorage.setItem('user', JSON.stringify(userData))
     localStorage.setItem('role', userRole)
-    
+
     if (userCompanyId) {
       localStorage.setItem('companyId', userCompanyId.toString())
     }
-    
+
     if (userCompanySlug) {
       localStorage.setItem('companySlug', userCompanySlug)
     }
 
-    console.log('로그인 완료:', { 
-      isLoggedIn: isLoggedIn.value, 
+    console.log('로그인 완료:', {
+      isLoggedIn: isLoggedIn.value,
       role: role.value,
       companyId: companyId.value,
-      companySlug: companySlug.value 
+      companySlug: companySlug.value,
     })
   }
 
+  // ===== 정보 수정 액션 =====
+  const updateUser = (updatedData) => {
+    if (!updatedData || !updatedData.data) return
+
+    const data = updatedData.data
+
+    if (!user.value) {
+      user.value = {}
+    }
+
+    // 필요한 값만 업데이트
+    user.value.userId = data.id ?? user.value.userId
+    user.value.name = data.name ?? user.value.name
+    user.value.email = data.email ?? user.value.email
+
+    // localStorage에도 저장
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+    storedUser.userId = user.value.userId
+    storedUser.name = user.value.name
+    storedUser.email = user.value.email
+    localStorage.setItem('user', JSON.stringify(storedUser))
+  }
+
+
   // ===== 로그아웃 액션 =====
-  
+
   /**
    * 로그아웃 처리
    * - 모든 상태 초기화
@@ -69,7 +93,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // ===== 인증 상태 복원 =====
-  
+
   /**
    * 인증 상태 복원 (페이지 새로고침 시)
    */
@@ -87,11 +111,11 @@ export const useAuthStore = defineStore('auth', () => {
       companyId.value = savedCompanyId ? parseInt(savedCompanyId) : null
       companySlug.value = savedCompanySlug || null
 
-      console.log('♻️ 인증 상태 복원:', { 
-        isLoggedIn: isLoggedIn.value, 
+      console.log('♻️ 인증 상태 복원:', {
+        isLoggedIn: isLoggedIn.value,
         role: role.value,
         companyId: companyId.value,
-        companySlug: companySlug.value 
+        companySlug: companySlug.value,
       })
     } else {
       console.log('저장된 인증 상태 없음')
@@ -112,7 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (companySlug.value && companySlug.value !== currentSlug) {
       console.warn('다른 회사 페이지 접근 감지 - 로그아웃 처리:', {
         saved: companySlug.value,
-        current: currentSlug
+        current: currentSlug,
       })
       logout()
       return false
@@ -130,6 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     checkAuth,
-    validateCompanyContext  
+    validateCompanyContext,
+    updateUser,
   }
 })
