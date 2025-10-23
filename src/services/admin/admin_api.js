@@ -105,12 +105,15 @@ const managerInfoEdit = async (managerInfo) => {
 /**
  * 탈퇴하기
  */
-const managerInfoDelete = async (managerInfo) => {
+const managerInfoDelete = async (payload) => {
   try {
-    const response = await axiosInstance.delete('/api/admins/me', managerInfo)
+    const response = await axiosInstance.delete('/api/admins/me', {
+      data: payload,
+    })
+    console.log('managerInfoDelete response', response.data) 
     return response.data
   } catch (error) {
-    console.error('프로필 수정 실패', error)
+    console.error('탈퇴 실패', error)
     throw error
   }
 }
@@ -126,4 +129,5 @@ export default {
   resetPassword,
   getManagerInfo,
   managerInfoEdit,
+  managerInfoDelete,
 }
