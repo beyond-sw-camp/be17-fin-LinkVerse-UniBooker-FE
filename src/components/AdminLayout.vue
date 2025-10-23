@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/admin/service_api'
 import adminApi from '@/services/admin/admin_api'
 
