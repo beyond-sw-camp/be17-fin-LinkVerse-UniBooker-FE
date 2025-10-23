@@ -1,24 +1,26 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useAuthStore } from '@/stores/UseStore'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
-import Modal from './Modal.vue'
-import Button from './Button.vue'
+import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/admin/service_api'
+import adminApi from '@/services/admin/admin_api'
 
-const isProfileModalOpen = ref(false)
-const isEditModalOpen = ref(false)
 
-const openEditModal = () => {
-  isEditModalOpen.value = true
+const isModalOpen = ref(false)
+const userData = ref(null)  
+const authStore = useAuthStore()
+
+async function openModal() {
+  try {
+    const response = await adminApi.getManagerInfo()
+    userData.value = response.data 
+    isModalOpen.value = true
+  } catch (err) {
+    console.error('프로필 조회 실패', err)
+  }
 }
 
-const openProfileModal = () => {
-  isProfileModalOpen.value = true
-}
-
-const closeAddModal = () => {
-  isProfileModalOpen.value = false
-}
 
 // 서비스 그룹 목록 조회
 const serviceGroups = reactive([])
@@ -33,6 +35,7 @@ const getServiceGroups = async () => {
     console.log('서비스 그룹 목록 조회 실패: ', error)
   }
 }
+
 // 서비스 그룹의 드롭다운 메뉴 항목
 const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
 const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
@@ -156,8 +159,12 @@ onMounted(() => {
     <div class="content-body">
       <div class="content-top">
         <div class="admin-badge">
-          <img src="/public/assets/images/admin_logo.png" alt="기업 로고 이미지" />
-          <span @click="openProfileModal">김아영 관리자님</span>
+          <img
+            @click="openModal"
+            src="/public/assets/images/admin_logo.png"
+            alt="기업 로고 이미지"
+          />
+          <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
@@ -175,37 +182,7 @@ onMounted(() => {
       </div>
     </div>
   </div>
-
-  <!-- 관리자 추가 버튼 클릭 시 뜨는 모달 -->
-  <Modal :open="isProfileModalOpen" @close="isProfileModalOpen = false">
-    <div class="add-modal-container">
-      <h3>관리자 추가</h3>
-      <p>
-        기업의 관리자를 추가할 수 있습니다. 입력하신 이메일로 가입에 필요한 계정 정보(이메일 및
-        비밀번호)가 발송됩니다. 정확한 안내를 위해 이메일 주소를 신중하게 입력해주세요.
-      </p>
-
-      <div class="input-field-container">
-        <div class="input-field-item">
-          <label>이름 <span>*</span></label>
-          <input type="text" placeholder="관리자의 이름을 입력해주세요." />
-        </div>
-        <div class="input-field-item">
-          <label>이메일 <span>*</span></label>
-          <input type="email" placeholder="관리자의 이메일을 입력해주세요." />
-        </div>
-        <div class="input-field-item">
-          <label>연락처 <span>*</span></label>
-          <input type="phone" placeholder="관리자의 연락처를 입력해주세요." />
-        </div>
-      </div>
-
-      <div class="add-modal-button-container">
-        <Button class="button-px" theme="gray" @click="closeAddModal">취소</Button>
-        <Button class="button-px">추가하기</Button>
-      </div>
-    </div>
-  </Modal>
+  <AccountManageModal :open="isModalOpen" :userData="userData" @close="isModalOpen = false" />
 </template>
 
 <style scoped>

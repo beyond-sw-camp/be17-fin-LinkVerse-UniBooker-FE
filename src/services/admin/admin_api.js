@@ -66,9 +66,58 @@ const login = async (loginData) => {
 /**
  * 비밀번호 재설정
  */
-const resetPassword = async (passwordData) => {
-  return await axiosInstance.patch('/api/admins/password/reset', passwordData)
+const resetPassword = async (payload) => {
+  try {
+    const response = await axiosInstance.patch('/api/admins/password/reset', payload)
+    return response.data
+  } catch (error) {
+    console.error('비밀번호 변경 실패', error)
+    throw error
+  }
 }
+
+/**
+ * 내 정보 조회
+ */
+const getManagerInfo = async (email, companyId) => {
+  try {
+    const response = await axiosInstance.get('/api/admins/me')
+    return response.data
+  } catch (error) {
+    console.error('프로필 조회 실패', error)
+    throw error
+  }
+}
+
+/**
+ * 내 정보 수정
+ */
+const managerInfoEdit = async (managerInfo) => {
+  try {
+    const response = await axiosInstance.patch('/api/admins/me', managerInfo)
+    return response.data
+  } catch (error) {
+    console.error('프로필 수정 실패', error)
+    throw error
+  }
+}
+
+/**
+ * 탈퇴하기
+ */
+const managerInfoDelete = async (payload) => {
+  try {
+    const response = await axiosInstance.delete('/api/admins/me', {
+      data: payload,
+    })
+    console.log('managerInfoDelete response', response.data) 
+    return response.data
+  } catch (error) {
+    console.error('탈퇴 실패', error)
+    throw error
+  }
+}
+
 
 export default {
   signUpAdmin,
@@ -77,5 +126,8 @@ export default {
   checkEmail,
   getSignUpStatus,
   login,
-  resetPassword
+  resetPassword,
+  getManagerInfo,
+  managerInfoEdit,
+  managerInfoDelete,
 }
