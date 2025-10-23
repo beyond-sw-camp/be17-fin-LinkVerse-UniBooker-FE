@@ -133,7 +133,7 @@ const router = createRouter({
       component: () => import('@/views/admin/ServiceGroupEdit.vue'),
     },
     {
-      path: '/admin/reservation-management',
+      path: '/admin/reservation-management/:serviceId',
       name: 'ReservationManagement',
       component: () => import('../views/admin/ReservationManagement.vue'),
     },
@@ -143,12 +143,12 @@ const router = createRouter({
       component: () => import('@/views/admin/SeatReservationManagement.vue'),
     },
     {
-      path: '/admin/service-create',
+      path: '/admin/service-create/:serviceGroupId',
       name: 'ServiceCreate',
       component: () => import('@/views/admin/ServiceCreate.vue'),
     },
     {
-      path: '/admin/service-management',
+      path: '/admin/service-management/:serviceGroupId',
       name: 'ServiceManagement',
       component: () => import('@/views/admin/ServiceManagement.vue'),
     },

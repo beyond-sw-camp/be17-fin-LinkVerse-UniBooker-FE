@@ -1,5 +1,9 @@
 import axiosInstance from '@/plugin/axiosInterceptor'
 
+/**
+ * 서비스 그룹
+ */
+
 const getServiceGroups = async (companyId) => {
   return await axiosInstance.get(`api/resource-group/company/${companyId}`)
 }
@@ -22,10 +26,19 @@ const deleteServiceGroup = async (resourceGroupId) => {
   return await axiosInstance.delete(`api/resource-group/${resourceGroupId}`)
 }
 
+/**
+ * 서비스
+ */
+
+const createService = async (formdata) => {
+  return await axiosInstance.post(`api/resource`, formdata)
+}
+
 export default {
   createServiceGroup,
   getServiceGroups,
   getServiceGroupInfo,
   editServiceGroup,
   deleteServiceGroup,
+  createService,
 }

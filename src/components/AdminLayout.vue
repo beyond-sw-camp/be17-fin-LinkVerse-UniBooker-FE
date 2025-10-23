@@ -35,7 +35,20 @@ const getServiceGroups = async () => {
 }
 // 서비스 그룹의 드롭다운 메뉴 항목
 const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
-
+const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
+  switch (menu) {
+    case '서비스 관리':
+      return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 관리':
+      return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 현황':
+      return '#'
+    case '전체 분석':
+      return '#'
+    default:
+      return '#'
+  }
+}
 const openDropdown = ref(null) // 열려있는 서비스 그룹
 const selectedMenuItems = ref(
   // 드롭다운 메뉴 항목의 초기값은 첫 번째 메뉴인 '전체 분석'
@@ -119,8 +132,8 @@ onMounted(() => {
             <div v-if="openDropdown === index">
               <router-link
                 v-for="child in dropdownItems"
-                to="#!"
                 :key="child"
+                :to="getMenuLink(child, item.id, item.name)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"

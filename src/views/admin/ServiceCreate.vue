@@ -5,6 +5,13 @@ import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
 import TimeSlotModal from '@/components/TimeSlotModal.vue'
+import { useRoute, useRouter } from 'vue-router'
+import serviceApi from '@/services/admin/service_api'
+
+const route = useRoute()
+const router = useRouter()
+const serviceGroupId = route.params.serviceGroupId
+const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
 
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
@@ -12,8 +19,61 @@ const category = ref([
   { label: '신청형', value: 'EVENT' },
 ])
 
+// DTO 매핑용 폼 데이터
+const name = ref('')
+const description = ref('')
+const capacity = ref(null)
+const startDate = ref('')
+const endDate = ref('')
+const startTime = ref('')
+const endTime = ref('')
+const timeInterval = ref(60)
+const row = ref(null)
+const col = ref(null)
+
+// 생성 요청
+const createService = async () => {
+  try {
+    const formData = {
+      name: name.value,
+      description: description.value,
+      resourceGroupId: Number(serviceGroupId),
+      startDate: startDate.value || null,
+      endDate: endDate.value || null,
+      startTime: startTime.value || null,
+      endTime: endTime.value || null,
+      timeInterval: timeInterval.value,
+      capacity: capacity.value ? Number(capacity.value) : null,
+      row: row.value ? Number(row.value) : null,
+      col: col.value ? Number(col.value) : null,
+    }
+
+    const response = await serviceApi.createService(formData)
+    alert('서비스가 성공적으로 생성되었습니다!')
+    console.log('✅ 등록 완료:', response.data)
+    router.push(`/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`)
+  } catch (error) {
+    console.error('❌ 서비스 생성 실패:', error)
+    alert('서비스 생성 중 오류가 발생했습니다.')
+  }
+}
+
 // 브레드크럼 항목
-const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회의실 예약' }]
+const breadcrumbItems = [{ label: 'Service Groups', path: '#!' }, { label: serviceGroupName }]
+
+// 입력값 초기화
+const resetValues = () => {
+  name.value = ''
+  description.value = ''
+  capacity.value = null
+  startDate.value = ''
+  endDate.value = ''
+  startTime.value = ''
+  endTime.value = ref('')
+  timeInterval.value = ref(60)
+  row.value = null
+  col.value = null
+}
 </script>
 
 <template>
@@ -46,7 +106,12 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
         <div>서비스 이름 <span>*</span></div>
         <p>어떤 서비스인가요? ( ex. 회의실 A, 클라이밍 동아리 등등 )</p>
       </div>
-      <Input class="text-input" type="text" placeholder="서비스 이름을 작성해주세요." />
+      <Input
+        class="text-input"
+        v-model="name"
+        type="text"
+        placeholder="서비스 이름을 작성해주세요."
+      />
     </section>
 
     <!-- 서비스 설명 -->
@@ -63,7 +128,12 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
         <div>수용 인원 <span>*</span></div>
         <p>해당 서비스의 최대 수용 인원 수를 알려주세요.</p>
       </div>
-      <Input class="text-input" type="number" placeholder="숫자로만 작성해주세요." />
+      <Input
+        class="text-input"
+        v-model="capacity"
+        type="number"
+        placeholder="숫자로만 작성해주세요."
+      />
     </section>
 
     <!-- 서비스 정보 -->
@@ -80,29 +150,46 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
         </div>
 
         <div class="service-info-form-inputs">
-          <Input class="text-input" type="date" placeholder="시작 날짜" />
+          <Input class="text-input" v-model="startDate" type="date" placeholder="시작 날짜" />
           <span>~</span>
-          <Input class="text-input" type="date" placeholder="종료 날짜" />
+          <Input class="text-input" v-model="endDate" type="date" placeholder="종료 날짜" />
         </div>
       </div>
 
       <!-- 시간 간격 선택 -->
-       <div class="service-info-section">
+      <div class="service-info-section">
         <div class="service-info-form-item-label-container">
           <span>시간 간격 선택</span>
         </div>
 
         <div class="service-info-form-radio">
-          <Input class="text-input" type="radio" placeholder="시작 날짜" label="1시간"/>
-          <Input class="text-input" type="radio" placeholder="종료 날짜" label="30분"/>
+          <Input
+            class="text-input"
+            v-model="timeInterval"
+            :value="60"
+            :name="timeInterval"
+            type="radio"
+            label="1시간"
+          />
+          <Input
+            class="text-input"
+            v-model="timeInterval"
+            :value="30"
+            :name="timeInterval"
+            type="radio"
+            label="30분"
+          />
         </div>
       </div>
 
       <!-- 서비스 이용 시간  -->
-       <div class="service-info-section">
+      <div class="service-info-section">
         <div class="service-info-form-item-label-container">
           <span>서비스 이용 시간</span>
-          <p>해당 서비스의 이용 가능한 시간을 입력해 주세요. 휴게 시간을 포함한 전체 시간을 입력하신 뒤 휴게 시간을 제거하시면 됩니다.</p>
+          <p>
+            해당 서비스의 이용 가능한 시간을 입력해 주세요. 휴게 시간을 포함한 전체 시간을 입력하신
+            뒤 휴게 시간을 제거하시면 됩니다.
+          </p>
         </div>
 
         <div class="service-info-form-inputs">
@@ -113,8 +200,8 @@ const breadcrumbItems = [{ label: 'Service Group', path: '#!' }, { label: '회�
 
     <!-- 버튼 컨테이너 -->
     <div class="button-container">
-      <Button theme="gray">초기화</Button>
-      <Button>생성하기</Button>
+      <Button theme="gray" @click="resetValues">초기화</Button>
+      <Button @click="createService">생성하기</Button>
     </div>
   </AdminLayout>
 </template>
