@@ -4,8 +4,8 @@ import axiosInstance from '@/plugin/axiosInterceptor'
  * 서비스 그룹
  */
 
-const getServiceGroups = async (companyId) => {
-  return await axiosInstance.get(`api/resource-group/company/${companyId}`)
+const getServiceGroups = async () => {
+  return await axiosInstance.get(`api/resource-group/company`)
 }
 
 const createServiceGroup = async (formdata) => {
