@@ -149,9 +149,11 @@ const handleLogout = async () => {
 
       <!-- 로그인 후 네비게이션 메뉴 (유효한 로그인 상태일 때만 표시) -->
       <nav v-if="isValidLogin" class="user-header-nav">
-        <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
-        <button @click="goToReservation" class="user-header-nav-item">예약 내역</button>
-        <button @click="goToMypage" class="user-header-nav-item">내 계정</button>
+        <div class="user-header-nav-container">
+          <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
+          <button @click="goToReservation" class="user-header-nav-item">예약 내역</button>
+          <button @click="goToMypage" class="user-header-nav-item">내 계정</button>
+        </div>
       </nav>
 
       <!-- 로그인 후 알림 + 로그아웃 버튼 (유효한 로그인 상태일 때만 표시) -->
@@ -171,7 +173,7 @@ const handleLogout = async () => {
 }
 
 .user-header-container {
-  @apply max-w-7xl mx-auto px-6 py-1 flex items-center justify-between;
+  @apply w-full mx-auto px-20 py-1 flex justify-between;
 }
 
 .user-header-logo-wrapper {
@@ -183,11 +185,15 @@ const handleLogout = async () => {
 }
 
 .user-header-nav {
-  @apply flex items-center gap-20 mr-5;
+  @apply flex items-center;
+}
+
+.user-header-nav-container {
+  @apply flex justify-between min-w-[450px] mx-40;
 }
 
 .user-header-nav-item {
-  @apply text-base font-medium text-gray-500 hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none;
+  @apply text-base font-normal text-gray-500 hover:font-medium hover:text-primary-hover transition-colors cursor-pointer bg-transparent border-none;
 }
 
 .notification-btn {
@@ -195,7 +201,7 @@ const handleLogout = async () => {
 }
 
 .user-header-alam {
-  @apply w-6 h-auto cursor-pointer hover:opacity-80 transition-opacity ml-20;
+  @apply w-6 h-auto cursor-pointer hover:scale-105 hover:opacity-80 transition-opacity;
 }
 
 .user-btn-container {
