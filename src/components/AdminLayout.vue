@@ -28,7 +28,6 @@ const getServiceGroups = async () => {
     const data = response.data.data
 
     Object.assign(serviceGroups, data.resourceGroups)
-    console.log(serviceGroups)
   } catch (error) {
     console.log('서비스 그룹 목록 조회 실패: ', error)
   }

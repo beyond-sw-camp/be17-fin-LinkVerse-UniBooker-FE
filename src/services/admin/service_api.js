@@ -1,4 +1,5 @@
 import axiosInstance from '@/plugin/axiosInterceptor'
+import axios from 'axios'
 
 /**
  * 서비스 그룹
@@ -10,6 +11,43 @@ const getServiceGroups = async () => {
 
 const createServiceGroup = async (formdata) => {
   return await axiosInstance.post(`api/resource-group`, formdata)
+}
+
+const getServiceGroupPresignedURL = async (formData) => {
+  try {
+    const response = await axiosInstance.post('api/image-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    const uploadUrl = response.data.result || response.data.data
+    console.log('업로드 URL:', uploadUrl)
+
+    return uploadUrl
+  } catch (error) {
+    console.error('이미지 업로드 url 요청 오류:', error)
+    alert('이미지 업로드 url을 받아오는 중 오류가 발생했습니다.')
+    return null
+  }
+}
+
+const uploadImage = async (presigedUrl, file) => {
+  let data = {}
+  await axios
+    .put(presigedUrl, file, {
+      headers: {
+        'Content-Type': file.type,
+      },
+    })
+    .then((res) => {
+      data = res.data
+    })
+    .catch((error) => {
+      data = error.data
+    })
+
+  return data
 }
 
 const getServiceGroupInfo = async (resourceGroupId) => {
@@ -36,6 +74,8 @@ const createService = async (formdata) => {
 
 export default {
   createServiceGroup,
+  getServiceGroupPresignedURL,
+  uploadImage,
   getServiceGroups,
   getServiceGroupInfo,
   editServiceGroup,

@@ -23,6 +23,43 @@ const isAlwaysAvailable = ref(false)
 const serviceCustomFields = ref([])
 const userCustomFields = ref([])
 
+// ---서비스 그룹 이미지 업로드---
+const selectedFile = ref(null)
+const previewUrl = ref(null)
+
+
+const onFileChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    // 1. FormData 생성 및 백엔드에서 presigned URL 요청
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('imageType', 'serviceGroup')
+
+    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(formData)
+    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
+
+    console.log('Presigned URL:', presignedUrl)
+
+    // 2. S3에 이미지 업로드
+    await serviceApi.uploadImage(presignedUrl, file)
+
+    // 3. CloudFront URL로 변환
+    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
+    const s3Path = presignedUrl.split('.com')[1].split('?')[0] // 쿼리 제거
+    previewUrl.value = cloudFrontDomain + s3Path
+
+    console.log('CloudFront URL:', previewUrl.value)
+
+  } catch (error) {
+    console.error('이미지 업로드 과정에서 오류 발생:', error)
+    alert('이미지 업로드 중 오류가 발생했습니다.')
+  }
+}
+
+
 // --- 문자열 → Enum 변환 함수 ---
 const mapToEnum = (type) => {
   switch(type) {
@@ -93,8 +130,15 @@ const createServiceGroup = async () => {
         <p>고객들이 어떤 서비스 그룹인지 쉽게 알 수 있도록 알맞은 이미지를 업로드 해주세요.</p>
       </div>
       <div id="service-group-image-upload">
-        <label for="file-upload" class="file-upload-label"> 이미지 업로드 </label>
-        <input id="file-upload" type="file" class="file-upload-input" />
+        <label for="file-upload" class="file-upload-label" style="cursor: pointer; display: inline-block;">
+          <template v-if="previewUrl">
+            <img :src="previewUrl" alt="미리보기" style="max-width: 300px;" />
+          </template>
+          <template v-else>
+            이미지 업로드
+          </template>
+        </label>
+        <input id="file-upload" type="file" class="file-upload-input"  @change="onFileChange"/>
       </div>
     </section>
 
@@ -222,7 +266,7 @@ const createServiceGroup = async () => {
 }
 
 .file-upload-label {
-  @apply w-full h-full flex items-center justify-center cursor-pointer text-[15px] text-gray-dark;
+  @apply flex w-full h-full flex items-center justify-center cursor-pointer text-[15px] text-gray-dark;
 }
 
 .text-input {
