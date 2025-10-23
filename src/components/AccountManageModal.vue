@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import adminApi from '@/services/admin/admin_api'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 
 const props = defineProps({
   open: Boolean,
@@ -11,6 +12,7 @@ const emit = defineEmits(['close'])
 
 const mode = ref('view') // view | edit | password | withdraw
 const router = useRouter()
+const authStore = useAuthStore()
 
 // 프로필 정보 수정용 임시 데이터
 const editInfo = ref({
@@ -102,7 +104,8 @@ const handleEditSubmit = async () => {
     }
 
     // 서버에 수정 요청
-    await adminApi.managerInfoEdit(payload)
+    const updatedData = await adminApi.managerInfoEdit(payload)
+    authStore.updateUser(updatedData)
 
     // 서버에서 최신 데이터 가져오기
     const response = await adminApi.getManagerInfo()
