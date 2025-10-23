@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useAuthStore } from '@/stores/UseStore'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/admin/service_api'
@@ -8,6 +9,7 @@ import adminApi from '@/services/admin/admin_api'
 
 const isModalOpen = ref(false)
 const userData = ref(null)  
+const authStore = useAuthStore()
 
 async function openModal() {
   try {
@@ -162,7 +164,7 @@ onMounted(() => {
             src="/public/assets/images/admin_logo.png"
             alt="기업 로고 이미지"
           />
-          <span @click="openModal">김아영 관리자님</span>
+          <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
