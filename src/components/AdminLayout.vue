@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import Modal from './Modal.vue'
 import Button from './Button.vue'
+import serviceApi from '@/services/admin/service_api'
 
 const isProfileModalOpen = ref(false)
 const isEditModalOpen = ref(false)
@@ -19,22 +20,40 @@ const closeAddModal = () => {
   isProfileModalOpen.value = false
 }
 
-// 예시 서비스 그룹 목록입니다.
-const services = ref([
-  { label: '동아리 모집' },
-  { label: '회의실 예약' },
-  { label: '통근버스 신청' },
-  { label: '캠핑카 이용 신청' },
-])
+// 서비스 그룹 목록 조회
+const serviceGroups = reactive([])
+const getServiceGroups = async () => {
+  try {
+    const response = await serviceApi.getServiceGroups(1)
+    const data = response.data.data
 
+    Object.assign(serviceGroups, data.resourceGroups)
+    console.log(serviceGroups)
+  } catch (error) {
+    console.log('서비스 그룹 목록 조회 실패: ', error)
+  }
+}
 // 서비스 그룹의 드롭다운 메뉴 항목
 const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
-
+const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
+  switch (menu) {
+    case '서비스 관리':
+      return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 관리':
+      return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+    case '예약 현황':
+      return '#'
+    case '전체 분석':
+      return '#'
+    default:
+      return '#'
+  }
+}
 const openDropdown = ref(null) // 열려있는 서비스 그룹
 const selectedMenuItems = ref(
   // 드롭다운 메뉴 항목의 초기값은 첫 번째 메뉴인 '전체 분석'
   // 이후에는 마지막으로 머물렀던 메뉴 항목을 유지
-  Object.fromEntries(services.value.map((_, i) => [i, dropdownItems[0]])),
+  Object.fromEntries(serviceGroups.map((_, i) => [i, dropdownItems[0]])),
 )
 
 // 드롭다운 토글
@@ -63,6 +82,10 @@ const notifications = ref([
 const notiToggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
+
+onMounted(() => {
+  getServiceGroups()
+})
 </script>
 
 <template>
@@ -97,20 +120,20 @@ const notiToggleDropdown = () => {
       <div class="sub-menu-section flex-1">
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
-          <div v-for="(item, index) in services" :key="index">
+          <div v-for="(item, index) in serviceGroups" :key="index">
             <router-link
               to="#!"
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
               @click="toggleDropdown(index)"
             >
-              {{ item.label }}
+              {{ item.name }}
             </router-link>
             <div v-if="openDropdown === index">
               <router-link
                 v-for="child in dropdownItems"
-                to="#!"
                 :key="child"
+                :to="getMenuLink(child, item.id, item.name)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"

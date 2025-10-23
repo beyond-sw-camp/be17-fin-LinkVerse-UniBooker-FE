@@ -4,9 +4,14 @@ import Breadcrumb from '@/components/Breadcrumb.vue'
 import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
 import { reactive, computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 
-const serviceGroupName = '회의실 예약'
+const route = useRoute()
+const router = useRouter()
+const serviceGroupId = route.params.serviceGroupId
+const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
+const serviceGroup = reactive({})
 
 const breadcrumbItems = [
   { label: '서비스 그룹', path: `admin/service-group-managation` },
@@ -98,8 +103,7 @@ const createStatusComputed = (statusName) =>
         if (original && original.status !== statusName) {
           original.status = statusName
           console.log(`${original.serviceName} 상태가 ${statusName}로 업데이트되었습니다.`)
-          // 실제 API 호출 위치
-          // axios.patch(`/api/services/${original.serviceId}/status`, { status: statusName })
+          // API 호출
         }
       })
     },
@@ -108,23 +112,6 @@ const createStatusComputed = (statusName) =>
 const upcomingServices = createStatusComputed('upcoming')
 const inProgressServices = createStatusComputed('in-progress')
 const finishedServices = createStatusComputed('finished')
-
-// 서비스 추가 (더미로 새로운 서비스 생성)
-const createService = () => {
-  const newId = services.length + 1
-  services.push({
-    serviceId: newId,
-    adminName: '신규 관리자',
-    serviceName: `회의실 ${String.fromCharCode(64 + newId)}`,
-    updatedAt: '2025.10.21',
-    status: 'upcoming',
-    startTime: '09:00',
-    endTime: '10:00',
-    capacity: 5,
-    location: `${String.fromCharCode(64 + newId)}동`,
-    description: '신규 서비스',
-  })
-}
 </script>
 
 <template>
@@ -132,7 +119,18 @@ const createService = () => {
     <Breadcrumb :items="breadcrumbItems" />
     <div class="upper-bar">
       <div class="components-page-title">서비스 관리</div>
-      <span class="plus-btn" @click="createService">+</span>
+      <RouterLink
+        :to="{
+          name: 'ServiceCreate',
+          query: {
+            serviceGroupId: serviceGroupId,
+            serviceGroupName: serviceGroupName,
+          },
+        }"
+      >
+        <span class="plus-btn">+</span>
+      </RouterLink>
+      <!-- <span class="plus-btn" @click="createService">+</span> -->
     </div>
     <div class="content-container">
       <!-- 진행 전 서비스 -->

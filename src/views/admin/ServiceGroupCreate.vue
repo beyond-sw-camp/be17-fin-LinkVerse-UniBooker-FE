@@ -3,13 +3,83 @@ import { ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
+import serviceApi from '@/services/admin/service_api'
 
+// --- 카테고리 ---
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
   { label: '좌석형', value: 'SEAT' },
   { label: '신청형', value: 'EVENT' },
 ])
+
+// --- 폼 데이터 상태 ---
+const name = ref('')
+const description = ref('')
+const thumbnail = ref('')
+const selectedCategory = ref('')
+const isAlwaysAvailable = ref(false)
+const companyId = ref(1)
+const userId = ref(5)
+
+// --- 커스텀 필드 ---
+const serviceCustomFields = ref([])
+const userCustomFields = ref([])
+
+// --- 문자열 → Enum 변환 함수 ---
+const mapToEnum = (type) => {
+  switch(type) {
+    case 'TEXT': return 'TEXT'
+    case 'NUMBER': return 'NUMBER'
+    case 'DATE': return 'DATE'
+    case 'TIME': return 'TIME'
+    case 'RADIO': return 'RADIO'
+    case 'CHECKBOX': return 'CHECKBOX'
+    case 'BOOLEAN': return 'BOOLEAN'
+    default: return 'TEXT'
+  }
+}
+
+// --- 생성 API 호출 ---
+const createServiceGroup = async () => {
+  try {
+    const formData = {
+      userId: userId.value,
+      name: name.value,
+      description: description.value,
+      thumbnail: thumbnail.value,
+      category: selectedCategory.value,
+      isAlwaysAvailable: isAlwaysAvailable.value,
+      companyId: companyId.value,
+      customFields: [
+        ...serviceCustomFields.value.map(f => ({
+          fieldName: f.fieldName,                // name → fieldName
+          description: f.description || '', // description 그대로
+          dataType: mapToEnum(f.dataType),      // 문자열 → Enum
+          targetType: 'RESOURCE',
+          required: f.required || false
+        })),
+        ...userCustomFields.value.map(f => ({
+          fieldName: f.fieldName,
+          description: f.description || '',
+          dataType: mapToEnum(f.dataType),
+          targetType: 'USER',
+          required: f.required || false
+        }))
+      ]
+    }
+
+    console.log('보내는 데이터:', formData)
+
+    const response = await serviceApi.createServiceGroup(formData)
+    console.log('✅ 서비스 그룹 생성 성공:', response.data)
+    alert('서비스 그룹이 성공적으로 생성되었습니다!')
+  } catch (error) {
+    console.error('❌ 서비스 그룹 생성 실패:', error)
+    alert('서비스 그룹 생성 중 오류가 발생했습니다.')
+  }
+}
 </script>
+
 
 
 <template>
@@ -38,7 +108,7 @@ const category = ref([
         <div>서비스 그룹 이름 <span>*</span></div>
         <p>어떤 종류의 서비스인가요? ( ex. 회의실 예약, 사내 동아리 모집 등등 )</p>
       </div>
-      <Input class="text-input" type="text" placeholder="서비스 이름을 작성해주세요." />
+      <Input v-model="name" class="text-input" type="text" placeholder="서비스 이름을 작성해주세요." />
     </section>
 
     <!-- 서비스 그룹 설명 -->
@@ -46,7 +116,7 @@ const category = ref([
       <div class="form-label-container">
         <div>서비스 그룹 설명 <span>*</span></div>
       </div>
-      <textarea placeholder="서비스 그룹 설명을 작성해주세요."></textarea>
+      <textarea v-model="description" placeholder="서비스 그룹 설명을 작성해주세요."></textarea>
     </section>
 
     <!-- 상시 모집 여부 확인 -->
@@ -59,8 +129,8 @@ const category = ref([
         </p>
       </div>
       <div class="radio-button-container">
-        <Input class="radio-style" type="radio" label="예" />
-        <Input class="radio-style" type="radio" label="아니오" />
+        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" value="true" />
+        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" value="false" />
       </div>
     </section>
 
@@ -82,7 +152,8 @@ const category = ref([
           </div>
         </p>
       </div>
-      <Dropdown class="dropdown-style" :options="category" placeholder="카테고리를 선택해주세요." width="w-48" />
+      <Dropdown         v-model="selectedCategory"
+ class="dropdown-style" :options="category" placeholder="카테고리를 선택해주세요." width="w-48" />
     </section>
 
     <!-- 서비스 입력 항목 -->
@@ -95,7 +166,7 @@ const category = ref([
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd />
+        <CustomFieldAdd :customFields="serviceCustomFields" @add-field="serviceCustomFields.push($event)" />
       </div>
     </section>
 
@@ -109,14 +180,14 @@ const category = ref([
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd />
+        <CustomFieldAdd :customFields="userCustomFields" @add-field="userCustomFields.push($event)" />
       </div>
     </section>
 
     <!-- 버튼 컨테이너 -->
     <div class="button-container">
       <Button theme="gray">초기화</button>
-      <Button>생성하기</Button>
+      <Button @click="createServiceGroup">생성하기</Button>
     </div>
   </AdminLayout>
 </template>
