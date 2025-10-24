@@ -89,7 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('companyId')
     // companySlug는 유지
 
-    console.log('🚪 로그아웃 완료 (companySlug 유지:', companySlug.value, ')')
+    console.log('로그아웃 완료 (companySlug 유지:', companySlug.value, ')')
   }
 
   // ===== 인증 상태 복원 =====

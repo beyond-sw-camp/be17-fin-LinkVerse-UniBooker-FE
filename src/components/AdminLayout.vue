@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useAuthStore } from '@/stores/UseStore'
+import { useRouter } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/admin/service_api'
@@ -32,6 +33,52 @@ async function openModal() {
     console.error('❌ 에러 응답:', err.response)
     alert('프로필 조회에 실패했습니다.')
   }
+}
+
+// 로그아웃 처리
+const router = useRouter()
+
+// 로그아웃 처리
+const handleLogout = async () => {
+  try {
+    // refreshToken은 쿠키에 있으므로 자동 전송됨
+    // 하지만 DTO 요구사항에 따라 body에 포함 필요할 수 있음
+
+    // 쿠키에서 refreshToken 읽기 (필요한 경우)
+    // const refreshToken = getCookie('refreshToken')
+
+    // if (!refreshToken) {
+    //   console.warn('⚠️ refreshToken이 없습니다. 강제 로그아웃 처리')
+    //   authStore.logout()
+    //   router.push('/admin/login')
+    //   return
+    // }
+
+    // 로그아웃 API 호출 (쿠키는 자동으로 전송됨)
+    await adminApi.logout(refreshToken)
+
+    // 스토어 로그아웃 처리
+    authStore.logout()
+
+    // 로그인 페이지로 리다이렉트
+    router.push('/admin/login')
+
+    console.log('✅ 로그아웃 완료 (쿠키 삭제됨)')
+  } catch (error) {
+    console.error('❌ 로그아웃 실패:', error)
+
+    // 실패해도 프론트엔드 상태는 초기화
+    authStore.logout()
+    router.push('/admin/login')
+  }
+}
+
+// 쿠키 읽기 헬퍼 함수
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
+  return null
 }
 
 // 서비스 그룹 목록 조회
@@ -160,7 +207,7 @@ onMounted(() => {
       </div>
 
       <!-- 로그아웃 버튼 -->
-      <div class="sub-menu-logout-button-container">
+      <div class="sub-menu-logout-button-container" @click="handleLogout">
         <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
         Logout
       </div>
