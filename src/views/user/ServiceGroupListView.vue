@@ -15,7 +15,6 @@ const getServiceGroups = async () => {
   try {
     const response = await serviceApi.getServiceGroups()
     Object.assign(serviceGroups, response)
-    console.log(serviceGroups)
   } catch (error) {
     console.log(error)
   }
@@ -30,20 +29,14 @@ const filteredServiceGroups = computed(() => {
   return serviceGroups.filter((serviceGroup) => serviceGroup.status === selectedFilter.value)
 })
 
-// 필터 드롭다운 메뉴 선택
-const selectMenuItem = (e) => {
-  selectedFilter.value = e.target.value
-}
-
 /**
  * 카드 선택시 서비스 항목 목록 페이지로 이동
  * - companySlug 포함
  */
 const goToServiceGroup = (item) => {
   const slug = route.params.companySlug || authStore.companySlug || 'default'
-
   router.push({
-    path: `/c/${slug}/service-item/list`,
+    path: `/c/${slug}/services/${item.id}`,
     query: { type: item.type },
   })
 }

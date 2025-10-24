@@ -32,15 +32,15 @@ const router = createRouter({
       meta: { layout: 'user' },
     },
     {
-      path: '/c/:companySlug/service/list',
-      name: 'ServiceGroupList',
+      path: '/c/:companySlug/services',
+      name: 'UserServiceGroupList',
       component: () => import('@/views/user/ServiceGroupListView.vue'),
       meta: { layout: 'user' },
     },
     {
-      path: '/c/:companySlug/service-item/list',
-      name: 'ServiceItemList',
-      component: () => import('@/views/user/ServiceItemListView.vue'),
+      path: '/c/:companySlug/services/:groupId',
+      name: 'UserServiceList',
+      component: () => import('@/views/user/ServiceListView.vue'),
       meta: { layout: 'user' },
     },
     {
