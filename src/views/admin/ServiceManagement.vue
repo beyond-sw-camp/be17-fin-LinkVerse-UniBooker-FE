@@ -1,74 +1,22 @@
 <script setup>
 import AdminLayout from '@/components/AdminLayout.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
-import { reactive, computed, ref } from 'vue'
+import { reactive, computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
+import serviceApi from '@/services/admin/service_api.js'
 
 const route = useRoute()
 const router = useRouter()
 const serviceGroupId = route.params.serviceGroupId
 const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
-const serviceGroup = reactive({})
+const services = reactive([])
 
 const breadcrumbItems = [
   { label: '서비스 그룹', path: `admin/service-group-managation` },
   { label: serviceGroupName, path: `` },
 ]
-
-// 더미 서비스 데이터
-const services = reactive([
-  {
-    serviceId: 1,
-    adminName: '김아영 관리자',
-    serviceName: '회의실 B',
-    updatedAt: '2025.10.03',
-    status: 'upcoming',
-    startTime: '09:00',
-    endTime: '10:00',
-    capacity: 10,
-    location: 'B동 2층',
-    description: '회의실 B 예약',
-  },
-  {
-    serviceId: 2,
-    adminName: '유현경 관리자',
-    serviceName: '회의실 A',
-    updatedAt: '2025.10.03',
-    status: 'upcoming',
-    startTime: '10:30',
-    endTime: '11:30',
-    capacity: 8,
-    location: 'A동 1층',
-    description: '회의실 A 예약',
-  },
-  {
-    serviceId: 3,
-    adminName: '박철수 관리자',
-    serviceName: '회의실 C',
-    updatedAt: '2025.10.04',
-    status: 'in-progress',
-    startTime: '11:00',
-    endTime: '12:00',
-    capacity: 12,
-    location: 'C동 3층',
-    description: '회의실 C 예약',
-  },
-  {
-    serviceId: 4,
-    adminName: '이민호 관리자',
-    serviceName: '회의실 D',
-    updatedAt: '2025.10.01',
-    status: 'finished',
-    startTime: '13:00',
-    endTime: '14:00',
-    capacity: 5,
-    location: 'D동 4층',
-    description: '회의실 D 예약',
-  },
-])
 
 const selectedService = reactive({
   serviceId: null,
@@ -84,7 +32,7 @@ const showDetailModal = ref(false)
 
 // 모달 열기
 const viewServiceDetail = (id) => {
-  const service = services.find((s) => s.serviceId === id)
+  const service = services.find((s) => s.id === id)
   if (service) {
     Object.assign(selectedService, service)
     showDetailModal.value = true
@@ -93,25 +41,41 @@ const viewServiceDetail = (id) => {
 
 const goToEditService = () => {}
 
-// 상태별 computed 배열 + 상태 변경 시 로그(API 호출 시점)
+// 상태별 computed
 const createStatusComputed = (statusName) =>
   computed({
-    get: () => services.filter((s) => s.status === statusName),
+    get: () => services.filter((s) => s.status.toUpperCase() === statusName.toUpperCase()),
     set: (newList) => {
       newList.forEach((item) => {
-        const original = services.find((s) => s.serviceId === item.serviceId)
-        if (original && original.status !== statusName) {
+        const original = services.find((s) => s.id === item.id)
+        if (original && original.status.toUpperCase() !== statusName.toUpperCase()) {
           original.status = statusName
-          console.log(`${original.serviceName} 상태가 ${statusName}로 업데이트되었습니다.`)
-          // API 호출
+          console.log(`${original.name} 상태가 ${statusName}로 변경됨`)
+          // 필요시 API 호출
         }
       })
     },
   })
 
-const upcomingServices = createStatusComputed('upcoming')
-const inProgressServices = createStatusComputed('in-progress')
-const finishedServices = createStatusComputed('finished')
+const upcomingServices = createStatusComputed('UPCOMING')
+const inProgressServices = createStatusComputed('IN_PROGRESS')
+const finishedServices = createStatusComputed('FINISHED')
+
+// 서비스 리스트 조회
+const getServiceList = async (serviceGroupId) => {
+  try {
+    const response = await serviceApi.getServiceList(serviceGroupId)
+    console.log('서비스 리스트 응답 : ', response.data)
+    // 실제 배열은 resources
+    services.splice(0, services.length, ...response.data.data.resources)
+  } catch (error) {
+    console.log('서비스 리스트 조회 실패: ', error)
+  }
+}
+
+onMounted(() => {
+  getServiceList(serviceGroupId)
+})
 </script>
 
 <template>
@@ -142,18 +106,18 @@ const finishedServices = createStatusComputed('finished')
         <draggable
           v-model="upcomingServices"
           group="services"
-          :item-key="'serviceId'"
+          :item-key="'id'"
           class="service-list"
         >
           <template #item="{ element: s }">
             <div class="service">
               <div class="service-info">
-                <span>{{ s.adminName }}</span>
+                <span>{{ s.createdByName }} 관리자</span>
                 <span>{{ s.updatedAt }}</span>
               </div>
-              <div>
-                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
-                  {{ s.serviceName }}
+              <div class="service-name-container">
+                <span class="service-name" @click="viewServiceDetail(s.id)">
+                  {{ s.name }}
                 </span>
               </div>
             </div>
@@ -176,12 +140,12 @@ const finishedServices = createStatusComputed('finished')
           <template #item="{ element: s }">
             <div class="service">
               <div class="service-info">
-                <span>{{ s.adminName }}</span>
+                <span>{{ s.createdByName }} 관리자</span>
                 <span>{{ s.updatedAt }}</span>
               </div>
-              <div>
-                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
-                  {{ s.serviceName }}
+              <div class="service-name-container">
+                <span class="service-name" @click="viewServiceDetail(s.id)">
+                  {{ s.name }}
                 </span>
               </div>
             </div>
@@ -204,12 +168,12 @@ const finishedServices = createStatusComputed('finished')
           <template #item="{ element: s }">
             <div class="service">
               <div class="service-info">
-                <span>{{ s.adminName }}</span>
+                <span>{{ s.createdByName }} 관리자</span>
                 <span>{{ s.updatedAt }}</span>
               </div>
-              <div>
-                <span class="service-name" @click="viewServiceDetail(s.serviceId)">
-                  {{ s.serviceName }}
+              <div class="service-name-container">
+                <span class="service-name" @click="viewServiceDetail(s.id)">
+                  {{ s.name }}
                 </span>
               </div>
             </div>
@@ -273,31 +237,31 @@ const finishedServices = createStatusComputed('finished')
   @apply flex gap-3 h-full;
 }
 .status-container {
-  @apply grow flex flex-col gap-2;
+  @apply grow flex flex-col bg-[#F4F4F4] rounded-[5px] min-h-[550px] w-[480px];
 }
 .status {
-  @apply flex bg-gray-300 rounded-md px-3 py-2 font-normal items-center;
+  @apply flex bg-gray-deep rounded-tl-[5px] rounded-tr-[5px] px-[15px] py-[12px] font-medium items-center text-[14px];
 }
 .status-upcoming {
-  @apply rounded-full w-4 h-4 mr-2 bg-blue-300 border-2 border-blue-500;
+  @apply rounded-full w-4 h-4 mr-3 bg-blue-300 border-2 border-blue-500;
 }
 .status-in-progress {
-  @apply rounded-full w-4 h-4 mr-2 bg-green-300 border-2 border-green-500;
+  @apply rounded-full w-4 h-4 mr-3 bg-green-300 border-2 border-green-500;
 }
 .status-finished {
-  @apply rounded-full w-4 h-4 mr-2 bg-red-300 border-2 border-red-500;
+  @apply rounded-full w-4 h-4 mr-3 bg-red-300 border-2 border-red-500;
 }
 .service-list {
-  @apply bg-gray-50 p-3 rounded-md flex flex-col gap-2 h-full overflow-y-auto;
+  @apply mx-[10px] my-[15px] rounded-md flex flex-col gap-2 h-full overflow-y-auto;
 }
 .service {
-  @apply bg-white rounded-md p-2 hover:shadow-md cursor-pointer;
+  @apply bg-white rounded-md cursor-pointer;
 }
 .service-info {
-  @apply flex justify-between text-sm text-gray-700 mb-1;
+  @apply flex justify-between text-[12px] text-text border-b border-gray-line p-[13px];
 }
 .service-name {
-  @apply text-blue-600 hover:underline cursor-pointer;
+  @apply text-blue-600 hover:underline cursor-pointer text-[14px];
 }
 .service-image {
   @apply w-full h-40 bg-gray-200 rounded-md;
@@ -313,5 +277,9 @@ const finishedServices = createStatusComputed('finished')
 }
 .modal-btn {
   @apply w-[130px] text-sm;
+}
+
+.service-name-container {
+  @apply px-[14px] py-[10px];
 }
 </style>
