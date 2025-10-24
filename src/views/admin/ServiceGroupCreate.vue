@@ -166,8 +166,8 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="radio-button-container">
-        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" value="true" />
-        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" value="false" />
+        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" :value="true" />
+<Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" :value="false" />
       </div>
     </section>
 
