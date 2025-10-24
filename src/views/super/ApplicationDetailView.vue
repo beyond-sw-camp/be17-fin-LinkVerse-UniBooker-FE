@@ -48,7 +48,8 @@ const fetchCompanyDetail = async () => {
 
       company.value = {
         name: data.companyName,
-        id: data.companyId,
+        id: data.businessNumber,
+        companyId: data.companyId,
         status: data.status === 'APPROVED',
         link: `https://unibooker.kro.kr/${data.companySlug}`,
         logo: data.logoUrl || '/assets/images/admin_logo.png',
