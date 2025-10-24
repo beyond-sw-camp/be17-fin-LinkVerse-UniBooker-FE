@@ -7,6 +7,7 @@ const router = createRouter({
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     {
       path: '/c/:companySlug/',
       name: 'UserLogin',
@@ -146,6 +147,11 @@ const router = createRouter({
       path: '/admin/service-create/:serviceGroupId',
       name: 'ServiceCreate',
       component: () => import('@/views/admin/ServiceCreate.vue'),
+    },
+    {
+      path: '/admin/service-edit/:serviceGroupId',
+      name: 'ServiceEdit',
+      component: () => import('@/views/admin/ServiceEdit.vue'),
     },
     {
       path: '/admin/service-management/:serviceGroupId',
