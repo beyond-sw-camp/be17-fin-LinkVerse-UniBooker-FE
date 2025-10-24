@@ -98,7 +98,7 @@ onMounted(() => {
 }
 
 .service-group-container {
-  @apply bg-white rounded-[15px] flex flex-col gap-4 px-[22px] py-[18px] max-w-[370px];
+  @apply bg-white rounded-[15px] flex flex-col gap-4 px-[22px] py-[18px] w-[350px];
 }
 
 .service-group-container-top {
