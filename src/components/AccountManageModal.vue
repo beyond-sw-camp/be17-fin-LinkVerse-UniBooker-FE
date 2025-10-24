@@ -75,7 +75,7 @@ watch(
       name: newVal.name || '',
       phone: newVal.phone || '',
       logoFile: null,
-      logoUrl: newVal.logo || '/public/assets/images/admin_logo.png',
+      logoUrl: newVal.logoUrl || '/public/assets/images/admin_logo.png',
     }
   },
   { immediate: true },
@@ -164,7 +164,7 @@ const formatPhoneNumber = (e) => {
       <template v-if="mode === 'view'">
         <div class="modal-header">
           <h3>내 계정관리</h3>
-          <span class="cursor-pointer" @click="enterEditMode">수정</span>
+          <span class="cursor-pointer update-btn" @click="enterEditMode">수정</span>
         </div>
 
         <div class="modal-input-section">
@@ -341,5 +341,9 @@ label,
 
 .secession input {
   @apply w-[400px];
+}
+
+.update-btn {
+  @apply border border-opacity-50 border-primary text-primary font-medium px-3 py-0.5 rounded-full hover:border-red-600 hover:bg-gray-line;
 }
 </style>
