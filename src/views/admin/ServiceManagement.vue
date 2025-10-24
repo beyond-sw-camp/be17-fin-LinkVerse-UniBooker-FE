@@ -2,7 +2,7 @@
 import AdminLayout from '@/components/AdminLayout.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
 import Modal from '@/components/Modal.vue'
-import { reactive, computed, ref, onMounted } from 'vue'
+import { reactive, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import serviceApi from '@/services/admin/service_api.js'
@@ -73,9 +73,15 @@ const getServiceList = async (serviceGroupId) => {
   }
 }
 
-onMounted(() => {
-  getServiceList(serviceGroupId)
-})
+watch(
+  () => route.params.serviceGroupId,
+  (newId, oldId) => {
+    if (newId) {
+      getServiceList(newId)
+    }
+  },
+  { immediate: true } 
+)
 </script>
 
 <template>
