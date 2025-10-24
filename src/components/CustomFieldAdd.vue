@@ -16,8 +16,18 @@ const modalFieldType = ref('')
 const modalFieldDescription = ref('')
 const isModalOpen = ref(false)
 
+// 단일/다중 선택용 옵션
+const modalOptions = ref([])
+const newOption = ref('')
+
 const openModal = () => {
   isModalOpen.value = true
+  // 초기화
+  modalFieldName.value = ''
+  modalFieldDescription.value = ''
+  modalFieldType.value = 'TEXT'
+  modalOptions.value = []
+  newOption.value = ''
 }
 const closeModal = () => {
   isModalOpen.value = false
@@ -33,16 +43,34 @@ const types = ref([
   { label: '여부확인', value: 'BOOLEAN' },
 ])
 
+// 선택 항목 추가
+const addOption = () => {
+  if (!newOption.value.trim()) return
+  modalOptions.value.push(newOption.value.trim())
+  newOption.value = ''
+}
+
+// 선택 항목 삭제
+const removeOption = (index) => {
+  modalOptions.value.splice(index, 1)
+}
+
 const addFieldFromModal = () => {
-  if (!modalFieldName.value) return
-  emit('add-field', {
+  if (!modalFieldName.value) return alert('항목명을 입력해주세요.')
+
+  const payload = {
     fieldName: modalFieldName.value,
     dataType: modalFieldType.value,
     description: modalFieldDescription.value,
-  })
-  modalFieldName.value = ''
-  modalFieldType.value = 'TEXT'
-  modalFieldDescription.value = ''
+  }
+
+  if (modalFieldType.value === 'RADIO' || modalFieldType.value === 'CHECKBOX') {
+    payload.options = [...modalOptions.value]
+    if (payload.options.length === 0) return alert('선택 항목을 최소 하나 이상 추가해주세요.')
+  }
+
+  emit('add-field', payload)
+
   closeModal()
 }
 </script>
@@ -116,6 +144,27 @@ const addFieldFromModal = () => {
         />
       </div>
 
+      <div
+        v-if="modalFieldType === 'RADIO' || modalFieldType === 'CHECKBOX'"
+        class="add-field-items-container"
+      >
+        <div class="field-label-container">선택 항목 추가</div>
+        <div class="flex gap-2 mb-2">
+          <input
+            v-model="newOption"
+            placeholder="항목을 입력하세요."
+            class="modal-input-focus-style"
+          />
+          <button @click="addOption" class="add-option-button">+</button>
+        </div>
+        <ul class="option-list">
+          <li v-for="(opt, idx) in modalOptions" :key="idx" class="option-item">
+            {{ opt }}
+            <button @click="removeOption(idx)" class="remove-option-button">ㅡ</button>
+          </li>
+        </ul>
+      </div>
+
       <div class="button-container">
         <Button @click="closeModal" theme="gray">취소</Button>
         <Button @click="addFieldFromModal">추가</Button>
@@ -154,7 +203,7 @@ const addFieldFromModal = () => {
 }
 
 .modal-container {
-  @apply px-[30px] py-[20px] flex flex-col;
+  @apply px-[30px] my-[20px] flex flex-col max-h-[560px] overflow-y-auto;
 }
 
 h3 {
@@ -205,5 +254,22 @@ textarea {
 
 .field-delete-button img {
   @apply w-[10px];
+}
+
+.add-option-button {
+  @apply bg-blue-600 text-white w-[40px] h-[40px] rounded text-[30px] leading-tight;
+}
+
+.option-item {
+  @apply flex justify-between w-[235px] px-[12px] py-[8px] border border-gray-line rounded-[3px] text-[14px];
+}
+
+.option-list {
+  @apply flex flex-col gap-1
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 6px;          /* 모서리 둥글게 */
+  border: 3px solid #f0f0f0;  /* 주변 여백 색 */
 }
 </style>
