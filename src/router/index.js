@@ -33,8 +33,8 @@ const router = createRouter({
     },
     {
       path: '/c/:companySlug/service/list',
-      name: 'ServiceList',
-      component: () => import('@/views/user/ServiceListView.vue'),
+      name: 'ServiceGroupList',
+      component: () => import('@/views/user/ServiceGroupListView.vue'),
       meta: { layout: 'user' },
     },
     {
