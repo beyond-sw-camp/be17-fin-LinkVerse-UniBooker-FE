@@ -50,6 +50,11 @@ const uploadImage = async (presigedUrl, file) => {
   return data
 }
 
+// 서비스 그룹의 카테고리와 상시모집 여부 조회
+const getServiceGroupFieldInfo = async (resourceGroupId) => {
+    return await axiosInstance.get(`api/resource-group/${resourceGroupId}/register`)
+}
+
 const getServiceGroupInfo = async (resourceGroupId) => {
   return await axiosInstance.get(`api/resource-group/${resourceGroupId}/edit`)
 }
@@ -81,4 +86,5 @@ export default {
   editServiceGroup,
   deleteServiceGroup,
   createService,
+  getServiceGroupFieldInfo,
 }
