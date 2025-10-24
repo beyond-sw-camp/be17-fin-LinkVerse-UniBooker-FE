@@ -12,6 +12,8 @@ const router = useRouter()
 const serviceGroupId = route.params.serviceGroupId
 const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
 
+const thumbnail = ref('')
+
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
   { label: '좌석형', value: 'SEAT' },
@@ -115,6 +117,38 @@ const resetValues = () => {
   row.value = null
   col.value = null
 }
+
+// ---서비스 이미지 업로드---
+const onFileChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    // 1. FormData 생성 및 백엔드에서 presigned URL 요청
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('imageType', 'serviceGroup')
+
+    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(formData)
+    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
+
+    console.log('Presigned URL:', presignedUrl)
+
+    // 2. S3에 이미지 업로드
+    await serviceApi.uploadImage(presignedUrl, file)
+
+    // 3. CloudFront URL로 변환
+    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
+    const s3Path = presignedUrl.split('.com')[1].split('?')[0] // 쿼리 제거
+    thumbnail.value = cloudFrontDomain + s3Path
+
+    console.log('CloudFront URL:', thumbnail.value)
+
+  } catch (error) {
+    console.error('이미지 업로드 과정에서 오류 발생:', error)
+    alert('이미지 업로드 중 오류가 발생했습니다.')
+  }
+}
 </script>
 
 <template>
@@ -135,10 +169,16 @@ const resetValues = () => {
         <p>고객들이 어떤 서비스인지 쉽게 알 수 있도록 알맞은 이미지를 업로드 해주세요.</p>
       </div>
       <div id="service-group-image-upload">
-        <label for="file-upload" class="file-upload-label"> 이미지 업로드 </label>
-        <input id="file-upload" type="file" class="file-upload-input" />
+        <label for="file-upload" class="file-upload-label">
+          <template v-if="thumbnail">
+            <img :src="thumbnail" class="service-group-thumbnail" alt="미리보기" />
+          </template>
+          <template v-else>
+            이미지 업로드
+          </template>
+        </label>
+        <input id="file-upload" type="file" class="file-upload-input"  @change="onFileChange"/>
       </div>
-      <!-- TODO: 이미지 슬라이드 컨테이너 생성 (이미지 업로드 로직 구현 후) -->
     </section>
 
     <!-- 서비스 이름 -->
@@ -338,6 +378,26 @@ const resetValues = () => {
 
 .form-label-container {
   @apply flex gap-3 items-center mt-[35px] mb-[6px];
+}
+
+.form-label-container img {
+  @apply w-[14px] h-[14px] cursor-pointer;
+}
+
+#service-group-image-upload {
+  @apply rounded-[3px] bg-[#D9D9D9] w-[507px] h-[264px] flex items-center justify-center cursor-pointer;
+}
+
+.service-group-thumbnail {
+  @apply max-w-full max-h-full;
+}
+
+.file-upload-input {
+  @apply hidden;
+}
+
+.file-upload-label {
+  @apply flex w-full h-full flex items-center justify-center cursor-pointer text-[15px] text-gray-dark;
 }
 
 .form-label-container > div {
