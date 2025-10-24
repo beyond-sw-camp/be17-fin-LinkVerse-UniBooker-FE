@@ -30,6 +30,10 @@ const deleteServiceGroup = async (serviceGroupId) => {
   }
 }
 
+const goCreate = () => {
+  router.push({ name: 'ServiceGroupCreate' })
+}
+
 const goEdit = (serviceGroupId) => {
   router.push(`/admin/service-group-edit/${serviceGroupId}`)
 }
@@ -44,7 +48,8 @@ onMounted(() => {
     <!-- 페이지 헤더 -->
     <div class="components-page-title">
       <span class="haeder"
-        >서비스 그룹 관리 <img src="/assets/icons/ic-dark-gray-plus.png" alt="추가하기"
+        >서비스 그룹 관리
+        <img src="/assets/icons/ic-dark-gray-plus.png" alt="추가하기" @click="goCreate"
       /></span>
     </div>
 
