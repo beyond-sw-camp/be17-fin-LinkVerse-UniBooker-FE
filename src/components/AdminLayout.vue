@@ -15,7 +15,7 @@ async function openModal() {
     const response = await adminApi.getManagerInfo()
     console.log('🔍 전체 응답:', response)
     console.log('🔍 response.data:', response.data)
-    
+
     // BaseResponse 구조: { code, message, data: {...}, isSuccess }
     // response.data가 이미 BaseResponse이므로 response.data.data가 실제 데이터
     if (response.data && response.data.data) {
@@ -24,7 +24,7 @@ async function openModal() {
       // 만약 response.data가 직접 데이터라면
       userData.value = response.data
     }
-    
+
     console.log('🔍 최종 userData:', userData.value)
     isModalOpen.value = true
   } catch (err) {
@@ -124,7 +124,7 @@ onMounted(() => {
           <router-link class="sub-menu-item" to="/admin/manager-management"
             >관리자 관리</router-link
           >
-          <router-link class="sub-menu-item" to="/admin/service-group-managation"
+          <router-link class="sub-menu-item" to="/admin/service-group-management"
             >서비스 그룹 관리</router-link
           >
         </div>

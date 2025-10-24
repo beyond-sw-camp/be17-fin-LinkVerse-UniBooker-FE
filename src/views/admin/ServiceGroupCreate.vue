@@ -4,6 +4,9 @@ import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
 import serviceApi from '@/services/admin/service_api'
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 // --- 카테고리 ---
 const category = ref([
@@ -24,10 +27,6 @@ const serviceCustomFields = ref([])
 const userCustomFields = ref([])
 
 // ---서비스 그룹 이미지 업로드---
-const selectedFile = ref(null)
-const previewUrl = ref(null)
-
-
 const onFileChange = async (event) => {
   const file = event.target.files[0]
   if (!file) return
@@ -49,9 +48,9 @@ const onFileChange = async (event) => {
     // 3. CloudFront URL로 변환
     const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
     const s3Path = presignedUrl.split('.com')[1].split('?')[0] // 쿼리 제거
-    previewUrl.value = cloudFrontDomain + s3Path
+    thumbnail.value = cloudFrontDomain + s3Path
 
-    console.log('CloudFront URL:', previewUrl.value)
+    console.log('CloudFront URL:', thumbnail.value)
 
   } catch (error) {
     console.error('이미지 업로드 과정에서 오류 발생:', error)
@@ -106,15 +105,13 @@ const createServiceGroup = async () => {
     const response = await serviceApi.createServiceGroup(formData)
     console.log('✅ 서비스 그룹 생성 성공:', response.data)
     alert('서비스 그룹이 성공적으로 생성되었습니다!')
+    router.push({ name: 'ServiceGroupManagation' })
   } catch (error) {
     console.error('❌ 서비스 그룹 생성 실패:', error)
     alert('서비스 그룹 생성 중 오류가 발생했습니다.')
   }
 }
 </script>
-
-
-
 <template>
   <AdminLayout>
     <!-- 페이지 헤더 -->
@@ -130,9 +127,9 @@ const createServiceGroup = async () => {
         <p>고객들이 어떤 서비스 그룹인지 쉽게 알 수 있도록 알맞은 이미지를 업로드 해주세요.</p>
       </div>
       <div id="service-group-image-upload">
-        <label for="file-upload" class="file-upload-label" style="cursor: pointer; display: inline-block;">
-          <template v-if="previewUrl">
-            <img :src="previewUrl" alt="미리보기" style="max-width: 300px;" />
+        <label for="file-upload" class="file-upload-label">
+          <template v-if="thumbnail">
+            <img :src="thumbnail" class="service-group-thumbnail" alt="미리보기" />
           </template>
           <template v-else>
             이미지 업로드
@@ -259,6 +256,10 @@ const createServiceGroup = async () => {
 
 #service-group-image-upload {
   @apply rounded-[3px] bg-[#D9D9D9] w-[507px] h-[264px] flex items-center justify-center cursor-pointer;
+}
+
+.service-group-thumbnail {
+  @apply max-w-full max-h-full;
 }
 
 .file-upload-input {

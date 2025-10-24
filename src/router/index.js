@@ -123,9 +123,9 @@ const router = createRouter({
       component: () => import('@/views/admin/ServiceGroupCreate.vue'),
     },
     {
-      path: '/admin/service-group-managation',
-      name: 'ServiceGroupManagation',
-      component: () => import('@/views/admin/ServiceGroupManagation.vue'),
+      path: '/admin/service-group-management',
+      name: 'ServiceGroupManagement',
+      component: () => import('@/views/admin/ServiceGroupManagement.vue'),
     },
     {
       path: '/admin/service-group-edit/:id',
