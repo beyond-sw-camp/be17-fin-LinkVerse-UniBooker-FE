@@ -107,15 +107,19 @@ const handleLogin = async () => {
         companyInfo.value.companySlug,
       )
 
-      console.log('✅ Store 로그인 상태:', authStore.isLoggedIn)
-      console.log('✅ Store 역할:', authStore.role)
-      console.log('✅ Store 기업 ID:', authStore.companyId)
-      console.log('✅ Store 기업 Slug:', authStore.companySlug)
-
       // 로그인 후 리다이렉트
       if (loginResult.passwordChangeRequired) {
-        alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
-        router.push(`/c/${companyInfo.value.companySlug}/change-password`)
+        // ADMIN/MANAGER는 강제 변경, USER는 안내만
+        if (loginResult.role === 'ADMIN' || loginResult.role === 'MANAGER') {
+          alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
+          router.push(`/c/${companyInfo.value.companySlug}/change-password`)
+        } else {
+          // 일반 사용자는 안내만 하고 서비스로 이동
+          alert(
+            '로그인 성공!\n\n보안을 위해 비밀번호를 변경하는 것을 권장합니다.\n(프로필 메뉴에서 변경 가능)',
+          )
+          router.push(`/c/${companyInfo.value.companySlug}/services`)
+        }
       } else {
         alert('로그인 성공!')
         router.push(`/c/${companyInfo.value.companySlug}/services`)
@@ -159,11 +163,19 @@ const goToSignup = () => {
 // ========== 아이디/비밀번호 찾기 (TODO) ==========
 
 const goToFindId = () => {
-  alert('아이디 찾기 기능은 준비 중입니다.')
+  if (companyInfo.value) {
+    router.push(`/c/${companyInfo.value.companySlug}/find-id`)
+  } else {
+    alert('기업 정보를 불러오는 중입니다.')
+  }
 }
 
 const goToFindPassword = () => {
-  alert('비밀번호 찾기 기능은 준비 중입니다.')
+  if (companyInfo.value) {
+    router.push(`/c/${companyInfo.value.companySlug}/find-password`)
+  } else {
+    alert('기업 정보를 불러오는 중입니다.')
+  }
 }
 </script>
 
