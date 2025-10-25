@@ -149,7 +149,7 @@ const router = createRouter({
       component: () => import('@/views/admin/ServiceCreate.vue'),
     },
     {
-      path: '/admin/service-edit/:serviceGroupId',
+      path: '/admin/service-edit/:serviceId',
       name: 'ServiceEdit',
       component: () => import('@/views/admin/ServiceEdit.vue'),
     },
