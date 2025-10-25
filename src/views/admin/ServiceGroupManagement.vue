@@ -19,6 +19,10 @@ const getServiceGroups = async () => {
 }
 
 const deleteServiceGroup = async (serviceGroupId) => {
+  // 삭제 확인
+  const isConfirmed = window.confirm('정말 이 서비스 그룹을 삭제하시겠습니까?')
+  if (!isConfirmed) return
+  
   try {
     const response = await serviceApi.deleteServiceGroup(serviceGroupId)
     const data = response.data.data

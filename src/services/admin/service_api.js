@@ -77,6 +77,14 @@ const createService = async (formdata) => {
   return await axiosInstance.post(`api/resource`, formdata)
 }
 
+const getServiceList = async (serviceGroupId) => {
+  return await axiosInstance.get(`api/resource/group/${serviceGroupId}`)
+}
+
+const getResourceCustomFieldAndValue = async (resourceId) => {
+  return await axiosInstance.get(`/api/custom-field/value/resource/${resourceId}?type=RESOURCE`)
+}
+
 export default {
   createServiceGroup,
   getServiceGroupPresignedURL,
@@ -87,4 +95,6 @@ export default {
   deleteServiceGroup,
   createService,
   getServiceGroupFieldInfo,
+  getServiceList,
+  getResourceCustomFieldAndValue,
 }
