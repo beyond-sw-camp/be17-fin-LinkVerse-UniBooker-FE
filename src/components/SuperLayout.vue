@@ -3,9 +3,12 @@ import { RouterView, useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import { useAuthStore } from '@/stores/UseStore'
+import superApi from '@/services/super/super_api'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 const selectedMenu = ref(route.path)
 
 // 메뉴 배열 정의
@@ -31,6 +34,31 @@ const notifications = ref([
 // 알림 아이콘 클릭 토글
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value
+}
+
+// ===== 로그아웃 핸들러 =====
+
+/**
+ * 로그아웃 처리
+ * - 서버에 로그아웃 API 호출 (쿠키 삭제)
+ * - Store 초기화
+ * - 로그인 페이지로 리다이렉트
+ */
+const handleLogout = async () => {
+  try {
+    // 서버에 로그아웃 요청 (쿠키 삭제)
+    await superApi.logout()
+
+    // 스토어 로그아웃 처리
+    authStore.logout()
+
+    // 로그인 페이지로 리다이렉트
+    router.push('/super/login')
+  } catch (error) {
+    // 실패해도 프론트엔드 상태는 초기화
+    authStore.logout()
+    router.push('/super/login')
+  }
 }
 </script>
 
@@ -59,7 +87,7 @@ const toggleDropdown = () => {
       </div>
 
       <!-- 로그아웃 버튼 -->
-      <div class="sub-menu-logout-button-container">
+      <div class="sub-menu-logout-button-container" @click="handleLogout">
         <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
         Logout
       </div>
@@ -74,7 +102,12 @@ const toggleDropdown = () => {
           <button @click.stop="toggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
-          <NotificationDropdown type="super" v-if="isDropdownOpen" :notifications="notifications" @close="isDropdownOpen = false" />
+          <NotificationDropdown
+            type="super"
+            v-if="isDropdownOpen"
+            :notifications="notifications"
+            @close="isDropdownOpen = false"
+          />
         </div>
       </div>
       <div class="content-slot">

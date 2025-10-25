@@ -14,8 +14,6 @@ const authStore = useAuthStore()
 async function openModal() {
   try {
     const response = await adminApi.getManagerInfo()
-    console.log('🔍 전체 응답:', response)
-    console.log('🔍 response.data:', response.data)
 
     // BaseResponse 구조: { code, message, data: {...}, isSuccess }
     // response.data가 이미 BaseResponse이므로 response.data.data가 실제 데이터
@@ -26,11 +24,8 @@ async function openModal() {
       userData.value = response.data
     }
 
-    console.log('🔍 최종 userData:', userData.value)
     isModalOpen.value = true
   } catch (err) {
-    console.error('❌ 프로필 조회 실패:', err)
-    console.error('❌ 에러 응답:', err.response)
     alert('프로필 조회에 실패했습니다.')
   }
 }
@@ -55,18 +50,14 @@ const handleLogout = async () => {
     // }
 
     // 로그아웃 API 호출 (쿠키는 자동으로 전송됨)
-    await adminApi.logout(refreshToken)
+    await adminApi.logout()
 
     // 스토어 로그아웃 처리
     authStore.logout()
 
     // 로그인 페이지로 리다이렉트
     router.push('/admin/login')
-
-    console.log('✅ 로그아웃 완료 (쿠키 삭제됨)')
   } catch (error) {
-    console.error('❌ 로그아웃 실패:', error)
-
     // 실패해도 프론트엔드 상태는 초기화
     authStore.logout()
     router.push('/admin/login')
@@ -90,7 +81,7 @@ const getServiceGroups = async () => {
 
     Object.assign(serviceGroups, data.resourceGroups)
   } catch (error) {
-    console.log('서비스 그룹 목록 조회 실패: ', error)
+    // 서비스 그룹 목록 조회 실패
   }
 }
 

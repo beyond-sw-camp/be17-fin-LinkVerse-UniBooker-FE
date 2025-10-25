@@ -5,8 +5,7 @@ import { useAuthStore } from '@/stores/UseStore'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import { getCompanyBySlug, checkEmailDuplicate, signUpUser } from '@/services/user/user_api'
-import { loginUser } from '@/services/user/user_api'
+import userApi from '@/services/user/user_api'
 
 const router = useRouter()
 const route = useRoute()
@@ -63,7 +62,7 @@ const loadCompanyInfo = async () => {
 
   isLoadingCompany.value = true
   try {
-    const response = await getCompanyBySlug(companySlug)
+    const response = await userApi.getCompanyBySlug(companySlug)
 
     if (response.isSuccess && response.data) {
       companyInfo.value = response.data
@@ -156,7 +155,7 @@ const checkEmail = async () => {
   }
 
   try {
-    const response = await checkEmailDuplicate(formData.email, formData.companyId)
+    const response = await userApi.checkEmailDuplicate(formData.email, formData.companyId)
 
     if (response.isSuccess) {
       const exists = response.data
@@ -197,7 +196,7 @@ const autoLogin = async (email, password) => {
       companyId: formData.companyId,
     }
 
-    const response = await loginUser(loginData)
+    const response = await userApi.loginUser(loginData)
 
     if (response.isSuccess && response.data) {
       const loginResult = response.data
@@ -281,7 +280,7 @@ const handleSubmit = async () => {
       gender: formData.gender || null,
     }
 
-    const response = await signUpUser(signUpData)
+    const response = await userApi.signUpUser(signUpData)
 
     if (response.isSuccess) {
       alert('회원가입이 완료되었습니다!')
