@@ -1,5 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, defineEmits } from 'vue'
+
+const emits = defineEmits(['select'])
 
 /* 상수 */
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -25,6 +27,8 @@ const daysInMonth = computed(() =>
 // 날짜 선택
 function selectDate(day) {
   selectedDate.value = day
+  const date = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  emits('select', date)
 }
 
 // 이전 달로 이동

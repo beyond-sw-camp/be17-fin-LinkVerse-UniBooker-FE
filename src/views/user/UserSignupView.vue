@@ -290,7 +290,7 @@ const handleSubmit = async () => {
 
       if (loginSuccess) {
         // 자동 로그인 성공 → 서비스 목록으로 이동
-        router.push(`/c/${companyInfo.value.companySlug}/service/list`)
+        router.push(`/c/${companyInfo.value.companySlug}/services`)
       } else {
         // 자동 로그인 실패 → 로그인 페이지로 이동
         router.push(`/c/${companyInfo.value.companySlug}`)

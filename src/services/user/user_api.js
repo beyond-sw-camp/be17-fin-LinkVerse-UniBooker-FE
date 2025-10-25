@@ -113,6 +113,74 @@ const logoutUser = async () => {
   }
 }
 
+// ========== 프로필 관련 (추가) ==========
+
+/**
+ * 내 프로필 조회
+ */
+const getMyProfile = async () => {
+  try {
+    const response = await axiosInstance.get('/api/users/profile')
+    return response.data
+  } catch (error) {
+    console.error('프로필 조회 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 내 프로필 수정
+ * @param {Object} profileData - 프로필 수정 데이터
+ * @param {string} profileData.name - 이름
+ * @param {string} [profileData.phone] - 전화번호 (선택)
+ * @param {string} [profileData.birthDate] - 생년월일 (선택)
+ * @param {string} [profileData.gender] - 성별 (선택)
+ */
+const updateMyProfile = async (profileData) => {
+  try {
+    const response = await axiosInstance.patch('/api/users/profile', profileData)
+    return response.data
+  } catch (error) {
+    console.error('프로필 수정 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 비밀번호 변경
+ * @param {Object} passwordData - 비밀번호 변경 데이터
+ * @param {string} passwordData.currentPassword - 현재 비밀번호
+ * @param {string} passwordData.newPassword - 새 비밀번호
+ * @param {string} passwordData.confirmPassword - 새 비밀번호 확인
+ */
+const changePassword = async (passwordData) => {
+  try {
+    const response = await axiosInstance.put('/api/users/password', passwordData)
+    return response.data
+  } catch (error) {
+    console.error('비밀번호 변경 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 회원 탈퇴
+ * @param {Object} withdrawData - 회원 탈퇴 데이터
+ * @param {string} withdrawData.password - 비밀번호 확인
+ * @param {string} [withdrawData.reason] - 탈퇴 사유 (선택)
+ */
+const withdrawUser = async (withdrawData) => {
+  try {
+    const response = await axiosInstance.delete('/api/users/profile', {
+      data: withdrawData
+    })
+    return response.data
+  } catch (error) {
+    console.error('회원 탈퇴 실패:', error)
+    throw error
+  }
+}
+
 export default {
   // 기업 정보
   getCompanyBySlug,
@@ -125,4 +193,10 @@ export default {
   // 인증
   loginUser,
   logoutUser,
+  
+  // 프로필 관련 (추가)
+  getMyProfile,
+  updateMyProfile,
+  changePassword,
+  withdrawUser,
 }

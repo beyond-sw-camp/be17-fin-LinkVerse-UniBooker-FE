@@ -15,12 +15,9 @@ async function openModal() {
   try {
     const response = await adminApi.getManagerInfo()
 
-    // BaseResponse 구조: { code, message, data: {...}, isSuccess }
-    // response.data가 이미 BaseResponse이므로 response.data.data가 실제 데이터
     if (response.data && response.data.data) {
       userData.value = response.data.data
     } else {
-      // 만약 response.data가 직접 데이터라면
       userData.value = response.data
     }
 

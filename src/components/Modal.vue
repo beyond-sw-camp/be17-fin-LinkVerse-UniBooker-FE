@@ -32,6 +32,6 @@ function handleOverlayClick(e) {
 }
 
 .components-modal-contents {
-  @apply bg-white shadow-md p-6 rounded-md max-w-[600px] min-w-[300px] z-50;
+  @apply bg-white shadow-md p-6 rounded-md max-w-[1500px] min-w-[300px] z-50;
 }
 </style>

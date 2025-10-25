@@ -118,10 +118,11 @@ const openFilePicker = () => {
     <template v-else>
       <input
         :type="props.type"
-        :class="[inputClasses, 'w-full']"
+        :class="[inputClasses, 'w-full', $attrs.class]"
         :placeholder="props.placeholder"
         :disabled="disabled"
         :value="modelValue != null ? modelValue : ''"
+        :readonly="$attrs.readonly"
         @input="onChange"
       />
     </template>

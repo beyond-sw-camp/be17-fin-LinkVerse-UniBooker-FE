@@ -8,6 +8,7 @@ const router = createRouter({
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 고객 관련 라우터
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     {
       path: '/c/:companySlug/',
       name: 'UserLogin',
@@ -42,6 +43,12 @@ const router = createRouter({
       path: '/c/:companySlug/services/:groupId',
       name: 'UserServiceList',
       component: () => import('@/views/user/ServiceListView.vue'),
+      meta: { layout: 'user' },
+    },
+    {
+      path: '/c/:companySlug/service-item/detail',
+      name: 'ServiceItemDetail',
+      component: () => import('@/views/user/ServiceItemDetailView.vue'),
       meta: { layout: 'user' },
     },
     {
@@ -156,6 +163,11 @@ const router = createRouter({
       name: 'ServiceCreate',
       component: () => import('@/views/admin/ServiceCreate.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
+    },
+    {
+      path: '/admin/service-edit/:serviceId',
+      name: 'ServiceEdit',
+      component: () => import('@/views/admin/ServiceEdit.vue'),
     },
     {
       path: '/admin/service-management/:serviceGroupId',
