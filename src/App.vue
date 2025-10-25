@@ -133,16 +133,16 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* .user-layout {
+.user-layout {
   @apply min-h-screen flex flex-col;
 }
 
 .user-content {
   @apply flex-1;
-} */
+}
 
 /* Admin 레이아웃 스타일 추가 */
-/* .admin-layout {
+.admin-layout {
   @apply min-h-screen flex bg-gray-line;
 }
 
@@ -152,5 +152,5 @@ onUnmounted(() => {
 
 .admin-content {
   @apply flex-1 pt-20;
-} */
+}
 </style>
