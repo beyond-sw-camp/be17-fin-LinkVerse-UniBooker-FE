@@ -85,7 +85,7 @@ const goToHome = () => {
  */
 const goToService = () => {
   const slug = authStore.companySlug || 'default'
-  router.push(`/c/${slug}/service/list`)
+  router.push(`/c/${slug}/services`)
 }
 
 /**
