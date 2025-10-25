@@ -1,7 +1,6 @@
 <script setup>
 import AdminLayout from '@/components/AdminLayout.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import Modal from '@/components/Modal.vue'
 import { reactive, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
@@ -13,33 +12,58 @@ const serviceGroupId = route.params.serviceGroupId
 const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
 const services = reactive([])
 
-const breadcrumbItems = [
-  { label: '서비스 그룹', path: `admin/service-group-managation` },
-  { label: serviceGroupName, path: `` },
-]
+const breadcrumbItems = computed(() => [
+  { label: '서비스 그룹', path: '/admin/service-group-managation' },
+  { label: decodeURIComponent(route.query.serviceGroupName || ''), path: '' },
+])
 
 const selectedService = reactive({
-  serviceId: null,
-  serviceName: '',
+  id: null,
+  name: '',
   startTime: '',
   endTime: '',
   capacity: 0,
-  location: '',
   description: '',
+  customFields: [],
 })
 
 const showDetailModal = ref(false)
 
 // 모달 열기
-const viewServiceDetail = (id) => {
+const viewServiceDetail = async (id) => {
   const service = services.find((s) => s.id === id)
   if (service) {
     Object.assign(selectedService, service)
     showDetailModal.value = true
+
+    try {
+      const response = await serviceApi.getResourceCustomFieldAndValue(id)
+      selectedService.customFields = (response.data.data || []).map((field) => ({
+        fieldName: field.fieldName,
+        value: Array.isArray(field.values) ? field.values.join(', ') : field.values,
+      }))
+    } catch (error) {
+      console.error('커스텀 필드 조회 실패:', error)
+      selectedService.customFields = []
+    }
   }
 }
 
-const goToEditService = () => {}
+const goToEditService = (serviceId) => {
+  if (!serviceId) {
+    console.warn('서비스 ID가 없습니다.')
+    return
+  }
+
+  router.push({
+    name: 'ServiceEdit',
+    params: { serviceId },
+    query: {
+      serviceGroupId: serviceGroupId, // 그룹정보도 필요할 경우
+      serviceGroupName: serviceGroupName, 
+    },
+  })
+}
 
 // 상태별 computed
 const createStatusComputed = (statusName) =>
@@ -80,7 +104,7 @@ watch(
       getServiceList(newId)
     }
   },
-  { immediate: true } 
+  { immediate: true },
 )
 </script>
 
@@ -189,41 +213,53 @@ watch(
     </div>
 
     <Modal :open="showDetailModal">
-      <div class="service-image mb-4"></div>
+      <div class="modal-container">
+        <!-- <img class="resource-image-box" :src="selectedService.resourceImage" alt="리소스 이미지" /> -->
+        <img
+          class="resource-image-box"
+          src="https://image.fmkorea.com/files/attach/new4/20250110/7908807291_44021718_cc499aa70d44d0afe024a9295e6a6c23.jpg"
+          alt="djse"
+        />
 
-      <div class="info-row">
-        <span class="info-label font-semibold">서비스명:</span>
-        <span>{{ selectedService.serviceName }}</span>
-      </div>
+        <div class="resource-info-container">
+          <h2>{{ selectedService.name }}</h2>
 
-      <div class="info-row">
-        <span class="info-label font-semibold">시작시간:</span>
-        <span>{{ selectedService.startTime }}</span>
-      </div>
+          <div class="info-row">
+            <span class="info-label">시작시간</span>
+            <span>{{ selectedService.startTime }}</span>
+          </div>
 
-      <div class="info-row">
-        <span class="info-label font-semibold">종료시간:</span>
-        <span>{{ selectedService.endTime }}</span>
-      </div>
+          <div class="info-row">
+            <span class="info-label">종료시간</span>
+            <span>{{ selectedService.endTime }}</span>
+          </div>
 
-      <div class="info-row">
-        <span class="info-label font-semibold">인원수:</span>
-        <span>{{ selectedService.capacity }}</span>
-      </div>
+          <div class="info-row">
+            <span class="info-label">인원수</span>
+            <span>{{ selectedService.capacity }} 명</span>
+          </div>
 
-      <div class="info-row">
-        <span class="info-label font-semibold">장소:</span>
-        <span>{{ selectedService.location }}</span>
-      </div>
+          <div v-if="selectedService.customFields.length">
+            <div
+              v-for="(field, index) in selectedService.customFields"
+              :key="index"
+              class="info-row"
+            >
+              <span class="info-label">{{ field.fieldName }}</span>
+              <span>{{ field.value }}</span>
+            </div>
+          </div>
 
-      <div class="info-row">
-        <span class="info-label font-semibold">설명:</span>
-        <span>{{ selectedService.description }}</span>
-      </div>
+          <div class="service-info-description-container">
+            <span class="info-label">설명</span>
+            <p>{{ selectedService.description }}</p>
+          </div>
+        </div>
 
-      <div class="modal-footer">
-        <Button class="modal-btn" :theme="'gray'" @click="showDetailModal = false">닫기</Button>
-        <Button class="modal-btn" @click="goToEditService">수정</Button>
+        <div class="modal-footer">
+          <Button class="modal-btn" :theme="'gray'" @click="showDetailModal = false">닫기</Button>
+          <Button class="modal-btn" @click="goToEditService(selectedService.id)">수정</Button>
+        </div>
       </div>
     </Modal>
   </AdminLayout>
@@ -267,25 +303,53 @@ watch(
   @apply flex justify-between text-[12px] text-text border-b border-gray-line p-[13px];
 }
 .service-name {
-  @apply text-blue-600 hover:underline cursor-pointer text-[14px];
+  @apply text-blue-600 hover:font-medium hover:underline cursor-pointer text-[14px];
 }
 .service-image {
   @apply w-full h-40 bg-gray-200 rounded-md;
 }
 .info-row {
-  @apply flex gap-2 mb-2 items-center  min-w-[300px];
+  @apply flex gap-2 mb-2 items-center  min-w-[300px] text-[14px];
 }
 .info-label {
-  @apply w-24 text-gray-700 text-sm;
+  @apply w-24 text-[#535353] text-[14px];
 }
 .modal-footer {
-  @apply flex float-right gap-3 mt-2;
+  @apply flex float-right gap-1 mt-2 w-full justify-end;
 }
 .modal-btn {
-  @apply w-[130px] text-sm;
+  @apply w-[80px] text-sm rounded-[5px];
 }
 
 .service-name-container {
   @apply px-[14px] py-[10px];
+}
+
+.resource-image-box {
+  @apply w-full h-[220px] object-cover rounded-[5px];
+}
+
+.modal-container {
+  @apply w-[512px] max-h-[500px] flex flex-col overflow-y-auto;
+}
+
+.modal-container h2 {
+  @apply text-[18px] font-bold mt-[15px] mb-[15px];
+}
+
+.resource-info-container {
+  @apply p-[5px] flex-1;
+}
+
+.service-info-description-container {
+  @apply flex flex-col items-start gap-2
+}
+
+.service-info-description-container p {
+  @apply text-[14px] mb-[20px]
+}
+
+::-webkit-scrollbar-track {
+  background: #eeeeee;
 }
 </style>
