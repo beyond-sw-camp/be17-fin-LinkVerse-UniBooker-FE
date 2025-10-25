@@ -214,12 +214,7 @@ watch(
 
     <Modal :open="showDetailModal">
       <div class="modal-container">
-        <!-- <img class="resource-image-box" :src="selectedService.resourceImage" alt="리소스 이미지" /> -->
-        <img
-          class="resource-image-box"
-          src="https://image.fmkorea.com/files/attach/new4/20250110/7908807291_44021718_cc499aa70d44d0afe024a9295e6a6c23.jpg"
-          alt="djse"
-        />
+        <img class="resource-image-box" :src="selectedService.resourceImage" alt="리소스 이미지" />
 
         <div class="resource-info-container">
           <h2>{{ selectedService.name }}</h2>
