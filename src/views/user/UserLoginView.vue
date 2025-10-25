@@ -118,7 +118,7 @@ const handleLogin = async () => {
         router.push(`/c/${companyInfo.value.companySlug}/change-password`)
       } else {
         alert('로그인 성공!')
-        router.push(`/c/${companyInfo.value.companySlug}/service/list`)
+        router.push(`/c/${companyInfo.value.companySlug}/services`)
       }
     } else {
       alert(response.message || '로그인에 실패했습니다.')
