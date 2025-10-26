@@ -12,7 +12,6 @@ const getServiceGroups = async () => {
     const data = response.data.data
 
     Object.assign(serviceGroups, data.resourceGroups)
-    console.log(serviceGroups)
   } catch (error) {
     console.log('서비스 그룹 목록 조회 실패: ', error)
   }
@@ -26,7 +25,6 @@ const deleteServiceGroup = async (serviceGroupId) => {
   try {
     const response = await serviceApi.deleteServiceGroup(serviceGroupId)
     const data = response.data.data
-    console.log(data)
     const index = serviceGroups.findIndex((s) => s.id === serviceGroupId)
     if (index !== -1) serviceGroups.splice(index, 1)
   } catch (error) {
