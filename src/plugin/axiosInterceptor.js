@@ -103,11 +103,6 @@ axiosInstance.interceptors.response.use(
       if (isLoggingOut) {
         return Promise.reject(error)
       }
-      
-      // 비밀번호 재설정 페이지는 예외 처리
-      if (currentPath.includes('/admin/firstPassword')) {
-        return Promise.reject(error)
-      }
 
       // refresh 요청 자체가 실패한 경우 → 즉시 로그아웃
       if (originalRequest.url === '/api/auth/refresh') {

@@ -216,6 +216,32 @@ const findEmail = async (findEmailData) => {
   }
 }
 
+/**
+ * 현재 로그인 사용자 정보 조회 (인증 확인용)
+ */
+const getCurrentUser = async () => {
+  try {
+    const response = await axiosInstance.get('/api/users/me')
+    return response.data
+  } catch (error) {
+    console.error('현재 사용자 정보 조회 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * Access Token 갱신
+ */
+const refreshToken = async () => {
+  try {
+    const response = await axiosInstance.post('/api/users/refresh')
+    return response.data
+  } catch (error) {
+    console.error('Token 갱신 실패:', error)
+    throw error
+  }
+}
+
 export default {
   // 기업 정보
   getCompanyBySlug,
@@ -240,4 +266,10 @@ export default {
 
   // 아이디 찾기
   findEmail,
+
+  // 현재 로그인 사용자 정보 조회
+  getCurrentUser,
+
+  // Access Token 갱신
+  refreshToken 
 }

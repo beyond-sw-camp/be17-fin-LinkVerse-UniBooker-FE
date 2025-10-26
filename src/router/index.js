@@ -133,7 +133,7 @@ const router = createRouter({
       path: '/admin/manager-management',
       name: 'ManagerManagement',
       component: () => import('@/views/admin/ManagerManagement.vue'),
-      meta: { requiresAuth: true, role: 'ADMIN' },
+      meta: { requiresAuth: true, role: 'ADMIN', onlyAdmin: true },
     },
     {
       path: '/admin/notification',
@@ -298,11 +298,33 @@ const router = createRouter({
  * 전역 네비게이션 가드 (강화)
  * 1. 인증 상태 복원
  * 2. 인증 필요 페이지 접근 제어
- * 3. 역할 검증
+ * 3. 역할 검증 (Manager는 Admin 페이지 접근 가능)
  * 4. Company slug 검증 (USER만)
  */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // ===== 역할 검증 헬퍼 함수 =====
+  
+  /**
+   * 역할 검증 헬퍼 함수
+   * - ADMIN 페이지는 ADMIN과 MANAGER 모두 허용
+   * - 나머지 페이지는 정확한 역할 일치 필요
+   */
+  const isRoleAllowed = (currentRole, requiredRole, onlyAdmin) => {
+    // onlyAdmin이 true면 ADMIN만 허용
+    if (onlyAdmin === true) {
+      return currentRole === 'ADMIN'
+    }
+  
+    // Admin 페이지는 ADMIN과 MANAGER 모두 허용
+    if (requiredRole === 'ADMIN' && (currentRole === 'ADMIN' || currentRole === 'MANAGER')) {
+      return true
+    }
+  
+    // 나머지는 정확히 일치해야 함
+    return currentRole === requiredRole
+  }
   
   // ===== 1. 인증 상태 복원 (localStorage 기반) =====
   authStore.checkAuth()
@@ -336,8 +358,9 @@ router.beforeEach(async (to, from, next) => {
       return next('/')
     }
 
-    // 3-2. 역할 불일치 검증
-    if (requiredRole && authStore.role !== requiredRole) {
+    // 3-2. 역할 불일치 검증 (Manager는 Admin 페이지 접근 가능)
+    const onlyAdmin = to.meta.onlyAdmin
+    if (requiredRole && !isRoleAllowed(authStore.role, requiredRole, onlyAdmin)) {
       console.warn('🚫 권한 불일치:', {
         required: requiredRole,
         current: authStore.role,
@@ -349,7 +372,7 @@ router.beforeEach(async (to, from, next) => {
       if (authStore.role === 'USER') {
         const slug = authStore.companySlug || 'default'
         return next(`/c/${slug}/service/list`)
-      } else if (authStore.role === 'ADMIN') {
+      } else if (authStore.role === 'ADMIN' || authStore.role === 'MANAGER') {
         return next('/admin/dashboard')
       } else if (authStore.role === 'SUPER') {
         return next('/super/dashboard')
