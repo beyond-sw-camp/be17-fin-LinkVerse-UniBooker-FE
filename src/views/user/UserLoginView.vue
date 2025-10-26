@@ -3,7 +3,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
-import { getCompanyBySlug, loginUser } from '@/services/user/user_api'
+import userApi from '@/services/user/user_api'
 import { useAuthStore } from '@/stores/UseStore'
 
 const router = useRouter()
@@ -38,7 +38,7 @@ const loadCompanyInfo = async () => {
 
   isLoadingCompany.value = true
   try {
-    const response = await getCompanyBySlug(companySlug)
+    const response = await userApi.getCompanyBySlug(companySlug)
 
     if (response.isSuccess && response.data) {
       companyInfo.value = response.data
@@ -86,7 +86,7 @@ const handleLogin = async () => {
       companyId: companyInfo.value.id,
     }
 
-    const response = await loginUser(loginData)
+    const response = await userApi.loginUser(loginData)
 
     if (response.isSuccess && response.data) {
       const loginResult = response.data

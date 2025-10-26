@@ -17,6 +17,13 @@ const login = async (loginData) => {
   return await axiosInstance.post('/api/super/login', loginData)
 }
 
+/**
+ * 슈퍼 관리자 로그아웃
+ */
+const logout = async () => {
+  return await axiosInstance.post('/api/super/logout')
+}
+
 // ========== 기업 관리 ==========
 
 /**
@@ -56,6 +63,7 @@ const rejectCompany = async (companyId, rejectionReason) => {
 export default {
   // 인증
   login,
+  logout,
   
   // 기업 관리
   getPendingCompanies,
