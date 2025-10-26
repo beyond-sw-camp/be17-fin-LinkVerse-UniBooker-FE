@@ -95,7 +95,8 @@ const createServiceGroup = async () => {
           description: f.description || '',
           dataType: mapToEnum(f.dataType),
           targetType: 'USER',
-          required: f.required || false
+          required: f.required || false,
+          options: f.options
         }))
       ]
     }

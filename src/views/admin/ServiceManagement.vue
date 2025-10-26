@@ -60,7 +60,7 @@ const goToEditService = (serviceId) => {
     params: { serviceId },
     query: {
       serviceGroupId: serviceGroupId, // 그룹정보도 필요할 경우
-      serviceGroupName: serviceGroupName, 
+      serviceGroupName: serviceGroupName,
     },
   })
 }
@@ -337,11 +337,11 @@ watch(
 }
 
 .service-info-description-container {
-  @apply flex flex-col items-start gap-2
+  @apply flex flex-col items-start gap-2;
 }
 
 .service-info-description-container p {
-  @apply text-[14px] mb-[20px]
+  @apply text-[14px] mb-[20px];
 }
 
 ::-webkit-scrollbar-track {
