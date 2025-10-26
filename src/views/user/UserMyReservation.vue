@@ -1,22 +1,27 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 import Dropdown from '@/components/Dropdown.vue'
 import Input from '@/components/Input.vue'
+import ReservationApi from '@/services/user/reservation_api'
 
+const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
-const goToMyReservationDetail = (id) => {
-  router.push(`/myreservation/${id}`)
+// 예약 상세 페이지 이동
+const goToMyReservationDetail = (reservationId) => {
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
+  router.push(`/c/${slug}/reservation/detail/${reservationId}`)
 }
 
-/* 상태 */
+// 상태
 const selectedYear = ref(null)
 const selectedMonth = ref(null)
-// 취소 내역 포함에 체크할 경우, status가 'CANCELLED'인 항목도 같이 노출한다.
-const includeCancelled = ref(false)
+const includeCancelled = ref(false) // 취소 내역 포함에 체크할 경우, status가 'CANCELLED'인 항목도 같이 노출한다.
 
-/* 연도 드롭다운 */
+// 연도 드롭다운
 const currentYear = new Date().getFullYear()
 const startYear = 2020
 const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) => {
@@ -24,57 +29,55 @@ const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) =
   return { label: `${year}년`, value: year }
 })
 
-/* 월 드롭다운 */
+// 월 드롭다운
 const monthOptions = Array.from({ length: 12 }, (_, i) => ({
   label: `${i + 1}월`,
   value: i + 1
 }))
 
-/* 예약 내역 데이터 (예시) */
-const reservations = ref([
-  {
-    id: 1234567890, // 예약 ID
-    name: '회의실 A', // 리소스 이름
-    resource_group_name: '회의실 예약', // 리소스 그룹 이름
-    startTime: '2025년 10월 8일 14:00', // 시작 시간
-    endTime: '2025년 10월 8일 15:00', // 종료 시간
-    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',  // 리소스 썸네일
-    status: 'CONFIRMED', // 예약 상태
-  },
-  {
-    id: 1234567891,
-    name: '보드게임 동아리',
-    resource_group_name: '동아리 모집',
-    startTime: '2025년 10월 8일 14:00', 
-    endTime: '2025년 10월 8일 15:00', 
-    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
-    status: 'CANCELLED',
-  },
-  {
-    id: 1234567892,
-    name: '분당선(판교역) 출근',
-    resource_group_name: '통근버스 신청',
-    startTime: '2025년 10월 8일 14:00', 
-    endTime: '2025년 10월 8일 15:00',
-    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
-    status: 'CANCELLED',
-  },
-  {
-    id: 1234567893,
-    name: '패밀리 디럭스',
-    resource_group_name: '캠핑카 이용 신청',
-    startTime: '2025년 10월 8일 14:00', 
-    endTime: '2025년 10월 8일 15:00',
-    thumbnail: 'https://placehold.co/100x100/e2e8f0/64748b?text=IMG',
-    status: 'CONFIRMED',
+
+// 예약 내역
+const reservations = reactive([])
+const getUserReservations = async () => {
+  const response = await ReservationApi.getUserReservations()
+
+  if (response && response.isSuccess) {
+    Object.assign(reservations, response.data.reservations)
+    console.log(JSON.stringify(reservations))
   }
-])
+}
+
+// 날짜 카테고리 타입에 따른 변환
+const formatDate = (dateString, includeTime = false) => {
+  const date = new Date(dateString)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+
+  if (includeTime) {
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${yyyy}년${mm}월${dd}일 ${hh}:${min}`
+  }
+
+  return `${yyyy}년${mm}월${dd}일`
+}
+
+// 날짜 표시
+const getDate = (item) => {
+  if (item.serviceCategory === 'EVENT') return formatDateEvent(item.createdAt)
+  else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
+}
+
+onMounted(() => {
+  getUserReservations()
+})
 </script>
 <template>
   <div class="page-background">
-    <!-- 예약 내역 -->
     <div class="content-card">
       <main class="main-content">
+        <!-- 헤더 및 필터 영역 -->
         <div class="flex justify-between items-center mb-5">
           <h2 class="section-title">예약/신청 내역</h2>
           <div class="flex items-center gap-4">
@@ -83,19 +86,20 @@ const reservations = ref([
             <Dropdown v-model="selectedMonth" :options="monthOptions" placeholder="월 선택" width="w-30"/>
           </div>
         </div>
+        <!-- 예약 목록 영역 -->
         <div class="reservation-list">
           <a v-for="item in reservations" :key="item.id" class="reservation-item cursor-pointer" @click="goToMyReservationDetail(item.id)">
             <img :src="item.thumbnail" class="item-image" />
             <div class="item-info">
               <div class="item-header">
-                <h3 class="item-name">{{ item.name }}</h3>
-                <span class="tag-primary">{{ item.resource_group_name }}</span>
+                <h3 class="item-name">{{ item.resourceName }}</h3>
+                <span class="tag-primary">{{ item.resourceGroupName }}</span>
                 <span v-if="item.status === 'CANCELLED'" class="tag-cancelled">취소</span>
               </div>
               <p class="item-id">예약번호 {{ item.id }}</p>
               <div class="item-name-desc">
-                <p class="item-name-small">{{ item.name }}</p>
-                <p>{{ item.startTime }} ~ {{ item.endTime }}</p>
+                <p class="item-name-small">{{ item.resourceName }}</p>
+                <p>{{ getDate(item) }}</p>
               </div>
             </div>
             <div class="arrow-icon-wrapper">
