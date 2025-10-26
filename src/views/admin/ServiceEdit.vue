@@ -9,10 +9,12 @@ import ExceptionModal from '@/components/ExceptionModal.vue'
 
 const route = useRoute()
 const router = useRouter()
-const serviceGroupId = route.params.serviceGroupId
+const serviceId = route.params.serviceId
+const serviceGroupId = route.query.serviceGroupId
 const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
-
 const thumbnail = ref('')
+
+console.log(serviceId, serviceGroupId, serviceGroupName)
 
 const category = ref([
   { label: '예약형', value: 'RESERVATION' },
@@ -74,35 +76,8 @@ watch(timeInterval, (newVal, oldVal) => {
   }
 })
 
-// 생성 요청
-const createService = async () => {
-  try {
-    const formData = {
-      name: name.value,
-      description: description.value,
-      resourceGroupId: Number(serviceGroupId),
-      startDate: startDate.value || null,
-      endDate: endDate.value || null,
-      startTime: startTime.value || null,
-      endTime: endTime.value || null,
-      timeInterval: timeInterval.value,
-      capacity: capacity.value ? Number(capacity.value) : null,
-      row: row.value ? Number(row.value) : null,
-      col: col.value ? Number(col.value) : null,
-    }
-
-    const response = await serviceApi.createService(formData)
-    alert('서비스가 성공적으로 생성되었습니다!')
-    console.log('✅ 등록 완료:', response.data)
-    router.push(`/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`)
-  } catch (error) {
-    console.error('❌ 서비스 생성 실패:', error)
-    alert('서비스 생성 중 오류가 발생했습니다.')
-  }
-}
-
 // 브레드크럼 항목
-const breadcrumbItems = [{ label: 'Service Groups', path: '#!' }, { label: serviceGroupName }]
+const breadcrumbItems = [{ label: 'Service Groups', path: '#!' }, { label: serviceGroupName, path: `/admin/service-management/${serviceGroupId}` }, { label: '서비스 수정', path: '' }]
 
 // 입력값 초기화
 const resetValues = () => {

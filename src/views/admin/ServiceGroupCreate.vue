@@ -105,7 +105,7 @@ const createServiceGroup = async () => {
     const response = await serviceApi.createServiceGroup(formData)
     console.log('✅ 서비스 그룹 생성 성공:', response.data)
     alert('서비스 그룹이 성공적으로 생성되었습니다!')
-    router.push({ name: 'ServiceGroupManagation' })
+    router.push({ name: 'ServiceGroupManagement' })
   } catch (error) {
     console.error('❌ 서비스 그룹 생성 실패:', error)
     alert('서비스 그룹 생성 중 오류가 발생했습니다.')
@@ -166,8 +166,8 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="radio-button-container">
-        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" value="true" />
-        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" value="false" />
+        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" :value="true" />
+<Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" :value="false" />
       </div>
     </section>
 
