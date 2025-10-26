@@ -181,6 +181,41 @@ const withdrawUser = async (withdrawData) => {
   }
 }
 
+/**
+ * 비밀번호 찾기 - 임시 비밀번호 발급
+ * @param {string} email - 이메일
+ * @param {number} companyId - 기업 ID
+ */
+const resetPassword = async (email, companyId) => {
+  try {
+    const response = await axiosInstance.post('/api/users/reset-password', null, {
+      params: { email, companyId }
+    })
+    return response.data
+  } catch (error) {
+    console.error('비밀번호 찾기 실패:', error)
+    throw error
+  }
+}
+
+/**
+ * 아이디 찾기 - 이메일 조회
+ * @param {Object} findEmailData - 아이디 찾기 데이터
+ * @param {string} findEmailData.name - 이름
+ * @param {number} findEmailData.companyId - 기업 ID
+ * @param {string} [findEmailData.phone] - 전화번호 (선택)
+ * @param {string} [findEmailData.birthDate] - 생년월일 (선택)
+ */
+const findEmail = async (findEmailData) => {
+  try {
+    const response = await axiosInstance.post('/api/users/find-email', findEmailData)
+    return response.data
+  } catch (error) {
+    console.error('아이디 찾기 실패:', error)
+    throw error
+  }
+}
+
 export default {
   // 기업 정보
   getCompanyBySlug,
@@ -194,9 +229,15 @@ export default {
   loginUser,
   logoutUser,
   
-  // 프로필 관련 (추가)
+  // 프로필 관련
   getMyProfile,
   updateMyProfile,
   changePassword,
   withdrawUser,
+  
+  // 비밀번호 찾기
+  resetPassword,
+
+  // 아이디 찾기
+  findEmail,
 }

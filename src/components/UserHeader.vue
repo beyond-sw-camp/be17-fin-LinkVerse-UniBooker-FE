@@ -15,7 +15,7 @@ const isCheckingAuth = ref(false)
 
 /**
  * 인증 검증이 필요 없는 페이지 확인
- * - 로그인 페이지, 회원가입 페이지는 검증 불필요
+ * - 로그인 페이지, 회원가입 페이지, 아이디 찾기, 비밀번호 찾기는 검증 불필요
  * - 경로 기반으로 판단 (route.name 대신 route.path 사용)
  */
 const isAuthPage = computed(() => {
@@ -28,7 +28,10 @@ const isAuthPage = computed(() => {
   // 회원가입 페이지 패턴
   const isSignupPage = currentPath.includes('/signup')
 
-  return isLoginPage || isSignupPage
+  // 아이디/비밀번호 찾기 페이지 패턴
+  const isFindPage = currentPath.includes('/find-id') || currentPath.includes('/find-password')
+
+  return isLoginPage || isSignupPage || isFindPage
 })
 
 /**

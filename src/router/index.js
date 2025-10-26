@@ -70,6 +70,19 @@ const router = createRouter({
       component: () => import('@/views/user/UserNotificationView.vue'),
       meta: { layout: 'user', requiresAuth: true, role: 'USER' },
     },
+    {
+      path: '/c/:companySlug/find-password',
+      name: 'FindPassword',
+      component: () => import('@/views/user/FindPasswordView.vue'),
+      meta: { layout: 'user', requiresGuest: true, title: '비밀번호 찾기'},
+    },
+    {
+      path: '/c/:companySlug/find-id',
+      name: 'FindId',
+      component: () => import('@/views/user/FindIdView.vue'),
+      meta: { layout: 'user', requiresGuest: true, title: '아이디 찾기'
+      }
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터

@@ -5,11 +5,19 @@ import { useRoute } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import { useAuthStore } from '@/stores/UseStore'
 import superApi from '@/services/super/super_api'
+import { computed } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const selectedMenu = ref(route.path)
+
+/**
+ * 현재 로그인한 사용자 이름 계산
+ */
+const userName = computed(() => {
+  return authStore.user?.name || '운영자'
+})
 
 // 메뉴 배열 정의
 const menuItems = [
@@ -98,7 +106,7 @@ const handleLogout = async () => {
       <div class="content-top">
         <div class="super-badge">
           <img src="/public/assets/images/unibooker_blue_logo.svg" alt="기업 로고 이미지" />
-          <span>홍서연 운영자님</span>
+          <span>{{ userName }}님</span>
           <button @click.stop="toggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
           </button>
