@@ -118,6 +118,19 @@ const managerInfoDelete = async (payload) => {
   }
 }
 
+/**
+ * 로그아웃
+ */
+const logout = async () => {
+  try {
+    const response = await axiosInstance.post('/api/admins/logout')
+    return response.data
+  } catch (error) {
+    console.error('로그아웃 실패', error)
+    throw error
+  }
+}
+
 
 export default {
   signUpAdmin,
@@ -130,4 +143,5 @@ export default {
   getManagerInfo,
   managerInfoEdit,
   managerInfoDelete,
+  logout,
 }

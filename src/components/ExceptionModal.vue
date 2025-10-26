@@ -49,7 +49,7 @@ const updateModalTimes = () => {
   const endMin = Number(endHour.value) * 60 + Number(endMinute.value)
   const times = []
 
-  for (let t = startMin; t <= endMin; t += props.interval) {
+  for (let t = startMin; t < endMin; t += props.interval) {
     const h = Math.floor(t / 60)
     const m = t % 60
     times.push({ label: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`, value: t })
@@ -93,7 +93,7 @@ const openModal = () => {
     const endMin = Number(endHour.value) * 60 + Number(endMinute.value)
     selectedTimes.value = []
 
-    for (let t = startMin; t <= endMin; t += props.interval) {
+    for (let t = startMin; t < endMin; t += props.interval) {
       const h = Math.floor(t / 60)
       const m = t % 60
       const timeLabel = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
@@ -232,7 +232,64 @@ const resetAll = () => {
   // v-model로 바인딩된 부모 값 초기화
   emit('update:modelValue', [])
 }
-defineExpose({ resetAll })
+
+defineExpose({
+  resetAll,
+
+  getExceptionSlots: () => {
+    const slots = []
+
+    props.modelValue.forEach((ex) => {
+      if (ex.isHoliday) {
+        slots.push({
+          date: ex.date,
+          startTime: null,
+          endTime: null,
+          isClosed: true,
+          note: ex.note || '',
+        })
+      } else {
+        // selectedTimes를 분 단위로 정렬
+        const selectedMins = (ex.selectedTimes || [])
+          .map((t) => {
+            const [h, m] = t.split(':').map(Number)
+            return h * 60 + m
+          })
+          .sort((a, b) => a - b)
+
+        if (!selectedMins.length) return
+
+        let blockStart = selectedMins[0]
+        let prev = selectedMins[0]
+
+        for (let i = 1; i <= selectedMins.length; i++) {
+          const curr = selectedMins[i]
+
+          if (curr !== prev + props.interval) {
+            // 연속 블록 종료
+            const startH = String(Math.floor(blockStart / 60)).padStart(2, '0')
+            const startM = String(blockStart % 60).padStart(2, '0')
+            const endH = String(Math.floor(prev / 60)).padStart(2, '0')
+            const endM = String(prev % 60).padStart(2, '0')
+
+            slots.push({
+              date: ex.date,
+              startTime: `${startH}:${startM}`,
+              endTime: `${endH}:${endM}`,
+              isClosed: false,
+              note: ex.note || '',
+            })
+
+            blockStart = curr
+          }
+          prev = curr
+        }
+      }
+    })
+
+    return slots
+  },
+})
 </script>
 
 <template>

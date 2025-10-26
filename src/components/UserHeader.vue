@@ -1,137 +1,229 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
+import userApi from '@/services/user/user_api'
+import axiosInstance from '@/plugin/axiosInterceptor'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// ===== 페이지 로드 시 인증 상태 확인 =====
-
-onMounted(() => {
-  authStore.checkAuth()
-  console.log('🎯 UserHeader 마운트:', {
-    isLoggedIn: authStore.isLoggedIn,
-    role: authStore.role,
-    companyId: authStore.companyId,
-    companySlug: authStore.companySlug,
-  })
-})
-
-// ===== 현재 페이지의 회사와 로그인한 회사가 일치하는지 확인 =====
+// ===== 실제 인증 상태 (서버 검증) =====
+const isActuallyAuthenticated = ref(false)
+const isCheckingAuth = ref(false)
 
 /**
- * 유효한 로그인 상태 검증
- * - 로그인 상태 && USER 권한 && 현재 URL의 companySlug와 저장된 companySlug 일치
+ * 인증 검증이 필요 없는 페이지 확인
+ * - 로그인 페이지, 회원가입 페이지, 아이디 찾기, 비밀번호 찾기는 검증 불필요
+ * - 경로 기반으로 판단 (route.name 대신 route.path 사용)
  */
-const isValidLogin = computed(() => {
-  // 로그인 상태가 아니면 false
-  if (!authStore.isLoggedIn || authStore.role !== 'USER') {
-    return false
-  }
+const isAuthPage = computed(() => {
+  const currentPath = route.path
 
-  // URL에서 현재 회사 slug 추출
-  const currentSlug = route.params.companySlug
+  // 로그인 페이지 패턴
+  const isLoginPage =
+    currentPath === '/' || currentPath.endsWith('/') || currentPath.includes('/login')
 
-  // company 페이지가 아니면 false (헤더 비표시)
-  if (!currentSlug) {
-    return false
-  }
+  // 회원가입 페이지 패턴
+  const isSignupPage = currentPath.includes('/signup')
 
-  // 현재 URL의 slug와 저장된 slug 비교
-  const isValid = authStore.companySlug === currentSlug
+  // 아이디/비밀번호 찾기 페이지 패턴
+  const isFindPage = currentPath.includes('/find-id') || currentPath.includes('/find-password')
 
-  if (!isValid) {
-    console.warn('⚠️ Header: 다른 회사 페이지 감지', {
-      saved: authStore.companySlug,
-      current: currentSlug,
-    })
-  }
-
-  return isValid
+  return isLoginPage || isSignupPage || isFindPage
 })
 
-// ===== 로그인 상태 변경 감지 =====
+/**
+ * 서버에 실제 인증 상태 확인
+ * - localStorage가 아닌 쿠키 기반 서버 검증
+ * - 현재 페이지의 companySlug와 서버 토큰의 companySlug 비교
+ * - 로그인/회원가입 페이지에서는 실행하지 않음
+ */
+const checkServerAuth = async () => {
+  // 인증 페이지에서는 검증하지 않음
+  if (isAuthPage.value) {
+    isActuallyAuthenticated.value = false
+    console.log('🔇 인증 페이지 - 검증 생략')
+    return
+  }
 
+  if (isCheckingAuth.value) return
+
+  const currentSlug = route.params.companySlug
+  if (!currentSlug) {
+    isActuallyAuthenticated.value = false
+    return
+  }
+
+  isCheckingAuth.value = true
+
+  try {
+    // Silent 플래그 추가 (401 알림 표시 안 함)
+    const response = await axiosInstance.get('/api/users/me', {
+      _silentAuth: true,
+    })
+
+    if (response.data.isSuccess) {
+      const userData = response.data.data
+
+      console.log('✅ 서버 인증 성공:', {
+        serverSlug: userData.companySlug,
+        currentSlug: currentSlug,
+      })
+
+      // 현재 페이지의 slug와 서버 토큰의 slug 비교
+      if (userData.companySlug === currentSlug) {
+        isActuallyAuthenticated.value = true
+
+        // localStorage 상태도 동기화
+        if (!authStore.isLoggedIn || authStore.companySlug !== currentSlug) {
+          authStore.login(
+            { userId: userData.id, name: userData.name, email: userData.email },
+            'USER',
+            userData.companyId,
+            userData.companySlug,
+          )
+        }
+      } else {
+        // slug 불일치 → 다른 기업으로 로그인된 상태
+        isActuallyAuthenticated.value = false
+
+        console.warn('⚠️ Company Slug 불일치:', {
+          server: userData.companySlug,
+          current: currentSlug,
+        })
+
+        // localStorage 정리
+        if (authStore.companySlug === currentSlug) {
+          console.warn('⚠️ 다른 기업으로 로그인됨 - 현재 페이지 인증 해제')
+          authStore.forceLogout()
+        }
+      }
+    }
+  } catch (error) {
+    // 401 에러 → 인증 안 됨 (알림 표시 안 함)
+    isActuallyAuthenticated.value = false
+
+    console.warn('❌ 서버 인증 실패 (401):', error.response?.status)
+
+    // localStorage에는 있는데 서버는 인증 실패 → 좀비 세션
+    if (authStore.isLoggedIn && authStore.companySlug === currentSlug) {
+      console.warn('⚠️ 좀비 세션 감지 - 서버 인증 실패')
+      authStore.forceLogout()
+    }
+  } finally {
+    isCheckingAuth.value = false
+  }
+}
+
+// ===== 주기적 인증 확인 =====
+let authCheckInterval = null
+
+onMounted(async () => {
+  console.log('📡 UserHeader 마운트 - 초기화 시작')
+
+  // 초기 localStorage 복원
+  authStore.checkAuth()
+
+  // 로그인 페이지가 아닐 때만 서버 인증 확인
+  if (!isAuthPage.value) {
+    console.log('📡 서비스 페이지 - 인증 검증 시작')
+    await checkServerAuth()
+
+    // 10초마다 주기적 검증
+    authCheckInterval = setInterval(checkServerAuth, 10000)
+
+    console.log('📡 헤더 인증 검증 시작 (10초 간격)')
+  } else {
+    console.log('🔇 인증 페이지 - 검증하지 않음')
+  }
+})
+
+onUnmounted(() => {
+  if (authCheckInterval) {
+    clearInterval(authCheckInterval)
+    console.log('📡 헤더 인증 검증 중지')
+  }
+})
+
+// ===== URL 변경 감지 =====
 watch(
-  () => authStore.isLoggedIn,
-  (newValue) => {
-    console.log('👀 로그인 상태 변경:', newValue, 'role:', authStore.role)
+  () => route.path,
+  async (newPath, oldPath) => {
+    if (newPath !== oldPath) {
+      console.log('🔄 URL 변경 감지:', { old: oldPath, new: newPath })
+
+      // 인증 페이지로 이동 시 interval 정리
+      if (isAuthPage.value) {
+        if (authCheckInterval) {
+          clearInterval(authCheckInterval)
+          authCheckInterval = null
+          console.log('📡 인증 페이지 이동 - 검증 중지')
+        }
+        isActuallyAuthenticated.value = false
+      } else {
+        // 서비스 페이지로 이동 시 즉시 검증 + interval 시작
+        console.log('📡 서비스 페이지 이동 - 즉시 검증')
+        await checkServerAuth()
+
+        if (!authCheckInterval) {
+          authCheckInterval = setInterval(checkServerAuth, 10000)
+          console.log('📡 주기적 검증 시작')
+        }
+      }
+    }
   },
 )
 
-// ===== 네비게이션 핸들러 =====
+// ===== 유효한 로그인 상태 (서버 검증 기반) =====
+const isValidLogin = computed(() => {
+  return isActuallyAuthenticated.value && !isAuthPage.value
+})
 
-/**
- * 홈/랜딩 페이지로 이동
- * - 로그인 상태: /c/:companySlug/service/list
- * - 비로그인 상태: /c/:companySlug
- */
+// ===== 네비게이션 핸들러 =====
 const goToHome = () => {
   const currentSlug = route.params.companySlug || authStore.companySlug || 'default'
 
   if (isValidLogin.value) {
-    // 로그인 상태면 서비스 목록으로
     router.push(`/c/${currentSlug}/service/list`)
   } else {
-    // 비로그인 상태면 랜딩 페이지로
     router.push(`/c/${currentSlug}`)
   }
 }
 
-/**
- * 서비스 목록 페이지로 이동
- */
 const goToService = () => {
   const slug = authStore.companySlug || 'default'
   router.push(`/c/${slug}/services`)
 }
 
-/**
- * 예약 내역 페이지로 이동
- */
 const goToReservation = () => {
-  const slug = authStore.companySlug || 'default'
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push(`/c/${slug}/myReservation`)
 }
 
-/**
- * 내 계정 페이지로 이동
- */
 const goToMypage = () => {
-  const slug = authStore.companySlug || 'default'
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push(`/c/${slug}/user/mypage`)
 }
 
-/**
- * 알림 페이지로 이동
- */
 const goToNotification = () => {
-  const slug = authStore.companySlug || 'default'
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push(`/c/${slug}/notification`)
 }
 
 // ===== 로그아웃 핸들러 =====
-
-/**
- * 로그아웃 처리
- * - 서버에 로그아웃 API 호출 (쿠키 삭제)
- * - Store 초기화
- */
 const handleLogout = async () => {
-  try {
-    // 서버에 로그아웃 요청 (쿠키 삭제)
-    await axiosInstance.post('/api/users/logout')
+  const targetSlug = route.params.companySlug || authStore.companySlug || 'default'
 
-    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
-    authStore.logout()
-    alert('로그아웃되었습니다.')
-    router.push(`/c/${targetSlug}`)
+  try {
+    await userApi.logoutUser()
+    console.log('✅ 서버 로그아웃 성공')
   } catch (error) {
-    console.error('로그아웃 실패:', error)
-    // 실패해도 클라이언트 측 로그아웃 진행
-    const targetSlug = authStore.companySlug || route.params.companySlug || 'default'
+    console.error('❌ 서버 로그아웃 실패:', error)
+  } finally {
+    // 성공/실패 관계없이 클라이언트 정리
+    isActuallyAuthenticated.value = false
     authStore.logout()
     alert('로그아웃되었습니다.')
     router.push(`/c/${targetSlug}`)
@@ -142,12 +234,12 @@ const handleLogout = async () => {
 <template>
   <header class="user-header">
     <div class="user-header-container">
-      <!-- 로고 영역 (클릭 시 홈으로 이동) -->
+      <!-- 로고 영역 -->
       <div class="user-header-logo-wrapper" @click="goToHome">
         <img src="/assets/images/admin_logo.png" alt="로고" class="user-header-logo-img" />
       </div>
 
-      <!-- 로그인 후 네비게이션 메뉴 (유효한 로그인 상태일 때만 표시) -->
+      <!-- 로그인 후 네비게이션 메뉴 (서버 검증 기반) -->
       <nav v-if="isValidLogin" class="user-header-nav">
         <div class="user-header-nav-container">
           <button @click="goToService" class="user-header-nav-item">서비스 목록</button>
@@ -156,7 +248,7 @@ const handleLogout = async () => {
         </div>
       </nav>
 
-      <!-- 로그인 후 알림 + 로그아웃 버튼 (유효한 로그인 상태일 때만 표시) -->
+      <!-- 로그인 후 알림 + 로그아웃 버튼 (서버 검증 기반) -->
       <div v-if="isValidLogin" class="user-btn-container">
         <button @click="goToNotification" class="notification-btn">
           <img src="/assets/icons/ic-no-notify.png" class="user-header-alam" alt="알림" />
@@ -206,10 +298,6 @@ const handleLogout = async () => {
 
 .user-btn-container {
   @apply flex items-center gap-5;
-}
-
-.login-btn {
-  @apply px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all cursor-pointer border-none text-sm font-medium;
 }
 
 .logout-btn {
