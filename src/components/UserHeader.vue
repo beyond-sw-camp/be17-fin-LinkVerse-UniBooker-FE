@@ -93,7 +93,7 @@ const goToService = () => {
  */
 const goToReservation = () => {
   const slug = authStore.companySlug || 'default'
-  router.push(`/c/${slug}/myReservation`)
+  router.push(`/c/${slug}/reservations`)
 }
 
 /**

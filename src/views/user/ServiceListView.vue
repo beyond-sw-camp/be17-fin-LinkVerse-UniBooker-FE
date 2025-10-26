@@ -52,12 +52,14 @@ const paginatedServiceItems = computed(() => {
 })
 
 // 예약 버튼 클릭시 서비스 항목 상세 페이지
-const goToServiceItemDetail = (item) => {
+const goToServiceDetail = (item) => {
     if (item.status !== '예약 가능') return
-    router.push('/')  
+    router.push({
+    path: `/c/${slug}/serivce/detail/${item.id}`,
+  })
 }
 
-// 나중에 백엔드에서 데이터 받아오기
+// 화면 로드시 데이터 받아오기
 onMounted(() => {
   if (route.query.type) {
     serviceType.value = route.query.type
@@ -117,7 +119,7 @@ onMounted(() => {
           <button
             class="reservation-btn"
             :class="item.status === '예약 가능' ? 'btn-available' : 'btn-disabled'"
-            @click="goToServiceItemDetail(item)"
+            @click="goToServiceDetail(item)"
           >
             {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
           </button>
