@@ -1,15 +1,20 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
+import ReservationApi from '@/services/user/reservation_api'
 
+const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
-/* 목록 페이지로 이동 */
+// 예약 목록 페이지로 이동
 const goToMyReservation = () => {
-  router.push('/myreservation')
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
+  router.push(`/c/${slug}/reservations/`)
 }
 
-/* 예약 취소 */
+// 예약 취소
 const cancelReservation = () => {
   if (confirm('이 예약을 취소하시겠습니까?')) {
     alert('예약이 취소되었습니다.')
@@ -17,17 +22,40 @@ const cancelReservation = () => {
   }
 }
 
-/* 예약 데이터 (예시) */
-const reservation = ref({
-  id: 123456789,
-  bookerName: '윤소민',
-  serviceName: '회의실 예약',
-  itemName: '회의실 A',
-  startTime: '2025년 10월 8일 (수) 14:00',
-  endTime: '16:00',
-  status: '예약 확정',
-  thumbnail: 'https://placehold.co/600x400/e2e8f0/64748b?text=IMG',
-  created_at: '2025년 9월 8일 (수) 20:01'
+// 예약 상세 데이터
+const reservation = reactive({})
+const getUserReservation = async () => {
+  const response = await ReservationApi.getUserReservation(route.params.reservationId)
+
+  if (response && response.isSuccess) {
+    Object.assign(reservation, response.data)
+  }
+}
+
+// 날짜 카테고리 타입에 따른 변환
+const formatDate = (dateString, includeTime = false) => {
+  const date = new Date(dateString)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+
+  if (includeTime) {
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
+  }
+
+  return `${yyyy}년 ${mm}월 ${dd}일`
+}
+
+// 날짜 표시
+const getDate = (item) => {
+  if (item.serviceCategory === 'EVENT') return formatDateEvent(item.createdAt)
+  else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
+}
+
+onMounted(() => {
+  getUserReservation()
 })
 </script>
 
@@ -42,17 +70,17 @@ const reservation = ref({
 
       <!-- 상세 정보 카드 -->
       <div class="content-card info-card">
-        <h3 class="info-title">{{ reservation.itemName }}</h3>
+        <h3 class="info-title">{{ reservation.resourceName }}</h3>
 
         <table class="detail-table">
           <tbody>
             <tr><th>예약 번호</th><td>{{ reservation.id }}</td></tr>
-            <tr><th>예약자</th><td>{{ reservation.bookerName }}</td></tr>
-            <tr><th>서비스</th><td>{{ reservation.serviceName }}</td></tr>
-            <tr><th>서비스 항목</th><td>{{ reservation.itemName }}</td></tr>
-            <tr><th>이용 일시</th><td>{{ reservation.startTime }} ~ {{ reservation.endTime }}</td></tr>
-            <tr><th>예약 시각</th><td>{{ reservation.created_at }}</td></tr>
-            <tr><th>예약 상태</th><td>{{ reservation.status }}</td></tr>            
+            <tr><th>예약자</th><td>{{ reservation.userName }}</td></tr>
+            <tr><th>서비스</th><td>{{ reservation.resourceGroupName }}</td></tr>
+            <tr><th>서비스 항목</th><td>{{ reservation.resourceName }}</td></tr>
+            <tr><th>이용 일시</th><td>{{ getDate(reservation) }}</td></tr>
+            <tr><th>예약 시각</th><td>{{ formatDate(reservation.createdAt, true) }}</td></tr>
+            <tr><th>예약 상태</th><td>{{ reservation.status === 'CONFIRMED' ? '예약 확정' : '예약 취소' }}</td></tr>            
           </tbody>
         </table>
 

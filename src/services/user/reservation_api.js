@@ -14,9 +14,28 @@ const getUserReservations = async () => {
       data = error.data
       console.log('사용자 예약 목록 조회 실패 : ', data)
     })
+  
+  return data
+}
+
+/** 사용자 예약 상세 조회 */
+const getUserReservation = async (reservationId) => {
+  let data = {}
+
+  await axiosInstance
+    .get(`api/reservation/detail/${reservationId}`)
+    .then(response => {
+      data = response.data
+      console.log('사용자 예약 상세 조회 성공 : ', data)
+    })
+    .catch(error => {
+      data = error.data
+      console.log('사용자 예약 상세 조회 실패 : ', data)
+    })
+  
   return data
 }
 
 export default {
-    getUserReservations,
+    getUserReservations, getUserReservation,
 }

@@ -43,7 +43,6 @@ const getUserReservations = async () => {
 
   if (response && response.isSuccess) {
     Object.assign(reservations, response.data.reservations)
-    console.log(JSON.stringify(reservations))
   }
 }
 
@@ -57,10 +56,10 @@ const formatDate = (dateString, includeTime = false) => {
   if (includeTime) {
     const hh = String(date.getHours()).padStart(2, '0')
     const min = String(date.getMinutes()).padStart(2, '0')
-    return `${yyyy}년${mm}월${dd}일 ${hh}:${min}`
+    return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
   }
 
-  return `${yyyy}년${mm}월${dd}일`
+  return `${yyyy}년 ${mm}월 ${dd}일`
 }
 
 // 날짜 표시
