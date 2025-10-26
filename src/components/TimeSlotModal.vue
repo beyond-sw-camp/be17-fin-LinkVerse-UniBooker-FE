@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import Dropdown from '@/components/Dropdown.vue'
 
 const props = defineProps({
-  interval: Number, 
+  interval: Number,
 })
 
 const days = ['월', '화', '수', '목', '금', '토', '일']
@@ -18,7 +18,6 @@ const endMinute = ref('')
 const timeSlots = ref([])
 const editingIndex = ref(null)
 const selectedTimes = ref([])
-
 
 const hourOptions = Array.from({ length: 24 }, (_, i) => ({
   label: String(i).padStart(2, '0'),
@@ -39,14 +38,13 @@ const modalTimes = computed(() => {
   const startMin = Number(startHour.value) * 60 + Number(startMinute.value)
   const endMin = Number(endHour.value) * 60 + Number(endMinute.value)
   const times = []
-  for (let t = startMin; t <= endMin; t += Number(props.interval)) {
+  for (let t = startMin; t < endMin; t += Number(props.interval)) {
     const h = Math.floor(t / 60)
     const m = t % 60
     times.push({ label: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`, value: t })
   }
   return times
 })
-
 
 // 새로 추가할 때만 기본 전체 선택
 watch(modalTimes, (newTimes) => {
@@ -94,8 +92,64 @@ const resetAll = () => {
   timeSlots.value = []
   editingIndex.value = null
 }
-defineExpose({ resetAll })
 
+// 한글 요일 → 영문 요일 맵핑
+const dayMap = {
+  월: 'MON',
+  화: 'TUE',
+  수: 'WED',
+  목: 'THU',
+  금: 'FRI',
+  토: 'SAT',
+  일: 'SUN',
+}
+
+// 부모 컴포넌트에서 접근 가능하도록 공개
+defineExpose({
+  resetAll,
+  getTimeSlots: () => {
+    const converted = []
+
+    timeSlots.value.forEach((slot) => {
+      // slot.selectedTimes: ['00:00','01:00',...,'07:00'] 등
+      const selectedMinutes = slot.selectedTimes
+        .map((t) => {
+          const [h, m] = t.split(':').map(Number)
+          return h * 60 + m
+        })
+        .sort((a, b) => a - b)
+
+      // 연속된 시간 블록으로 분리
+      let blocks = []
+      let start = selectedMinutes[0]
+      let prev = selectedMinutes[0]
+
+      for (let i = 1; i < selectedMinutes.length; i++) {
+        if (selectedMinutes[i] !== prev + props.interval) {
+          blocks.push([start, prev + props.interval])
+          start = selectedMinutes[i]
+        }
+        prev = selectedMinutes[i]
+      }
+      blocks.push([start, prev + props.interval])
+
+      // 블록 + 배열 형태로 변환
+      blocks.forEach(([s, e]) => {
+        const toTimeStr = (min) =>
+          `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
+
+        converted.push({
+          days: slot.days.map((d) => dayMap[d]), // 배열 그대로 전달
+          startTime: toTimeStr(s),
+          endTime: toTimeStr(e),
+        })
+      })
+    })
+
+    console.log(converted)
+    return converted
+  },
+})
 
 const addSlot = () => {
   if (selectedTimes.value.length === 0) {
@@ -242,18 +296,16 @@ const editSlot = (slot, idx) => {
 
         <div class="modal-exclud-time-button-container">
           <Button @click="closeModal" theme="gray" size="sm">취소</Button>
-          <Button @click="addSlot" size="sm">{{ editingIndex !== null ? '수정 완료' : '추가' }}</Button>
+          <Button @click="addSlot" size="sm">{{
+            editingIndex !== null ? '수정 완료' : '추가'
+          }}</Button>
         </div>
       </div>
     </div>
 
     <!-- 추가된 시간대 -->
     <div v-if="timeSlots.length" class="add-time-list-container">
-      <div
-        v-for="(slot, idx) in timeSlots"
-        :key="idx"
-        class="add-time-item"
-      >
+      <div v-for="(slot, idx) in timeSlots" :key="idx" class="add-time-item">
         <span>{{ slot.days.join(', ') }} | {{ slot.start }} ~ {{ slot.end }}</span>
         <div class="add-time-item-button-container">
           <button @click="editSlot(slot, idx)" class="text-gray-dark">수정</button>
@@ -263,7 +315,6 @@ const editSlot = (slot, idx) => {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .time-slot-modal-container {
@@ -319,14 +370,14 @@ const editSlot = (slot, idx) => {
 }
 
 .add-time-item {
-  @apply bg-white flex justify-between items-center py-[10px] px-[16px] rounded-[3px]
+  @apply bg-white flex justify-between items-center py-[10px] px-[16px] rounded-[3px];
 }
 
 .add-time-item-button-container {
-  @apply text-[13px] flex gap-3
+  @apply text-[13px] flex gap-3;
 }
 
 .add-time-item-button-container button {
-  @apply cursor-pointer
+  @apply cursor-pointer;
 }
 </style>

@@ -58,9 +58,12 @@ const removeOption = (index) => {
 const addFieldFromModal = () => {
   if (!modalFieldName.value) return alert('항목명을 입력해주세요.')
 
+  const typeItem = types.value.find(t => t.value === modalFieldType.value)
+
   const payload = {
     fieldName: modalFieldName.value,
-    dataType: modalFieldType.value,
+    dataType: modalFieldType.value,      // 서버 전송용
+    dataTypeLabel: typeItem?.label || '', // 화면 표시용
     description: modalFieldDescription.value,
   }
 
@@ -87,8 +90,7 @@ const addFieldFromModal = () => {
     />
     <Input
       class="input-style !w-[150px]"
-      :options="types"
-      v-model="field.dataType"
+      v-model="field.dataTypeLabel"
       placeholder="데이터 타입"
       :disabled="true"
     />
@@ -265,11 +267,11 @@ textarea {
 }
 
 .option-list {
-  @apply flex flex-col gap-1
+  @apply flex flex-col gap-1;
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 6px;          /* 모서리 둥글게 */
-  border: 3px solid #f0f0f0;  /* 주변 여백 색 */
+  border-radius: 6px; /* 모서리 둥글게 */
+  border: 3px solid #f0f0f0; /* 주변 여백 색 */
 }
 </style>

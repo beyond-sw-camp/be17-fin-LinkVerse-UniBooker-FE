@@ -52,7 +52,16 @@ const uploadImage = async (presigedUrl, file) => {
 
 // 서비스 그룹의 카테고리와 상시모집 여부 조회
 const getServiceGroupFieldInfo = async (resourceGroupId) => {
-    return await axiosInstance.get(`api/resource-group/${resourceGroupId}/register`)
+  let data = {}
+  await axiosInstance
+    .get(`api/resource-group/${resourceGroupId}/register`)
+    .then((res) => {
+      data = res.data.data
+    })
+    .catch((error) => {
+      data = error.data
+    })
+  return data
 }
 
 const getServiceGroupInfo = async (resourceGroupId) => {
@@ -77,6 +86,27 @@ const createService = async (formdata) => {
   return await axiosInstance.post(`api/resource`, formdata)
 }
 
+const getServiceList = async (serviceGroupId) => {
+  return await axiosInstance.get(`api/resource/group/${serviceGroupId}`)
+}
+
+const getResourceCustomFieldAndValue = async (resourceId) => {
+  return await axiosInstance.get(`/api/custom-field/value/resource/${resourceId}?type=RESOURCE`)
+}
+
+const getServiceCustomFields = async (serviceGroupId) => {
+  let data = {}
+  await axiosInstance
+    .get(`api/custom-field/${serviceGroupId}?type=RESOURCE`)
+    .then((res) => {
+      data = res.data.data
+    })
+    .catch((error) => {
+      data = error.data
+    })
+  return data
+}
+
 export default {
   createServiceGroup,
   getServiceGroupPresignedURL,
@@ -87,4 +117,7 @@ export default {
   deleteServiceGroup,
   createService,
   getServiceGroupFieldInfo,
+  getServiceList,
+  getResourceCustomFieldAndValue,
+  getServiceCustomFields,
 }
