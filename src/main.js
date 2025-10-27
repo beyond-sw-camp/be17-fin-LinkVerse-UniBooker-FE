@@ -1,3 +1,5 @@
+import './app.css'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
@@ -6,7 +8,6 @@ import router from './router'
 import { useAuthStore } from '@/stores/UseStore'
 
 // 전역 스타일
-import './app.css'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import Modal from '@/components/Modal.vue'
