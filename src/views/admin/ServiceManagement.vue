@@ -17,6 +17,16 @@ const breadcrumbItems = computed(() => [
   { label: decodeURIComponent(route.query.serviceGroupName || ''), path: '' },
 ])
 
+const dayMap = {
+  MON: '월',
+  TUE: '화',
+  WED: '수',
+  THU: '목',
+  FRI: '금',
+  SAT: '토',
+  SUN: '일',
+}
+
 const selectedService = reactive({
   id: null,
   name: '',
@@ -32,20 +42,72 @@ const showDetailModal = ref(false)
 // 모달 열기
 const viewServiceDetail = async (id) => {
   const service = services.find((s) => s.id === id)
-  if (service) {
-    Object.assign(selectedService, service)
-    showDetailModal.value = true
+  if (!service) return
 
-    try {
-      const response = await serviceApi.getResourceCustomFieldAndValue(id)
-      selectedService.customFields = (response.data.data || []).map((field) => ({
-        fieldName: field.fieldName,
-        value: Array.isArray(field.values) ? field.values.join(', ') : field.values,
-      }))
-    } catch (error) {
-      console.error('커스텀 필드 조회 실패:', error)
-      selectedService.customFields = []
-    }
+  Object.assign(selectedService, service)
+  showDetailModal.value = true
+
+  // ---------------- 커스텀 필드 ----------------
+  try {
+    const response = await serviceApi.getResourceCustomFieldAndValue(id)
+    selectedService.customFields = (response.data.data || []).map((field) => ({
+      fieldName: field.fieldName,
+      value: Array.isArray(field.values) ? field.values.join(', ') : field.values,
+    }))
+  } catch (error) {
+    console.error('커스텀 필드 조회 실패:', error)
+    selectedService.customFields = []
+  }
+
+  // ---------------- 운영시간 ----------------
+  try {
+    const res = await serviceApi.getDailyTimeSlots(id)
+    const timeslots = res.data.data || []
+
+    // 요일별 그룹핑
+    const grouped = {}
+    timeslots.forEach((slot) => {
+      if (!grouped[slot.dayOfWeek]) grouped[slot.dayOfWeek] = []
+      grouped[slot.dayOfWeek].push(`${slot.startTime} - ${slot.endTime}`)
+    })
+
+    // 한글 요일로 변환해서 selectedService에 저장
+    selectedService.dailyTimeSlots = Object.entries(grouped).map(([day, slots]) => ({
+      day: dayMap[day] || day,
+      slots,
+    }))
+  } catch (error) {
+    console.error('운영시간 조회 실패:', error)
+    selectedService.dailyTimeSlots = []
+  }
+
+  // ---------------- 예외시간 ----------------
+  // ---------------- 예외시간 ----------------
+  try {
+    const res = await serviceApi.getExceptionTimeSlots(id)
+    const exceptions = res.data.data || []
+
+    // 날짜별 그룹핑
+    const groupedExceptions = {}
+    exceptions.forEach((ex) => {
+      if (!groupedExceptions[ex.date]) groupedExceptions[ex.date] = []
+
+      if (ex.closed) {
+        // 휴무일
+        groupedExceptions[ex.date].push(ex.note ? `휴무 (${ex.note})` : '휴무')
+      } else {
+        // 일반 예외 시간
+        groupedExceptions[ex.date].push(`${ex.startTime} - ${ex.endTime}`)
+      }
+    })
+
+    selectedService.exceptionTimeSlots = Object.entries(groupedExceptions).map(([date, slots]) => ({
+      date,
+      slots,
+    }))
+  } catch (error) {
+    console.error('예외시간 조회 실패:', error)
+    selectedService.exceptionTimeSlots = []
   }
 }
 
@@ -81,9 +143,9 @@ const createStatusComputed = (statusName) =>
     },
   })
 
-const upcomingServices = createStatusComputed('UPCOMING')
+const upcomingServices = createStatusComputed('PROGRESS_BEFORE')
 const inProgressServices = createStatusComputed('IN_PROGRESS')
-const finishedServices = createStatusComputed('FINISHED')
+const finishedServices = createStatusComputed('CLOSED')
 
 // 서비스 리스트 조회
 const getServiceList = async (serviceGroupId) => {
@@ -219,21 +281,49 @@ watch(
         <div class="resource-info-container">
           <h2>{{ selectedService.name }}</h2>
 
-          <div class="info-row">
-            <span class="info-label">시작시간</span>
-            <span>{{ selectedService.startTime }}</span>
+          <!-- 운영 시간 -->
+          <div class="info-row-time">
+            <span class="info-label">운영시간</span>
+
+            <div class="daily-timeslots">
+              <div
+                v-for="daySlot in selectedService.dailyTimeSlots"
+                :key="daySlot.day"
+                class="day-container"
+              >
+                <span>{{ daySlot.day }}</span>
+                <div>
+                  <div v-for="time in daySlot.slots" :key="time">{{ time }}</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="info-row">
-            <span class="info-label">종료시간</span>
-            <span>{{ selectedService.endTime }}</span>
+          <!-- 예외 시간 -->
+          <div class="info-row-time">
+            <span class="info-label">예외시간</span>
+
+            <div class="daily-timeslots">
+              <div
+                v-for="item in selectedService.exceptionTimeSlots"
+                :key="item.date"
+                class="day-container"
+              >
+                <span class="w-[78px]">{{ item.date }}</span>
+                <div class="w-[305px]">
+                  {{ item.slots.join(', ') }}
+                </div>
+              </div>
+            </div>
           </div>
 
+          <!-- 인원수 -->
           <div class="info-row">
             <span class="info-label">인원수</span>
             <span>{{ selectedService.capacity }} 명</span>
           </div>
 
+          <!-- 커스텀 필드 -->
           <div v-if="selectedService.customFields.length">
             <div
               v-for="(field, index) in selectedService.customFields"
@@ -245,6 +335,7 @@ watch(
             </div>
           </div>
 
+          <!-- 설명 -->
           <div class="service-info-description-container">
             <span class="info-label">설명</span>
             <p>{{ selectedService.description }}</p>
@@ -304,7 +395,7 @@ watch(
   @apply w-full h-40 bg-gray-200 rounded-md;
 }
 .info-row {
-  @apply flex gap-2 mb-2 items-center  min-w-[300px] text-[14px];
+  @apply flex gap-2 mb-3 items-center  min-w-[300px] text-[14px];
 }
 .info-label {
   @apply w-24 text-[#535353] text-[14px];
@@ -337,14 +428,26 @@ watch(
 }
 
 .service-info-description-container {
-  @apply flex flex-col items-start gap-2;
+  @apply flex items-start gap-2 mt-[10px];
+}
+
+.service-info-description-container > .info-label {
+  @apply w-[150px];
 }
 
 .service-info-description-container p {
-  @apply text-[14px] mb-[20px];
+  @apply text-[14px] mb-[20px] ml-[2px] max-w-[650px];
 }
 
 ::-webkit-scrollbar-track {
   background: #eeeeee;
+}
+
+.info-row-time {
+  @apply flex gap-2 mb-3;
+}
+
+.day-container {
+  @apply flex gap-3 text-[14px] mb-[2px];
 }
 </style>
