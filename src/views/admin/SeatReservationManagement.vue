@@ -20,7 +20,7 @@ const isModalOpen = ref(false)
 
 const seatsMap = reactive({})
 
-// 좌석 데이터 생성
+// 좌석 데이터 생성 (더미 포함)
 const generateSeats = (serviceId) =>
   Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => {
@@ -49,22 +49,27 @@ services.forEach((s) => {
 
 const seats = computed(() => seatsMap[selectedService.value.id])
 
+// 좌석 클릭 시 모달 오픈
 const openSeatDetail = (seat) => {
   if (!seat.reservationInfo) return
   selectedSeat.value = seat
   isModalOpen.value = true
 }
 
+// 예약 취소
 const cancelReservation = () => {
   isModalOpen.value = false
 }
 
+// 모달 닫기
 const closeModal = () => {
   isModalOpen.value = false
 }
 
+// 예약 리스트 트랙킹용 refs
 const seatRefs = reactive({})
 
+// 좌석판에서 호버 -> 스크롤 포함
 const onSeatHoverBoard = (seat) => {
   hoverSeat.value = seat
   if (seat.reservationInfo && seatRefs[seat.id]) {
@@ -72,6 +77,7 @@ const onSeatHoverBoard = (seat) => {
   }
 }
 
+// 리스트에서 호버 -> 스크롤 X
 const onSeatHoverList = (seat) => {
   hoverSeat.value = seat
 }
@@ -79,28 +85,28 @@ const onSeatHoverList = (seat) => {
 
 <template>
   <AdminLayout>
-    <div class="RS_container">
+    <div class="container">
       <!-- 좌석판 + 예약 리스트 -->
-      <div class="RS_seatWrapper">
+      <div class="seat-wrapper">
         <!-- 좌석판 -->
-        <div class="RS_seatBoard">
-          <h2 class="RS_title">좌석</h2>
-          <div class="RS_legend">
-            <div class="RS_legendSeat RS_empty"></div>
-            <span class="RS_legendText">빈 좌석</span>
-            <div class="RS_legendSeat RS_reserved"></div>
-            <span class="RS_legendText">예약 완료</span>
+        <div class="seat-board">
+          <h2 class="title">좌석</h2>
+          <!-- 좌석 범례 -->
+          <div class="legend">
+            <div class="legend-seat empty"></div>
+            <span class="legend-text">빈 좌석</span>
+            <div class="legend-seat reserved"></div>
+            <span class="legend-text">예약 완료</span>
           </div>
-
-          <div class="RS_seatGrid">
-            <div v-for="row in seats" :key="row[0].row" class="RS_seatRow">
+          <div class="seat-grid">
+            <div v-for="row in seats" :key="row[0].row" class="seat-row">
               <div
                 v-for="seat in row"
                 :key="seat.id"
                 :class="[
-                  'RS_seat',
-                  seat.reserved ? 'RS_reserved' : 'RS_empty',
-                  hoverSeat?.id === seat.id ? 'RS_hovered' : '',
+                  'seat',
+                  seat.reserved ? 'reserved' : 'empty',
+                  hoverSeat?.id === seat.id ? 'hovered' : '',
                 ]"
                 @mouseenter="onSeatHoverBoard(seat)"
                 @mouseleave="hoverSeat = null"
@@ -109,9 +115,10 @@ const onSeatHoverList = (seat) => {
             </div>
           </div>
 
+          <!-- 툴팁 -->
           <div
             v-if="hoverSeat"
-            class="RS_seatTooltip"
+            class="seat-tooltip"
             :style="{
               top: `calc(${(hoverSeat.row - 1) * 1.5}rem - 8px)`,
               left: `${(hoverSeat.col - 1) * 1.5}rem`,
@@ -119,14 +126,14 @@ const onSeatHoverList = (seat) => {
           >
             <p>좌석: {{ hoverSeat.row }}-{{ hoverSeat.col }}</p>
             <p v-if="hoverSeat.reservationInfo">예약 번호: {{ hoverSeat.reservationInfo.id }}</p>
-            <p v-else class="RS_noReservation">예약 없음</p>
+            <p v-else class="no-reservation">예약 없음</p>
           </div>
         </div>
 
         <!-- 예약 리스트 -->
-        <div class="RS_reservationList">
-          <h2 class="RS_title">예약 리스트</h2>
-          <div class="components-super-table-container RS_tableContainer">
+        <div class="reservation-list">
+          <h2 class="title">예약 리스트</h2>
+          <div class="components-super-table-container table-container">
             <table class="components-super-table">
               <thead>
                 <tr>
@@ -144,7 +151,7 @@ const onSeatHoverList = (seat) => {
                   @mouseenter="onSeatHoverList(seat)"
                   @mouseleave="hoverSeat = null"
                   @click="openSeatDetail(seat)"
-                  :class="hoverSeat?.id === seat.id ? 'RS_rowHover' : ''"
+                  :class="hoverSeat?.id === seat.id ? 'row-hover' : ''"
                 >
                   <td>{{ seat.reservationInfo.id }}</td>
                   <td>{{ seat.reservationInfo.name }}</td>
@@ -157,35 +164,36 @@ const onSeatHoverList = (seat) => {
         </div>
       </div>
 
-      <!-- 공연/서비스 카드 -->
-      <div class="RS_serviceCards">
+      <!-- 공연/서비스 선택 카드 -->
+      <div class="service-cards">
         <div
           v-for="service in services"
           :key="service.id"
           @click="selectedService = service"
-          :class="['RS_serviceCard', selectedService?.id === service.id ? 'RS_selected' : '']"
+          :class="['service-card', selectedService?.id === service.id ? 'selected' : '']"
         >
-          <h3 class="RS_serviceTitle">{{ service.name }}</h3>
-          <p class="RS_serviceDate">{{ service.date }}</p>
-          <p class="RS_serviceTime">{{ service.time }}</p>
-          <p class="RS_serviceSeatInfo">
-            <span class="material-icons RS_seatIcon">좌석</span>
+          <h3 class="service-title">{{ service.name }}</h3>
+          <p class="service-date">{{ service.date }}</p>
+          <p class="service-time">{{ service.time }}</p>
+          <p class="service-seat-info">
+            <span class="material-icons seat-icon">좌석</span>
             {{ service.reserved }} / {{ service.total }}
           </p>
         </div>
       </div>
     </div>
 
+    <!-- 예약 상세 모달 -->
     <Modal :open="isModalOpen" @click.self="closeModal">
-      <h2 class="RS_modalTitle">예약 상세 정보</h2>
-      <div v-if="selectedSeat?.reservationInfo" class="RS_modalContent">
+      <h2 class="modal-title">예약 상세 정보</h2>
+      <div v-if="selectedSeat?.reservationInfo" class="modal-content">
         <p><strong>예약 번호:</strong> {{ selectedSeat.reservationInfo.id }}</p>
         <p><strong>예약자:</strong> {{ selectedSeat.reservationInfo.name }}</p>
         <p><strong>좌석:</strong> {{ selectedSeat.row }} - {{ selectedSeat.col }}</p>
         <p><strong>공연:</strong> {{ selectedService.name }}</p>
         <p><strong>일시:</strong> {{ selectedService.date }} {{ selectedService.time }}</p>
       </div>
-      <div class="RS_modalFooter">
+      <div class="modal-footer">
         <Button :theme="'gray'" @click="cancelReservation">예약 취소</Button>
         <Button @click="closeModal"> 닫기 </Button>
       </div>
@@ -193,126 +201,126 @@ const onSeatHoverList = (seat) => {
   </AdminLayout>
 </template>
 
-<style>
-.RS_container {
+<style scoped>
+.container {
   @apply flex gap-6;
 }
 
-.RS_seatWrapper {
+.seat-wrapper {
   @apply components-white-container flex-1 flex flex-col gap-4;
 }
 
-.RS_seatBoard {
+.seat-board {
   @apply relative p-4 overflow-visible;
 }
 
-.RS_title {
+.title {
   @apply font-semibold mb-2;
 }
 
-.RS_legend {
+.legend {
   @apply flex gap-4 mb-2 items-center;
 }
 
-.RS_legendSeat {
+.legend-seat {
   @apply w-4 h-4 rounded-sm border;
 }
 
-.RS_legendSeat.RS_empty {
+.legend-seat.empty {
   @apply bg-primary;
 }
 
-.RS_legendSeat.RS_reserved {
+.legend-seat.reserved {
   @apply bg-gray-200;
 }
 
-.RS_legendText {
+.legend-text {
   @apply text-sm text-gray-700;
 }
 
-.RS_seatGrid {
+.seat-grid {
   @apply inline-block;
   width: calc(12 * 1.5rem + 11px);
 }
 
-.RS_seatRow {
+.seat-row {
   @apply flex gap-1 mb-1;
 }
 
-.RS_seat {
+.seat {
   @apply w-6 h-6 rounded-sm cursor-pointer border relative transition;
 }
 
-.RS_seat.RS_empty {
+.seat.empty {
   @apply bg-primary;
 }
 
-.RS_seat.RS_reserved {
+.seat.reserved {
   @apply bg-gray-200;
 }
 
-.RS_seat.RS_hovered {
+.seat.hovered {
   @apply ring-2 ring-yellow-400;
 }
 
-.RS_seatTooltip {
+.seat-tooltip {
   @apply absolute p-2 bg-gray-50 border rounded text-sm text-gray-700 shadow z-10 whitespace-nowrap pointer-events-none;
 }
 
-.RS_noReservation {
+.no-reservation {
   @apply text-gray-400;
 }
 
-.RS_reservationList {
+.reservation-list {
   @apply rounded p-4 text-sm text-gray-700;
 }
 
-.RS_tableContainer {
+.table-container {
   @apply components-super-table-container max-h-64 overflow-y-auto;
 }
 
-.RS_rowHover {
+.row-hover {
   @apply bg-gray-100;
 }
 
-.RS_serviceCards {
+.service-cards {
   @apply flex flex-col gap-4 w-64;
 }
 
-.RS_serviceCard {
+.service-card {
   @apply border cursor-pointer transition components-white-container mb-0;
 }
 
-.RS_serviceCard.RS_selected {
+.service-card.selected {
   @apply border-blue-500 bg-blue-50;
 }
 
-.RS_serviceTitle {
+.service-title {
   @apply font-semibold;
 }
 
-.RS_serviceDate,
-.RS_serviceTime {
+.service-date,
+.service-time {
   @apply text-gray-500 text-sm;
 }
 
-.RS_serviceSeatInfo {
+.service-seat-info {
   @apply text-gray-700 text-sm flex items-center gap-1;
 }
 
-.RS_seatIcon {
+.seat-icon {
   @apply text-sm;
 }
 
-.RS_modalTitle {
+.modal-title {
   @apply text-lg font-semibold mb-4;
 }
 
-.RS_modalContent {
+.modal-content {
   @apply space-y-2;
 }
 
-.RS_modalFooter {
+.modal-footer {
   @apply mt-6 gap-3 flex justify-end;
 }
 </style>

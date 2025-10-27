@@ -1,13 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* -----------------------------
-   Base Reset & Global Styles
------------------------------ */
 @layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
-
   *,
   *::before,
   *::after {
@@ -20,97 +17,29 @@
   body {
     @apply h-full;
   }
-
   body {
     @apply bg-gray-50 font-mont-noto;
   }
-
   input,
   button {
     @apply outline-none;
   }
 
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 4px; /* 스크롤바 너비 */
   }
-
   ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.3); /* 트랙 배경색 */
   }
-
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1); /* 스크롤 색 */
     border-radius: 3px;
   }
-
   ::-webkit-scrollbar-thumb:hover {
     background: #555;
   }
 }
 
-/* -----------------------------
-   Component Layer
-   (각 custom 클래스는 별도 레이어로 분리)
------------------------------ */
+@import './styles/components.css';
 
-@layer components {
-  .components-page-title {
-    @apply text-[20px] font-medium w-full mb-2 flex justify-between;
-  }
-}
 
-@layer components {
-  .components-white-container {
-    @apply bg-white p-3 mt-3 mb-3 rounded-md;
-  }
-}
-
-@layer components {
-  .components-super-table-container {
-    @apply w-full h-full overflow-y-auto border border-gray-200 rounded-lg;
-  }
-}
-
-@layer components {
-  .components-super-table {
-    @apply w-full border-collapse table-auto text-sm;
-  }
-}
-
-@layer components {
-  .components-super-table thead th {
-    @apply bg-gray-100 text-gray-700 font-semibold py-3 px-4 text-center border-b border-gray-300;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-}
-
-@layer components {
-  .components-super-table tbody td {
-    @apply border-b border-gray-200 py-3 px-4 text-center;
-  }
-}
-
-@layer components {
-  .components-super-table tbody tr:hover td {
-    @apply bg-gray-100;
-  }
-}
-
-/* -----------------------------
-   Utilities (Scrollbars)
------------------------------ */
-@layer utilities {
-  .components-super-table-container::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .components-super-table-container::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-[4px];
-  }
-
-  .components-super-table-container::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
-  }
-}
