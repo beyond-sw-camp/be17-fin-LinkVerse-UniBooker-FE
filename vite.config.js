@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import postcssConfig from './postcss.config.cjs'
 
 export default defineConfig({
   plugins: [
@@ -10,7 +9,7 @@ export default defineConfig({
     vueDevTools(),
   ],
   css: {
-    postcss: postcssConfig,
+    postcss: './postcss.config.cjs',
   },
   resolve: {
     alias: {
