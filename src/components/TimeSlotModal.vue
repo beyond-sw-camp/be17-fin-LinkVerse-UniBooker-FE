@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import Dropdown from '@/components/Dropdown.vue'
+import Button from '@/components/Button.vue'
 
 const props = defineProps({
   interval: Number,
+  existingSlots: { type: Array, default: () => [] },
 })
 
 const days = ['월', '화', '수', '목', '금', '토', '일']
@@ -33,12 +35,72 @@ const minuteOptions = computed(() =>
       ],
 )
 
+// 한글 ↔ 영문 요일 맵핑
+const dayMap = { 월: 'MON', 화: 'TUE', 수: 'WED', 목: 'THU', 금: 'FRI', 토: 'SAT', 일: 'SUN' }
+const dayMapReverse = {
+  MON: '월',
+  TUE: '화',
+  WED: '수',
+  THU: '목',
+  FRI: '금',
+  SAT: '토',
+  SUN: '일',
+}
+
+// 선택된 시간 배열 생성
+function generateSelectedTimes(start, end, interval) {
+  const startMin = Number(start.split(':')[0]) * 60 + Number(start.split(':')[1])
+  const endMin = Number(end.split(':')[0]) * 60 + Number(end.split(':')[1])
+  const times = []
+  for (let t = startMin; t < endMin; t += interval) {
+    const h = Math.floor(t / 60)
+    const m = t % 60
+    times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+  }
+  return times
+}
+
+// slots 초기화 함수
+const initializeSlots = (slots) => {
+  if (!slots.length) return
+  const grouped = {}
+  slots.forEach((slot) => {
+    const key = `${slot.startTime}~${slot.endTime}`
+    const dayKor = dayMapReverse[slot.dayOfWeek] || slot.dayOfWeek
+    if (!grouped[key]) grouped[key] = []
+    grouped[key].push(dayKor)
+  })
+  timeSlots.value = Object.entries(grouped).map(([key, daysArr]) => {
+    const [start, end] = key.split('~')
+    return {
+      days: daysArr.sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b)),
+      start,
+      end,
+      selectedTimes: generateSelectedTimes(start, end, props.interval),
+    }
+  })
+}
+
+// 초기 마운트 시
+onMounted(() => {
+  initializeSlots(props.existingSlots)
+})
+
+// props.existingSlots가 바뀌면 다시 반영
+watch(
+  () => props.existingSlots,
+  (newSlots) => {
+    initializeSlots(newSlots)
+  },
+  { deep: true },
+)
+
 const modalTimes = computed(() => {
   if (!startHour.value || !startMinute.value || !endHour.value || !endMinute.value) return []
   const startMin = Number(startHour.value) * 60 + Number(startMinute.value)
   const endMin = Number(endHour.value) * 60 + Number(endMinute.value)
   const times = []
-  for (let t = startMin; t < endMin; t += Number(props.interval)) {
+  for (let t = startMin; t < endMin; t += props.interval) {
     const h = Math.floor(t / 60)
     const m = t % 60
     times.push({ label: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`, value: t })
@@ -46,9 +108,8 @@ const modalTimes = computed(() => {
   return times
 })
 
-// 새로 추가할 때만 기본 전체 선택
 watch(modalTimes, (newTimes) => {
-  if (newTimes.length > 0 && editingIndex.value === null) {
+  if (newTimes.length && editingIndex.value === null) {
     selectedTimes.value = newTimes.map((t) => t.label)
   }
 })
@@ -64,7 +125,7 @@ const openModal = () => {
     alert('시작/종료 시간을 선택해주세요.')
     return
   }
-  if (selectedDays.value.length === 0) {
+  if (!selectedDays.value.length) {
     alert('요일을 선택해주세요.')
     return
   }
@@ -93,89 +154,91 @@ const resetAll = () => {
   editingIndex.value = null
 }
 
-// 한글 요일 → 영문 요일 맵핑
-const dayMap = {
-  월: 'MON',
-  화: 'TUE',
-  수: 'WED',
-  목: 'THU',
-  금: 'FRI',
-  토: 'SAT',
-  일: 'SUN',
+function toMinutes(hhmm) {
+  const [h, m] = (hhmm || '00:00').split(':').map(Number)
+  return h * 60 + m
 }
 
-// 부모 컴포넌트에서 접근 가능하도록 공개
+function toHHMM(min) {
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+// expose
 defineExpose({
   resetAll,
   getTimeSlots: () => {
-    const converted = []
+    const interval = Number(props.interval || 60)
+    const result = []
 
     timeSlots.value.forEach((slot) => {
-      // slot.selectedTimes: ['00:00','01:00',...,'07:00'] 등
-      const selectedMinutes = slot.selectedTimes
-        .map((t) => {
-          const [h, m] = t.split(':').map(Number)
-          return h * 60 + m
-        })
-        .sort((a, b) => a - b)
+      // 포함된 시각 리스트(선택된 시간들)
+      const includedArr = Array.isArray(slot.selectedTimes)
+        ? [...slot.selectedTimes].sort()
+        : []
 
-      // 연속된 시간 블록으로 분리
-      let blocks = []
-      let start = selectedMinutes[0]
-      let prev = selectedMinutes[0]
+      if (!includedArr.length) return
 
-      for (let i = 1; i < selectedMinutes.length; i++) {
-        if (selectedMinutes[i] !== prev + props.interval) {
-          blocks.push([start, prev + props.interval])
-          start = selectedMinutes[i]
+      const startTimesInMin = includedArr.map(toMinutes)
+
+      // 연속된 구간을 묶는다
+      let blockStart = startTimesInMin[0]
+      let prev = startTimesInMin[0]
+
+      for (let i = 1; i <= startTimesInMin.length; i++) {
+        const cur = startTimesInMin[i]
+        const isContiguous = cur === prev + interval
+
+        // 블록 종료 시점
+        if (!isContiguous) {
+          result.push({
+            days: slot.days.map((d) => dayMap[d] || d),
+            startTime: toHHMM(blockStart),
+            endTime: toHHMM(prev + interval), // ✅ 마지막 시작 + interval
+          })
+
+          // 새 블록 시작
+          if (cur) {
+            blockStart = cur
+            prev = cur
+          }
+        } else {
+          prev = cur
         }
-        prev = selectedMinutes[i]
       }
-      blocks.push([start, prev + props.interval])
-
-      // 블록 + 배열 형태로 변환
-      blocks.forEach(([s, e]) => {
-        const toTimeStr = (min) =>
-          `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
-
-        converted.push({
-          days: slot.days.map((d) => dayMap[d]), // 배열 그대로 전달
-          startTime: toTimeStr(s),
-          endTime: toTimeStr(e),
-        })
-      })
     })
 
-    console.log(converted)
-    return converted
+    return result
   },
 })
 
 const addSlot = () => {
-  if (selectedTimes.value.length === 0) {
-    alert('시간을 하나 이상 선택하세요.')
+  if (!selectedTimes.value.length) {
+    alert('시간을 하나 이상 선택하세요')
     return
   }
 
-  selectedTimes.value.sort()
+  // 숫자 기준으로 정렬
+  selectedTimes.value.sort((a, b) => toMinutes(a) - toMinutes(b))
+
   const sortedDays = [...selectedDays.value].sort(
     (a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b),
   )
 
+  const lastTime = selectedTimes.value[selectedTimes.value.length - 1]
+  const endTime = toHHMM(toMinutes(lastTime) + props.interval)
+
   const newSlot = {
     days: sortedDays,
     start: selectedTimes.value[0],
-    end: selectedTimes.value[selectedTimes.value.length - 1],
-    selectedTimes: [...selectedTimes.value], // ✅ 선택 상태 저장
+    end: endTime, 
+    selectedTimes: [...selectedTimes.value],
   }
 
-  if (editingIndex.value !== null) {
-    timeSlots.value[editingIndex.value] = newSlot
-  } else {
-    timeSlots.value.push(newSlot)
-  }
+  if (editingIndex.value !== null) timeSlots.value[editingIndex.value] = newSlot
+  else timeSlots.value.push(newSlot)
 
-  // 리셋
   selectedDays.value = []
   startHour.value = ''
   startMinute.value = ''
@@ -190,23 +253,14 @@ const removeSlot = (idx) => {
   timeSlots.value.splice(idx, 1)
 }
 
-// 수정 기능 — 선택 상태 그대로 복원
 const editSlot = (slot, idx) => {
-  editingIndex.value = idx // watch보다 먼저 설정
-
+  editingIndex.value = idx
   selectedDays.value = [...slot.days]
   startHour.value = slot.start.split(':')[0]
   startMinute.value = slot.start.split(':')[1]
   endHour.value = slot.end.split(':')[0]
   endMinute.value = slot.end.split(':')[1]
-
-  // 저장된 선택 상태 복원
-  if (slot.selectedTimes && slot.selectedTimes.length) {
-    selectedTimes.value = [...slot.selectedTimes]
-  } else {
-    selectedTimes.value = modalTimes.value.map((t) => t.label)
-  }
-
+  selectedTimes.value = [...slot.selectedTimes]
   modalOpen.value = true
 }
 </script>
