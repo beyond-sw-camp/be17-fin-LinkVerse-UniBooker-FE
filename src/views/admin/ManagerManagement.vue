@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
-import Toast from '@/components/Toast.vue'
 import PageNation from '@/components/PageNation.vue'
 import adminApi from '@/services/admin/admin_api'
 import Modal from '@/components/Modal.vue'
@@ -34,11 +33,6 @@ const editForm = ref({
   phone: '',
 })
 
-/** Toast 알림 */
-const toastMessage = ref('')
-const toastType = ref('success')
-const showToast = ref(false)
-
 /** 매니저 추가 폼 데이터 */
 const newManager = ref({
   name: '',
@@ -67,7 +61,8 @@ const fetchManagers = async (page = 1) => {
       currentPage.value = page
     }
   } catch (error) {
-    showToastMessage('매니저 목록을 불러오는데 실패했습니다.', 'error')
+    console.error('❌ 매니저 목록 조회 실패:', error.response?.data)
+    alert('매니저 목록을 불러오는데 실패했습니다.')
   } finally {
     loading.value = false
   }
@@ -107,14 +102,14 @@ const closeAddModal = () => {
 const handleAddManager = async () => {
   // 필수 항목 검사 (이름, 이메일만)
   if (!newManager.value.name || !newManager.value.email) {
-    showToastMessage('이름과 이메일은 필수 항목입니다.', 'error')
+    alert('이름과 이메일은 필수 항목입니다.')
     return
   }
 
   // 이메일 형식 검증
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(newManager.value.email)) {
-    showToastMessage('올바른 이메일 형식을 입력해주세요.', 'error')
+    alert('올바른 이메일 형식을 입력해주세요.')
     return
   }
 
@@ -123,7 +118,7 @@ const handleAddManager = async () => {
     // 백엔드 정규식에 맞춤: 01X-XXX(X)-XXXX
     const phoneRegex = /^01(?:0|1|[6-9])-(?:\d{3}|\d{4})-\d{4}$/
     if (!phoneRegex.test(newManager.value.phone)) {
-      showToastMessage('연락처는 010-1234-5678 형식으로 입력해주세요.', 'error')
+      alert('연락처는 010-1234-5678 형식으로 입력해주세요.')
       return
     }
   }
@@ -141,18 +136,20 @@ const handleAddManager = async () => {
     const response = await adminApi.createManager(payload)
 
     // 백엔드 응답 구조: { isSuccess, code, message, data }
+    // 백엔드 응답 구조: { isSuccess, code, message, data }
     if (response.isSuccess) {
-      showToastMessage('매니저가 성공적으로 추가되었습니다. 이메일을 확인해주세요.', 'success')
+      alert('매니저가 성공적으로 추가되었습니다. 이메일을 확인해주세요.')
       closeAddModal()
 
       // 목록을 첫 페이지로 갱신 (1-based)
       currentPage.value = 1
     } else {
-      showToastMessage(response.message || '매니저 추가에 실패했습니다.', 'error')
+      alert(response.message || '매니저 추가에 실패했습니다.')
     }
   } catch (error) {
+    console.error('❌ 매니저 생성 실패:', error.response?.data)
     const errorMessage = error.response?.data?.message || '매니저 추가에 실패했습니다.'
-    showToastMessage(errorMessage, 'error')
+    alert(errorMessage)
   } finally {
     loading.value = false
   }
@@ -195,7 +192,7 @@ const handleDeleteManager = async () => {
 
     // 백엔드 응답 구조: { isSuccess, code, message, data }
     if (response.isSuccess) {
-      showToastMessage('매니저가 삭제되었습니다.', 'success')
+      alert('매니저가 삭제되었습니다.')
       isEditModalOpen.value = false
       selectedManager.value = null
 
@@ -206,11 +203,12 @@ const handleDeleteManager = async () => {
         currentPage.value = currentPage.value // watch가 자동 호출
       }
     } else {
-      showToastMessage(response.message || '매니저 삭제에 실패했습니다.', 'error')
+      alert(response.message || '매니저 삭제에 실패했습니다.')
     }
   } catch (error) {
+    console.error('❌ 매니저 삭제 실패:', error.response?.data)
     const errorMessage = error.response?.data?.message || '매니저 삭제에 실패했습니다.'
-    showToastMessage(errorMessage, 'error')
+    alert(errorMessage)
   } finally {
     loading.value = false
   }
@@ -243,7 +241,7 @@ const handleUpdateManager = async () => {
 
   // 필수 항목 검사
   if (!editForm.value.name) {
-    showToastMessage('이름은 필수 항목입니다.', 'error')
+    alert('이름은 필수 항목입니다.')
     return
   }
 
@@ -251,7 +249,7 @@ const handleUpdateManager = async () => {
   if (editForm.value.phone && editForm.value.phone.trim()) {
     const phoneRegex = /^01(?:0|1|[6-9])-(?:\d{3}|\d{4})-\d{4}$/
     if (!phoneRegex.test(editForm.value.phone)) {
-      showToastMessage('연락처는 010-1234-5678 형식으로 입력해주세요.', 'error')
+      alert('연락처는 010-1234-5678 형식으로 입력해주세요.')
       return
     }
   }
@@ -266,7 +264,7 @@ const handleUpdateManager = async () => {
     const response = await adminApi.updateManager(selectedManager.value.managerId, payload)
 
     if (response.isSuccess) {
-      showToastMessage('매니저 정보가 수정되었습니다.', 'success')
+      alert('매니저 정보가 수정되었습니다.')
       selectedManager.value.name = editForm.value.name
       selectedManager.value.phone = editForm.value.phone || null
       isEditMode.value = false
@@ -274,29 +272,15 @@ const handleUpdateManager = async () => {
       // 목록 갱신 (watch가 자동 호출하므로 값만 재할당)
       currentPage.value = currentPage.value
     } else {
-      showToastMessage(response.message || '매니저 수정에 실패했습니다.', 'error')
+      alert(response.message || '매니저 수정에 실패했습니다.')
     }
   } catch (error) {
+    console.error('❌ 매니저 수정 실패:', error.response?.data)
     const errorMessage = error.response?.data?.message || '매니저 수정에 실패했습니다.'
-    showToastMessage(errorMessage, 'error')
+    alert(errorMessage)
   } finally {
     loading.value = false
   }
-}
-
-// ========== Toast 알림 ==========
-
-/**
- * Toast 메시지 표시
- */
-const showToastMessage = (message, type = 'success') => {
-  toastMessage.value = message
-  toastType.value = type
-  showToast.value = true
-
-  setTimeout(() => {
-    showToast.value = false
-  }, 3000)
 }
 
 // ========== 유틸리티 함수 ==========
@@ -516,9 +500,6 @@ onMounted(() => {
         </div>
       </div>
     </Modal>
-
-    <!-- Toast 알림 -->
-    <Toast v-if="showToast" :message="toastMessage" :type="toastType" />
   </AdminLayout>
 </template>
 

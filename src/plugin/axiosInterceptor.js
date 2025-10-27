@@ -176,6 +176,16 @@ axiosInstance.interceptors.response.use(
       console.error('💥 서버 오류가 발생했습니다.')
     }
 
+    // ===== 400 Bad Request: 비즈니스 로직 에러 =====
+    if (error.response?.status === 400) {
+      const { code, message } = error.response.data || {}
+      
+      // 에러 코드별 로깅 (디버깅용)
+      if (code >= 4000 && code < 5000) {
+        console.warn(`⚠️ 비즈니스 에러 [${code}]:`, message)
+      }
+    }
+
     return Promise.reject(error)
   }
 )
