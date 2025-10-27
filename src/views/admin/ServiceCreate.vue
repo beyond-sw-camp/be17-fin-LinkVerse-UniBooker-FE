@@ -31,6 +31,13 @@ const customFieldValues = ref([])
 const timeSlotRef = ref(null)
 const exceptionRef = ref(null)
 
+// 사용자가 직접 입력했는지 추적
+const manuallyEdited = ref({
+  capacity: false,
+  row: false,
+  col: false,
+})
+
 watch(timeInterval, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     timeSlotRef.value?.resetAll?.()
@@ -58,7 +65,7 @@ const createService = async () => {
     const formatDate = (dateStr) => {
       if (!dateStr) return null
       const date = new Date(dateStr)
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     }
 
     const formattedCustomFields = customFieldValues.value.map((field) => ({
@@ -83,8 +90,6 @@ const createService = async () => {
       timeSlots,
       exceptionSlots,
     }
-
-    console.log('📦 요청 데이터:', formData)
 
     const response = await serviceApi.createService(formData)
     alert('서비스가 성공적으로 생성되었습니다!')
@@ -136,6 +141,34 @@ const onFileChange = async (event) => {
     alert('이미지 업로드 중 오류가 발생했습니다.')
   }
 }
+
+// 입력 이벤트 처리
+const handleInput = (field) => {
+  manuallyEdited.value[field] = true
+}
+
+// 자동 계산
+watch([row, col, capacity], ([newRow, newCol, newCapacity]) => {
+  if (serviceGroup.value.category !== 'SEAT') return
+
+  // 행, 열이 모두 입력되고, 사용자가 수용 인원을 직접 수정하지 않은 경우
+  if (newRow && newCol && !manuallyEdited.value.capacity) {
+    capacity.value = newRow * newCol
+  }
+  // 행, 수용 인원이 입력되고, 열을 수동 수정하지 않은 경우
+  else if (newCapacity && newRow && !manuallyEdited.value.col) {
+    col.value = Math.floor(newCapacity / newRow)
+  }
+  // 열, 수용 인원이 입력되고, 행을 수동 수정하지 않은 경우
+  else if (newCapacity && newCol && !manuallyEdited.value.row) {
+    row.value = Math.floor(newCapacity / newCol)
+  }
+})
+
+// 필드 리셋 시 수동 입력 상태도 초기화
+watch([serviceGroup], () => {
+  manuallyEdited.value = { capacity: false, row: false, col: false }
+})
 
 onMounted(() => {
   getServiceGroup()
