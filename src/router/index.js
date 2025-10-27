@@ -40,15 +40,9 @@ const router = createRouter({
       meta: { layout: 'user' },
     },
     {
-      path: '/c/:companySlug/services/:groupId',
+      path: '/c/:companySlug/services/:serviceGroupId',
       name: 'UserServiceList',
       component: () => import('@/views/user/ServiceListView.vue'),
-      meta: { layout: 'user' },
-    },
-    {
-      path: '/c/:companySlug/service-item/detail',
-      name: 'ServiceItemDetail',
-      component: () => import('@/views/user/ServiceItemDetailView.vue'),
       meta: { layout: 'user' },
     },
     {
@@ -74,14 +68,13 @@ const router = createRouter({
       path: '/c/:companySlug/find-password',
       name: 'FindPassword',
       component: () => import('@/views/user/FindPasswordView.vue'),
-      meta: { layout: 'user', requiresGuest: true, title: '비밀번호 찾기'},
+      meta: { layout: 'user', requiresGuest: true, title: '비밀번호 찾기' },
     },
     {
       path: '/c/:companySlug/find-id',
       name: 'FindId',
       component: () => import('@/views/user/FindIdView.vue'),
-      meta: { layout: 'user', requiresGuest: true, title: '아이디 찾기'
-      }
+      meta: { layout: 'user', requiresGuest: true, title: '아이디 찾기' },
     },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,10 +296,10 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // ===== 1. 인증 상태 복원 (localStorage 기반) =====
   authStore.checkAuth()
-  
+
   const requiresAuth = to.meta.requiresAuth
   const requiredRole = to.meta.role
   const currentSlug = to.params.companySlug
@@ -321,7 +314,7 @@ router.beforeEach(async (to, from, next) => {
     // 3-1. localStorage에 인증 정보 없으면 로그아웃 처리
     if (!authStore.isLoggedIn) {
       console.warn('🚫 인증되지 않은 접근 시도 - 로그인 페이지로 리다이렉트')
-      
+
       // 역할별 로그인 페이지로 리다이렉트
       if (requiredRole === 'USER') {
         const targetSlug = currentSlug || 'default'
@@ -331,7 +324,7 @@ router.beforeEach(async (to, from, next) => {
       } else if (requiredRole === 'SUPER') {
         return next('/super/login')
       }
-      
+
       // 기본 홈으로
       return next('/')
     }
@@ -342,9 +335,9 @@ router.beforeEach(async (to, from, next) => {
         required: requiredRole,
         current: authStore.role,
       })
-      
+
       alert('접근 권한이 없습니다.')
-      
+
       // 현재 역할의 홈으로 리다이렉트
       if (authStore.role === 'USER') {
         const slug = authStore.companySlug || 'default'
@@ -354,7 +347,7 @@ router.beforeEach(async (to, from, next) => {
       } else if (authStore.role === 'SUPER') {
         return next('/super/dashboard')
       }
-      
+
       return next('/')
     }
 

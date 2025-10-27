@@ -37,7 +37,7 @@ const goToServiceGroup = (item) => {
   const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push({
     path: `/c/${slug}/services/${item.id}`,
-    query: { type: item.type },
+    query: { serviceGroupName: item.name },
   })
 }
 
