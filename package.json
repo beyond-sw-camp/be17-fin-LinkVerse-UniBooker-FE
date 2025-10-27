@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tailwindcss -i ./src/app.css -o ./dist/tailwind.css && vite build",
     "preview": "vite preview",
     "format": "prettier --write src/"
   },
