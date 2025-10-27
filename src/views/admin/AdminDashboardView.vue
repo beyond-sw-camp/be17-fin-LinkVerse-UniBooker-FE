@@ -2,6 +2,10 @@
 import AdminLayout from '@/components/AdminLayout.vue'
 import { ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+<<<<<<< Updated upstream
+=======
+import dashboardApi from '@/services/dashboard/dashboard_api'
+>>>>>>> Stashed changes
 
 // ✅ KPI 더미데이터
 const kpi = ref({
@@ -70,6 +74,42 @@ const chartOptions = ref({
   legend: { position: 'top', horizontalAlign: 'center' },
   grid: { borderColor: '#E5E7EB', strokeDashArray: 4 },
 })
+<<<<<<< Updated upstream
+=======
+
+const getDashboardData = async () => {
+  const data = await dashboardApi.getAdminDashboardData()
+  dashboardData.value = data
+
+  console.log(dashboardData.value)
+
+  if (dashboardData.value.reservationTrends?.length) {
+    const trends = dashboardData.value.reservationTrends
+
+    // xaxis 날짜: 일(day)만 표시
+    chartOptions.value.xaxis.categories = trends.map((t) => {
+      const d = new Date(t.date)
+      return d.getDate() // 1~31 숫자
+    })
+
+    // 그룹 이름 추출
+    const groupNames = Object.keys(trends[0].groups || {})
+
+    // series 구성
+    series.value = groupNames.map((name) => ({
+      name,
+      data: trends.map((t) => t.groups[name] || 0),
+    }))
+  } else {
+    // 데이터가 없을 경우 series 초기화
+    series.value = []
+    chartOptions.value.xaxis.categories = []
+  }
+}
+onMounted(() => {
+  getDashboardData()
+})
+>>>>>>> Stashed changes
 </script>
 
 <template>
