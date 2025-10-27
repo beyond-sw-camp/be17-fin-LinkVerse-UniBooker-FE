@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-deployment-old
+spec:
+  selector:
+    matchLabels:
+      type: app
+      ver: old
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        type: app
+        ver: old
+    spec:
+      containers:
+      - name: container
+        image: linkverseunibooker/frontend:v1
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        readinessProbe:		# 프로그램이 실행 완료 됐는지 판단, 통과 못하면 Service의 부하분산에서 제외
+          httpGet:
+            path: /test
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          successThreshold: 3
+      terminationGracePeriodSeconds: 0
