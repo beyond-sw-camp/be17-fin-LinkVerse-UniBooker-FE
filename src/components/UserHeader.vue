@@ -199,7 +199,7 @@ const goToService = () => {
 
 const goToReservation = () => {
   const slug = route.params.companySlug || authStore.companySlug || 'default'
-  router.push(`/c/${slug}/myReservation`)
+  router.push(`/c/${slug}/reservations`)
 }
 
 const goToMypage = () => {

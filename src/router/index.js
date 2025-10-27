@@ -46,13 +46,19 @@ const router = createRouter({
       meta: { layout: 'user' },
     },
     {
-      path: '/c/:companySlug/myReservation',
+      path: '/c/:companySlug/service/detail/:itemId',
+      name: 'ServiceDetail',
+      component: () => import('@/views/user/ServiceDetailView.vue'),
+      meta: { layout: 'user' },
+    },
+    {
+      path: '/c/:companySlug/reservations',
       name: 'myReservation',
       component: () => import('@/views/user/UserMyReservation.vue'),
       meta: { layout: 'user', requiresAuth: true, role: 'USER' },
     },
     {
-      path: '/c/:companySlug/myReservation/:id',
+      path: '/c/:companySlug/reservation/detail/:reservationId',
       name: 'myReservationDetail',
       component: () => import('@/views/user/UserMyReservationDetail.vue'),
       props: true,
