@@ -17,6 +17,8 @@ const serviceGroup = ref(null)
 const thumbnail = ref('')
 const name = ref('')
 const description = ref('')
+const category = ref('')
+const isAlwaysAvailable = ref(false)
 const capacity = ref(null)
 const startDate = ref('')
 const endDate = ref('')
@@ -97,6 +99,8 @@ const getServiceInfo = async () => {
     if (res?.data) {
       const data = res.data.data
       name.value = data.name
+      category.value = data.category
+      isAlwaysAvailable.value = data.isAlwaysAvailable
       description.value = data.description
       thumbnail.value = data.resourceImage || ''
       capacity.value = data.capacity ? Number(data.capacity) : null
@@ -306,7 +310,7 @@ const back = () => {
       </section>
 
       <!-- 행 -->
-      <section v-if="serviceGroup.category == 'SEAT'">
+      <section v-if="category == 'SEAT'">
         <div class="form-label-container">
           <div>행 <span>*</span></div>
           <p>좌석의 행 수를 입력해주세요.</p>
@@ -320,7 +324,7 @@ const back = () => {
       </section>
 
       <!-- 열 -->
-      <section v-if="serviceGroup.category == 'SEAT'">
+      <section v-if="category == 'SEAT'">
         <div class="form-label-container">
           <div>열 <span>*</span></div>
           <p>좌석의 열 수를 입력해주세요.</p>
@@ -340,7 +344,7 @@ const back = () => {
         </div>
 
         <!-- 예약/신청 기간 -->
-        <div v-if="!serviceGroup.isAlwaysAvailable" class="service-info-section">
+        <div v-if="!isAlwaysAvailable" class="service-info-section">
           <div class="service-info-form-item-label-container !mt-[5px]">
             <span>예약/신청 기간</span>
             <p>해당 서비스의 예약/신청이 가능한 기간을 입력해 주세요.</p>
@@ -354,7 +358,7 @@ const back = () => {
         </div>
 
         <!-- 시간 간격 선택 -->
-        <div v-if="serviceGroup.category != 'EVENT'" class="service-info-section">
+        <div v-if="category != 'EVENT'" class="service-info-section">
           <div class="service-info-form-item-label-container">
             <span>시간 간격 선택</span>
           </div>
@@ -380,7 +384,7 @@ const back = () => {
         </div>
 
         <!-- 서비스 이용 시간  -->
-        <div v-if="serviceGroup.category != 'EVENT'" class="service-info-section">
+        <div v-if="category != 'EVENT'" class="service-info-section">
           <div class="service-info-form-item-label-container">
             <span>정기 이용 시간 (매주 반복)</span>
             <p>
@@ -399,7 +403,7 @@ const back = () => {
         </div>
 
         <!-- 제외 시간  -->
-        <div v-if="serviceGroup.category != 'EVENT'" class="service-info-section mt-[40px]">
+        <div v-if="category != 'EVENT'" class="service-info-section mt-[40px]">
           <div class="service-info-form-item-label-container">
             <span>예외 일정</span>
             <p>특정 날짜에만 적용되는 일정이 있거나 휴무나 점검 시간 등을 입력해 주세요.</p>
