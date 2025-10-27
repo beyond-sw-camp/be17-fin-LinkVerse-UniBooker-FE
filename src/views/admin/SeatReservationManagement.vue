@@ -207,7 +207,7 @@ const onSeatHoverList = (seat) => {
 }
 
 .seat-wrapper {
-  @apply components-white-container flex-1 flex flex-col gap-4;
+  @apply bg-white p-3 mt-3 mb-3 rounded-md flex-1 flex flex-col gap-4;
 }
 
 .seat-board {
