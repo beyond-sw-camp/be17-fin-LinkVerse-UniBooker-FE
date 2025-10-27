@@ -13,7 +13,7 @@ const authStore = useAuthStore()
 
 async function openModal() {
   try {
-    const response = await adminApi.getManagerInfo()
+    const response = await adminApi.getMyProfile()
 
     if (response.data && response.data.data) {
       userData.value = response.data.data
@@ -156,9 +156,14 @@ onMounted(() => {
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
           <router-link class="sub-menu-item" to="/admin/dashboard">전체 현황</router-link>
-          <router-link class="sub-menu-item" to="/admin/manager-management"
-            >관리자 관리</router-link
+          <!-- ADMIN만 관리자 관리 메뉴 표시 -->
+          <router-link
+            v-if="authStore.role === 'ADMIN'"
+            class="sub-menu-item"
+            to="/admin/manager-management"
           >
+            관리자 관리
+          </router-link>
           <router-link class="sub-menu-item" to="/admin/service-group-management"
             >서비스 그룹 관리</router-link
           >

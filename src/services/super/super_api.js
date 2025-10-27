@@ -60,6 +60,26 @@ const rejectCompany = async (companyId, rejectionReason) => {
   return response.data
 }
 
+/**
+ * 전체 관리자/매니저 조회
+ */
+const getAllAdmins = async (page = 0, size = 10, role = null, status = null) => {
+  const params = { page, size }
+  if (role) params.role = role
+  if (status) params.status = status
+  
+  const response = await axiosInstance.get('/api/admins', { params })
+  return response.data
+}
+
+/**
+ * 계정 상태 변경
+ */
+const updateAdminStatus = async (userId, status) => {
+  const response = await axiosInstance.patch(`/api/admins/${userId}/status`, { status })
+  return response.data
+}
+
 export default {
   // 인증
   login,
@@ -70,4 +90,10 @@ export default {
   getCompanyDetail,
   approveCompany,
   rejectCompany,
+
+  // 전체 관리자/매니저 조회
+  getAllAdmins,
+
+  // 계정 상태 변경
+  updateAdminStatus
 }

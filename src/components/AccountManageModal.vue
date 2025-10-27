@@ -108,7 +108,7 @@ const handleEditSubmit = async () => {
     authStore.updateUser(updatedData)
 
     // 서버에서 최신 데이터 가져오기
-    const response = await adminApi.getManagerInfo()
+    const response = await adminApi.getMyProfile() // ← getManagerInfo → getMyProfile
     Object.assign(props.userData, response.data) // props.userData 직접 업데이트
 
     // 모드 전환
