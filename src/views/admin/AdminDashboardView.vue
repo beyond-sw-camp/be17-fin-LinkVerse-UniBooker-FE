@@ -2,7 +2,7 @@
 import AdminLayout from '@/components/AdminLayout.vue'
 import { onMounted, ref } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
-import dashboardApi from '@/services/admin/dashboard_api'
+import dashboardApi from '@/services/dashboard/dashboard_api'
 
 const dashboardData = ref({
   summary: {},
@@ -34,7 +34,8 @@ const chartOptions = ref({
 })
 
 const getDashboardData = async () => {
-  const data = await dashboardApi.getDashboardData()
+  const data = await dashboardApi.getAdminDashboardData()
+  
   dashboardData.value = data
 
   console.log(dashboardData.value)
@@ -65,6 +66,7 @@ const getDashboardData = async () => {
 onMounted(() => {
   getDashboardData()
 })
+
 </script>
 
 <template>
