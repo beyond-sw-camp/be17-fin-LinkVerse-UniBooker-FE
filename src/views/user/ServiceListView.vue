@@ -1,35 +1,43 @@
 <script setup>
 import PageNation from '@/components/PageNation.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import { ref, reactive, computed, onMounted  } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import serviceApi from '@/services/user/service_api'
 
 const route = useRoute()
 const router = useRouter()
+const services = ref([])
 
-// 예시 회의실 목록 데이터
-const meetingRooms = reactive([
-    { name: '회의실 A', src: '/assets/images/service/meeting_room.jpg', location: '3층 회의실', capacity: '최대 인원 6명', status: '예약 가능' },
-    { name: '회의실 B', src: '/assets/images/service/meeting_room.jpg', location: '4층 회의실', capacity: '최대 인원 6명', status: '예약 불가' },
-    { name: '회의실 A', src: '/assets/images/service/meeting_room.jpg', location: '3층 회의실', capacity: '최대 인원 6명', status: '예약 가능' },
-    { name: '회의실 B', src: '/assets/images/service/meeting_room.jpg', location: '4층 회의실', capacity: '최대 인원 6명', status: '예약 가능' },
-    { name: '회의실 C', src: '/assets/images/service/meeting_room.jpg', location: '5층 회의실', capacity: '최대 인원 6명', status: '예약 불가' },
-    { name: '회의실 A', src: '/assets/images/service/meeting_room.jpg', location: '3층 회의실', capacity: '최대 인원 6명', status: '예약 가능' },
-])
+const serviceGroupId = route.params.serviceGroupId
+const serviceGroup = ref({})
+
+const getServiceGroup = async () => {
+  const response = await serviceApi.getServiceGroupDetail(serviceGroupId)
+  serviceGroup.value = response
+}
+
+const getServices = async () => {
+  services.value = await serviceApi.getServices(serviceGroupId)
+}
 
 // 서비스 타입(예약, 신청)
 const serviceType = ref('RESERVATION')
 
 // 필터 드롭다운 종류
-const filterItems = [{label: '전체', value: '전체'}, {label: '예약 가능', value: '예약 가능'}, {label: '예약 불가', value: '예약 불가'}]
+const filterItems = [
+  { label: '전체', value: '전체' },
+  { label: '예약 가능', value: '예약 가능' },
+  { label: '예약 불가', value: '예약 불가' },
+]
 
 // 선택된 필터 상태
 const selectedFilter = ref('전체')
 
 // 필터 적용된 목록
-const filteredServiceItems = computed(() => {
-  if (selectedFilter.value === '전체') return meetingRooms
-  return meetingRooms.filter(room => room.status === selectedFilter.value)
+const filteredServices = computed(() => {
+  if (selectedFilter.value === '전체') return services.value
+  return services.value.filter((item) => item.status === selectedFilter.value)
 })
 
 // 필터 드롭다운 메뉴 선택
@@ -45,10 +53,10 @@ const currentPage = ref(1)
 const itemsPerPage = 4
 
 // 현재 페이지에 맞게 잘라낸 목록 - 이 부분은 백엔드 연결했을 때 페이징 처리
-const paginatedServiceItems = computed(() => {
+const paginatedServices = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredServiceItems.value.slice(start, end)
+  return filteredServices.value.slice(start, end)
 })
 
 // 예약 버튼 클릭시 서비스 항목 상세 페이지
@@ -64,6 +72,8 @@ onMounted(() => {
   if (route.query.type) {
     serviceType.value = route.query.type
   }
+  getServiceGroup()
+  getServices()
 })
 </script>
 
@@ -72,14 +82,14 @@ onMounted(() => {
     <div class="service-item-container">
       <!-- 헤더 -->
       <div class="service-header">
-        <img src="/assets/images/service/meeting_room.jpg" alt="회의실" class="service-header-img"/>
+        <img :src="serviceGroup.thumbnail" alt="회의실" class="service-header-img" />
 
         <div class="service-header-right">
           <!-- 서비스 설명 -->
           <div>
-            <h2 class="service-title">회의실 예약</h2>
+            <h2 class="service-title">{{ serviceGroup.name }}</h2>
             <p class="service-contents">
-              회의실 A, 회의실 B는 앞으로 예약 시스템을 통해 이용 가능합니다.
+              {{ serviceGroup.description }}
             </p>
           </div>
 
@@ -89,15 +99,16 @@ onMounted(() => {
             :options="filterItems"
             placeholder="선택"
             width="w-48"
-            class="service-item-filter" @change="statusFilterChange"
+            class="service-item-filter"
+            @change="statusFilterChange"
           />
         </div>
       </div>
 
       <!-- 서비스 항목 카드 목록 -->
       <div class="service-item-grid">
-        <div v-for="(item, index) in paginatedServiceItems" :key="index" class="service-item-card">
-          <img :src="item.src" :alt="item.name" class="service-item-card-img" />
+        <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
+          <img :src="item.resourceImage" :alt="item.name" class="service-item-card-img" />
           <div class="service-item-card-body">
             <div class="service-item-card-header">
               <h3 class="service-item-card-name">{{ item.name }}</h3>
@@ -105,20 +116,22 @@ onMounted(() => {
                 <span
                   class="dot"
                   :class="{
-                    'dot-active': item.status === '예약 가능',
-                    'dot-end': item.status === '예약 불가'
+                    'dot-active': item.status === 'IN_PROGRESS',
+                    'dot-end': item.status !== 'IN_PROGRESS',
                   }"
                 />
-                {{ item.status }}
+                {{ item.status === 'IN_PROGRESS' ? '예약 가능' : '예약 불가' }}
               </span>
             </div>
-            <p class="service-item-card-desc">{{ item.location }} | {{ item.capacity }}</p>
+            <p class="service-item-card-desc">
+              {{ item.location }} | 최대인원 {{ item.capacity }}명
+            </p>
           </div>
 
           <!-- 버튼 -->
           <button
             class="reservation-btn"
-            :class="item.status === '예약 가능' ? 'btn-available' : 'btn-disabled'"
+            :class="item.status === 'IN_PROGRESS' ? 'btn-available' : 'btn-disabled'"
             @click="goToServiceDetail(item)"
           >
             {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
@@ -128,7 +141,11 @@ onMounted(() => {
 
       <!-- 페이지네이션 -->
       <div class="service-item-pagination">
-        <PageNation v-model="currentPage" :total-items="filteredServiceItems.length" :items-per-page="itemsPerPage" />
+        <PageNation
+          v-model="currentPage"
+          :total-items="filteredServices.length"
+          :items-per-page="itemsPerPage"
+        />
       </div>
     </div>
   </div>
@@ -170,7 +187,7 @@ onMounted(() => {
 
 /* 필터 */
 .service-item-filter {
-  @apply self-end bg-white rounded-md px-3 py-1 text-sm text-gray-700 focus:ring-1 focus:ring-gray-400 cursor-pointer;
+  @apply self-end text-sm text-gray-700 focus:ring-1 focus:ring-gray-400 cursor-pointer;
 }
 
 /* 카드 */
