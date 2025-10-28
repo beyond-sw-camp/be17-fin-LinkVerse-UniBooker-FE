@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import { useAuthStore } from '@/stores/UseStore'
 import superApi from '@/services/super/super_api'
+import notifyApi from '@/services/notification/notification_api'
 import { computed } from 'vue'
 import { useNotificationStore } from '@/stores/notificationStore'
 
@@ -13,6 +14,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const selectedMenu = ref(route.path)
 const notificationStore = useNotificationStore()
+
 
 /**
  * 현재 로그인한 사용자 이름 계산
@@ -34,19 +36,20 @@ const goMenu = (path) => {
   selectedMenu.value = path
 }
 
-// 알림 관련 상태, 예시
+// 알림 관련 상태
 const isDropdownOpen = ref(false)
-const notifications = ref([
-  { id: 1, message: '신규 기업 회원가입 요청이 도착했습니다.', time: '2분 전' },
-  { id: 2, message: '서버 점검이 내일 오전 9시에 예정되어 있습니다.', time: '1시간 전' },
-  { id: 3, message: '신청서가 검토 완료되었습니다.', time: '어제' },
-])
+const notifications = ref([])
 // 알림 아이콘 클릭 토글
-const toggleDropdown = () => {
-  notificationStore.reset() // 알림 이미지 변경
+const toggleDropdown = async () => {
+  notificationStore.reset() 
+
+  if (!isDropdownOpen.value) {
+    const data = await notifyApi.getNotifyList(0, 3)
+    notifications.value = data || [] 
+  }
+
   isDropdownOpen.value = !isDropdownOpen.value
 }
-
 // ===== 로그아웃 핸들러 =====
 
 /**
