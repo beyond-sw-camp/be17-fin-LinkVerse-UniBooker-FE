@@ -2,7 +2,7 @@
 FROM node:20 AS builder
 WORKDIR /app
 COPY . .
-RUN npm ci && npm run build
+RUN npm i && npm run build
 
 # 2단계: 실행 (정적 파일 서빙)
 FROM nginx:stable-alpine
