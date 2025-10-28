@@ -46,7 +46,7 @@ const router = createRouter({
       meta: { layout: 'user' },
     },
     {
-      path: '/c/:companySlug/service/detail/:itemId',
+      path: '/c/:companySlug/services/:serviceGroupId/detail/:itemId',
       name: 'ServiceDetail',
       component: () => import('@/views/user/ServiceDetailView.vue'),
       meta: { layout: 'user' },

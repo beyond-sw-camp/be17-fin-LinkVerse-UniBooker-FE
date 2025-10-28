@@ -1,86 +1,298 @@
 <script setup>
-import { ref } from 'vue'
+// ================= import ==================
+import { watch, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
+
 import Input from '@/components/Input.vue'
 import Button from '@/components/Button.vue'
 import Calendar from '@/components/Calendar.vue'
 import Modal from '@/components/Modal.vue'
 import SeatBoard from '@/components/SeatBoard.vue'
 
+import ServiceApi from '@/services/user/service_api'
 
-const serviceType = ref("SEAT")
-const showForceModal = ref(false)
 
-// 날짜 선택
-const selectedDate = ref(new Date().toISOString().slice(0, 10))
-const showCalendar = ref(false)
+// =============== definition ================
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
+const dayMap = { SUN: '일', MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금', SAT: '토', }
+
+const showSeatModal = ref(false)                // 좌석 선택 모달 활성화 여부
+const showCalendar = ref(false)                 // Calendar 모달 활성화 여부
+
+const service = reactive({})                    // 리소스 정보
+const resourceCustomFieldValues = reactive([])  // 리소스 커스텀 필드 값 (조회용)
+const userCustomFields = reactive([])           // 사용자 입력 커스텀 필드
+const userCustomFieldValuesForm = reactive([])  // 사용자 입력 커스텀 필드 값 요청 폼 (입력용)
+const times = reactive([])                      // 정규 운영 시간
+const exceptionTimeSlots = reactive([])         // 예외 운영 시간
+const yearMonthTimeSlots = ref([])              // 년/월 선택에 따른 모든 일자 별의 운영 가능 시간
+
+const availableTimes = ref([])                                  // 선택 가능한 운영 시간 목록 (버튼용)
+const selectedDate = ref(new Date().toISOString().slice(0, 10)) // 선택한 날짜
+const selectedTime = ref('')                                    // 선택한 시간
+const selectedYear = ref(new Date().getFullYear())              // 선택한 년도
+const selectedMonth = ref(new Date().getMonth() + 1)            // 선택한 월
+const selectedHeadCount = ref(1)                                // 선택한 인원수
+const selectedRow = ref(0)                                      // 선택한 좌석 행
+const selectedCol = ref(0)                                      // 선택한 좌석 열
+
+// 예약 요청 폼
+const reservationForm = reactive({
+  date: selectedDate,
+  time: selectedTime,
+  haedCount: selectedHeadCount,
+  row: selectedRow,
+  col: selectedCol,
+  customFieldValues: userCustomFieldValuesForm,
+})
+
+// ================== api 요청 ==================
+// --- 리소스 상세 조회
+const getService = async () => {
+  const response = await ServiceApi.getService(route.params.itemId)
+  Object.assign(service, response)
+}
+
+// --- 리소스의 커스텀 필드 값 조회
+const getResourceCustomFieldValues = async () => {
+  const response = await ServiceApi.getResourceCustomFieldValues(route.params.itemId)
+  Object.assign(resourceCustomFieldValues, response)
+}
+
+// --- 사용자 입력 커스텀 필드 조회
+const getUserCustomFields = async () => {
+  const response = await ServiceApi.getUserCustomFields(route.params.serviceGroupId)
+  Object.assign(userCustomFields, response)
+  Object.assign(userCustomFieldValuesForm, userCustomFields.map((field) => ({
+    customFieldId: field.id,
+    values: [''],
+  })))
+}
+
+// --- 정규 운영 시간 조회
+const getTimeSlots = async () => {
+  const response = await ServiceApi.getTimeSlots(route.params.itemId) 
+  Object.assign(times, response)
+
+  // 요일별 시간 매핑
+  const grouped = {}
+  times.forEach((slot) => {
+    if (!grouped[slot.dayOfWeek]) grouped[slot.dayOfWeek] = []
+    grouped[slot.dayOfWeek].push(`${slot.startTime} - ${slot.endTime}`)
+  })
+
+  // 한글 요일로 변환해서 저장
+  resourceCustomFieldValues.dailyTimeSlots = Object.entries(grouped).map(([day, slots]) => ({
+    day: dayMap[day] || day,
+    slots,
+  }))
+}
+
+// --- 예외 운영 시간 조회
+const getExceptionTimeSlots = async () => {
+  const response = await ServiceApi.getExceptionTimeSlots(route.params.itemId)
+  Object.assign(exceptionTimeSlots, response)
+
+  // 날짜별 그룹핑
+  const groupedExceptions = {}
+  exceptionTimeSlots.forEach((ex) => {
+    if (!groupedExceptions[ex.date]) groupedExceptions[ex.date] = []
+
+    if (ex.closed) {
+      groupedExceptions[ex.date].push(ex.note ? `휴무 (${ex.note})` : '휴무') // 휴무일
+    } else {
+      groupedExceptions[ex.date].push(`${ex.startTime} - ${ex.endTime}`) // 일반 예외 시간
+    }
+  })
+
+  // 한글 요일로 변환
+  resourceCustomFieldValues.exceptionTimeSlots = Object.entries(groupedExceptions).map(([date, slots]) => ({
+    date,
+    slots,
+  }))
+}
+
+// --- 년/월 선택에 따른 예외 포함 운영 시간 조회
+const getYearMonthTimeSlots = async (serviceId, year, month) => {
+  const response = await ServiceApi.getYearMonthTimeSlots(serviceId, year, month)
+  yearMonthTimeSlots.value = response || []
+
+  // 데이터 로드 후 선택 날짜의 선택 가능 시간 업데이트
+  updateAvailableTimes(selectedDate.value)
+}
+
+// --- 예약 요청
+const postReserve = async () => {
+}
+
+// ================ function ==================
+// --- 커스텀 필드의 값이 여러개 일 경우 표현 형식 변환
+const formatCustomFieldValues = (values) => {
+  const data = ref('')
+  for (value in values) {
+    data.value.concat(value+' ')
+  }
+  return data
+}
+
+// --- 종결 부호마다 줄바꿈 처리
+const formatNewLine = (dataString) => {
+  if (!dataString) return ''
+  return dataString.replace(/[.!?]\s*/g, '$&<br/>').trim()
+}
+
+// --- 날짜 선택에 따른 Calendar 모달 토클
 const toggleCalendar = () => {
   showCalendar.value = !showCalendar.value
 }
 
-// Calendar에서 날짜 선택했을 때 닫기
+// --- Calendar에서 날짜 선택했을 때
 const selectDate = (date) => {
   selectedDate.value = date
-  showCalendar.value = false
+  showCalendar.value = false // Calendar 모달 닫기
+
+  const [year, month] = date.split('-').map(Number) // 선택한 date에서 year, month 추출
+
+  // 현재 yearMonthTimeSlots가 다른 달이면 api 재호출
+  const firstItem = yearMonthTimeSlots.value[0]
+  if (!firstItem || !firstItem.date.startsWith(`${year}-${String(month).padStart(2, '0')}`)) {
+    getYearMonthTimeSlots(route.params.itemId, year, month)
+  }
 }
 
-// 시간 및 인원수
-const times = ['09:30', '10:30', '11:30', '13:30', '14:00', '15:00', '16:00']
-const selectedTime = ref('')
-const peopleCount = ref(2)
+// --- 선택한 날짜의 운영 시간 업데이트
+const updateAvailableTimes = (date) => {
+  if (!Array.isArray(yearMonthTimeSlots.value)) return
 
-const increase = () => { peopleCount.value += 1 }
-const decrease = () => { if (peopleCount.value > 1) peopleCount.value -= 1 }
+  const target = yearMonthTimeSlots.value.find((d) => d.date === date)
 
-// 예약 버튼 클릭
-const reserve = (serviceType) => {
-    if (serviceType == "SEAT") {
-      // 좌석 선택 모달창 띄우기
-      showForceModal.value = true
-    }
+  if (!target || target.closed) {
+    availableTimes.value = []
+    return
+  }
+
+  availableTimes.value = target.slots || []
 }
+
+// --- 선택한 날짜가 바뀔 때마다 요일별 시간 재계산
+watch(selectedDate, () => {
+  if (!selectedDate.value || yearMonthTimeSlots.value.length === 0) return
+
+  // 현재 선택한 날짜에 해당하는 시간 슬롯 목록 찾기
+  const daySlot = yearMonthTimeSlots.value.find((d) => d.date === selectedDate.value) 
+
+  if (!daySlot) {
+    availableTimes.value = []
+    return
+  }
+
+  // 휴무 처리
+  if (daySlot.closed) {
+    availableTimes.value = []
+    return
+  }
+
+  // 해당 날짜에 맞춰 시간 리스트 생성
+  availableTimes.value = daySlot.slots.map((slot) => ({
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+  }))
+})
+
+// --- 년/월 선택 변경에 따른 예외 포함 운영 가능 시간 변경
+watch([selectedYear, selectedMonth], async ([year, month]) => {
+  await getYearMonthTimeSlots(route.params.itemId, year, month)
+})
+
+// --- 인원수 증감
+const increase = () => { if (selectedHeadCount.value < service.capacity) selectedHeadCount.value += 1 }
+const decrease = () => { if (selectedHeadCount.value > 1) selectedHeadCount.value -= 1 }
+
+// --- 예약 버튼 클릭
+const reserve = () => {
+  if (service.category == "SEAT") {
+    showSeatModal.value = true // 좌석 선택 모달창 띄우기
+  }
+
+  else {    
+    const slug = route.params.companySlug || authStore.companySlug || 'default'
+    router.push(`/c/${slug}/reservation/completed`)
+
+    console.log('🌟 예약 요청 폼 : ', reservationForm)
+  }
+}
+
+
+// =============== 화면 로드시 데이터 조회 ===============
+onMounted(() => {
+  const today = new Date()
+  getService()
+  getResourceCustomFieldValues()
+  getUserCustomFields()
+  getTimeSlots()
+  getExceptionTimeSlots()
+  getYearMonthTimeSlots(route.params.itemId, today.getFullYear(), today.getMonth() + 1)
+})
 </script>
 
 <template>
   <div class="detail-page">
-    <Modal :open="showForceModal" :closeOnOverlay="false" @close="showForceModal=false">
+    <!-- 좌석 선택 모달 -->
+    <Modal :open="showSeatModal" :closeOnOverlay="false" @close="showSeatModal=false">
       <SeatBoard />
       <div class="p-6">
-        <Button @click="showForceModal = false">예약하기</Button>
+        <Button @click="showSeatModal = false">예약하기</Button>
       </div>
     </Modal>
 
     <!-- 상단 이미지 -->
-    <img src="/assets/images/service/meeting_room.jpg" alt="회의실" class="header-image" />
+    <img :src="service.resourceImage" alt="회의실" class="header-image" />
 
     <div class="content-wrapper">
-      <!-- 왼쪽 설명 -->
+      <!-- 왼쪽 영역 -->
       <div class="info-section">
-        <h2 class="title">회의실 A</h2>
-        <p class="desc">
-          회의실 A는 최대 6명까지 이용 가능합니다. <br />
-          회의실 내에는 대형 모니터가 설치되어 있으며, 화상회의 및 프레젠테이션이 가능합니다. 이용 후 정리정돈 부탁드립니다.
-        </p>
-        
+        <h2 class="title">{{ service.name }}</h2>
+        <p class="desc" v-html="formatNewLine(service.description)"></p>
         <table class="details-table">
           <tbody>
-            <tr>
-              <th>장소</th>
-              <td>4층 회의실</td>
+            <!-- 카테고리 별 고정 필드 -->
+            <tr v-if="service.category === 'RESERVATION' || service.category === 'SEAT'">
+              <th>운영 시간</th>
+              <td>
+                <table class="inner-table">
+                  <tbody>
+                    <tr v-for="(daySlot, index) in resourceCustomFieldValues.dailyTimeSlots" :key="index">
+                      <td class="font-semibold align-top w-8">{{ daySlot.day }}</td>
+                      <td>
+                        <div v-for="(slot, sIndex) in daySlot.slots" :key="sIndex">
+                          {{ slot }}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
             </tr>
+
             <tr>
-              <th>수용 가능 인원</th>
-              <td>최소 2명, 최대 6명</td>
+              <th>수용 가능 인원 수</th>
+              <td>최대 {{ service.capacity }}명</td>
             </tr>
-            <tr>
-              <th>사용 가능 밴드</th>
-              <td>커스텀 팀 전용</td>
-            </tr>     
+
+            <!-- 리소스의 커스텀 필드 -->
+            <tr v-for="item in resourceCustomFieldValues">
+              <th>{{ item.fieldName }}</th>
+              <td>{{ item.values.length > 1 ? formatCustomFieldValues(item.values) : item.values[0] }}</td>
+            </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- 오른쪽 예약 박스 -->
+      <!-- 오른쪽 영역 : 사용자 예약 박스 -->
       <div class="reservation-box">
         <div class="form-group">
           <label>날짜</label>
@@ -92,62 +304,41 @@ const reserve = (serviceType) => {
           </div>
         </div>
 
-        <div v-if="false" class="form-group">
+        <div v-if="(service.category === 'RESERVATION' || service.category === 'SEAT') && times" class="form-group">
           <label>시간</label>
-          <div class="time-grid">
-            <button v-for="(time, index) in times" :key="index" :class="['time-btn', { active: selectedTime === time }]" @click="selectedTime = time">
-              {{ time }}
+          <div v-if="availableTimes.length" class="time-grid">
+            <button v-for="(time, index) in availableTimes" :key="index" :class="['time-btn', { active: selectedTime === time.startTime }]" @click="selectedTime = time.startTime">
+              {{ time.startTime }}
             </button>
           </div>
+          <div v-else class="text-gray-400 text-sm">해당 날짜는 운영 시간이 없습니다.</div>
         </div>
         
         <div class="form-group">
           <label>인원수</label>
           <div class="people-control">
             <button class="count-btn" @click="decrease">−</button>
-            <span class="count">{{ peopleCount }}명</span>
+            <span class="count">{{ selectedHeadCount }}명</span>
             <button class="count-btn" @click="increase">＋</button>
           </div>
         </div>
 
-        <div class="form-group">
-            <label>NUMBER</label>
-            <div>
-                <Input type="number" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label>TEXT</label>
-            <div>
-                <Input type="text" v-model="value" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label>DATE</label>
-            <div>
-                <Input type="date" v-model="value" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label>TIME</label>
-            <div>
-                <Input type="time" v-model="value" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label>RADIO</label>
-            <div>
-                <Input type="radio" v-model="value" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label>CHECKBOX</label>
-            <div>
-                <Input type="checkbox" v-model="value" />
-            </div>
+        <!-- 사용자 커스텀 필드 -->
+        <div v-for="(item, index) in userCustomFields" :key="item.id">
+          <div class="form-group">
+              <label>{{ item.fieldName }}</label>
+              <div>
+                  <Input v-if="item.dataType === 'TEXT'" type="text" placeholder="텍스트를 입력해주세요." v-model="userCustomFieldValuesForm[index].values[0]" />
+                  <Input v-else-if="item.dataType ==='DATE'" type="date" v-model="userCustomFieldValuesForm[index].values[0]" />
+                  <Input v-else-if="item.dataType ==='TIME'" type="time" v-model="userCustomFieldValuesForm[index].values[0]" />
+                  <Input v-else-if="item.dataType ==='NUMBER'" type="number" placeholder="숫자를 입력해주세요." v-model="userCustomFieldValuesForm[index].values[0]" />
+                  <Input v-else-if="item.dataType ==='RADIO'" type="radio" v-model="userCustomFieldValuesForm[index].values[0]" />
+                  <Input v-else-if="item.dataType ==='CHECKBOX'" type="checkbox" v-model="userCustomFieldValuesForm[index].values[0]" />
+              </div>
+          </div>
         </div>
 
-        <Button @click="reserve(serviceType)">예약하기</Button>
+        <Button @click="reserve()">예약하기</Button>
       </div>
     </div>
   </div>
@@ -206,7 +397,7 @@ const reserve = (serviceType) => {
 .reservation-box {
   @apply w-full lg:w-1/3 border border-gray-200 rounded-xl shadow-md p-5 sm:shadow-md p-6 flex flex-col gap-6 bg-white;
   position: sticky;   /* 스크롤 시 고정 */
-  top: 80px;         /* 상단에서 떨어진 거리 */
+  top: 80px;          /* 상단에서 떨어진 거리 */
   max-height: 500px;  /* 고정 높이 설정 */
   overflow-y: auto;   /* 내부 스크롤 가능 */
 }
@@ -245,4 +436,21 @@ const reserve = (serviceType) => {
 .count {
   @apply text-base font-medium;
 }
+
+/* 운영 시간 테이블 */
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inner-table td {
+  padding: 2px 4px;
+  vertical-align: top;
+}
+
+.inner-table .font-semibold {
+  white-space: nowrap;
+  width: 2rem; /* 요일 칸 좁게 */
+}
+
 </style>
