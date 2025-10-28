@@ -77,19 +77,22 @@ const services = [
 const breadcrumbItems = [
   { label: '기업 목록', path: '/super/companies' },
   { label: companyName, path: `/super/companies/${encodeURIComponent(companyName)}` },
-  { label: '서비스 그룹 목록', path: `/super/companies/${encodeURIComponent(companyName)}/services` },
-  { label: serviceGroupName}
+  {
+    label: '서비스 그룹 목록',
+    path: `/super/companies/${encodeURIComponent(companyName)}/services`,
+  },
+  { label: serviceGroupName },
 ]
 </script>
 
 <template>
-  <SuperBreadcrumb :items="breadcrumbItems"/>
+  <SuperBreadcrumb :items="breadcrumbItems" />
   <div class="components-page-title">서비스 그룹 상세</div>
   <div class="components-white-container">
     <div class="subtitle-container">
       <span class="subtitle">{{ serviceGroupName }}</span>
       <div class="modal-toggle-btn" @click="showModal = !showModal">
-        <img src="/public/assets/icons/ic-more.png" />
+        <img src="/assets/icons/ic-more.png" />
       </div>
     </div>
     <div v-if="showModal" class="action-modal" @click="showModal = false">
@@ -119,7 +122,7 @@ const breadcrumbItems = [
           <tr v-for="(s, i) in services" :key="i">
             <td>
               <div class="service-link" @click="goToServiceDetail(s.name)">
-                {{ s.name }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+                {{ s.name }} <img src="/assets/icons/ic-arrow-outward.png" />
               </div>
             </td>
             <td>{{ s.status }}</td>

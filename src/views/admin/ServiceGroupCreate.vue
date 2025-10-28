@@ -179,7 +179,7 @@ const createServiceGroup = async () => {
         <p>
           서비스 그룹의 예약/신청 유형에 맞는 카테고리를 선택해 주세요.
           <div class="resource-create-question-container">
-            <img class="question-icon" src="/public/assets/icons/ic-question.png" alt="추가안내" />
+            <img class="question-icon" src="/assets/icons/ic-question.png" alt="추가안내" />
             <div class="category-description-box">
               각 카테고리 별로 아래의 필수 입력 항목이 자동으로 생성됩니다. <br/><br/>
 

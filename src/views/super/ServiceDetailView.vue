@@ -99,14 +99,20 @@ const filteredReservations = computed(() => {
 const breadcrumbItems = [
   { label: '기업 목록', path: '/super/companies' },
   { label: companyName, path: `/super/companies/${encodeURIComponent(companyName)}` },
-  { label: '서비스 그룹 목록', path: `/super/companies/${encodeURIComponent(companyName)}/services` },
-  { label: serviceGroupName, path: `/super/companies/${encodeURIComponent(companyName)}/services/${encodeURIComponent(serviceGroupName)}` },
-  { label: '서비스 상세'}
+  {
+    label: '서비스 그룹 목록',
+    path: `/super/companies/${encodeURIComponent(companyName)}/services`,
+  },
+  {
+    label: serviceGroupName,
+    path: `/super/companies/${encodeURIComponent(companyName)}/services/${encodeURIComponent(serviceGroupName)}`,
+  },
+  { label: '서비스 상세' },
 ]
 </script>
 
 <template>
-  <SuperBreadcrumb :items="breadcrumbItems"/>
+  <SuperBreadcrumb :items="breadcrumbItems" />
   <div class="components-page-title">서비스 상세</div>
 
   <!-- 서비스 정보 -->
@@ -114,7 +120,7 @@ const breadcrumbItems = [
     <div class="subtitle-container">
       <span class="subtitle">{{ service.name }}</span>
       <div class="modal-toggle-btn" @click="showModal = !showModal">
-        <img src="/public/assets/icons/ic-more.png" />
+        <img src="/assets/icons/ic-more.png" />
       </div>
     </div>
     <div v-if="showModal" class="action-modal" @click="showModal = false">

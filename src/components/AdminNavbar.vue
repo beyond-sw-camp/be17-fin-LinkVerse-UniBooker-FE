@@ -52,7 +52,7 @@ const inquiryEmailLink = computed(() => {
     <!-- 포지셔닝은 템플릿에서 Tailwind로 직접 -->
     <div class="navbar-container flex items-center justify-between px-5">
       <img
-        src="/public/assets/images/unibooker_blue_logo.svg"
+        src="/assets/images/unibooker_blue_logo.svg"
         alt="UniBooker Logo"
         class="navbar-logo pl-2"
         @click="goToHome"

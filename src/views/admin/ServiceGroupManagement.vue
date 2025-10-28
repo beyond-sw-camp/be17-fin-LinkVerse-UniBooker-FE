@@ -21,7 +21,7 @@ const deleteServiceGroup = async (serviceGroupId) => {
   // 삭제 확인
   const isConfirmed = window.confirm('정말 이 서비스 그룹을 삭제하시겠습니까?')
   if (!isConfirmed) return
-  
+
   try {
     const response = await serviceApi.deleteServiceGroup(serviceGroupId)
     const data = response.data.data
@@ -75,14 +75,14 @@ onMounted(() => {
 
         <div class="service-group-container-bottom">
           <div class="in-progress-service-group">
-            <img src="/public/assets/icons/ic-in-progress.png" alt="진행 중" />
+            <img src="/assets/icons/ic-in-progress.png" alt="진행 중" />
             <p>
               <span>{{ s.activeServiceCount }}</span> / {{ s.serviceCount }}
             </p>
           </div>
 
           <div class="resource-group-edit-button" @click="goEdit(s.id)">
-            <img src="/public/assets/icons/ic-white-pencil.png" alt="수정" />
+            <img src="/assets/icons/ic-white-pencil.png" alt="수정" />
           </div>
         </div>
       </div>
