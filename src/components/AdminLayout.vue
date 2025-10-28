@@ -143,7 +143,7 @@ onMounted(() => {
     <div class="sub-bar-contaienr">
       <!-- UniBooker 로고 -->
       <div class="logo-section">
-        <img src="/public/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
+        <img src="/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
       </div>
 
       <!-- 리소스 그룹 생성 버튼 -->
@@ -201,7 +201,7 @@ onMounted(() => {
 
       <!-- 로그아웃 버튼 -->
       <div class="sub-menu-logout-button-container" @click="handleLogout">
-        <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
+        <img src="/assets/icons/ic-logout.png" alt="로그아웃" />
         Logout
       </div>
     </div>
@@ -210,11 +210,7 @@ onMounted(() => {
     <div class="content-body">
       <div class="content-top">
         <div class="admin-badge">
-          <img
-            @click="openModal"
-            src="/public/assets/images/admin_logo.png"
-            alt="기업 로고 이미지"
-          />
+          <img @click="openModal" src="/assets/images/admin_logo.png" alt="기업 로고 이미지" />
           <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />

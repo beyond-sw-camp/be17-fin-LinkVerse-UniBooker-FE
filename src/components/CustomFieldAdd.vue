@@ -60,11 +60,11 @@ const removeOption = (index) => {
 const addFieldFromModal = () => {
   if (!modalFieldName.value) return alert('항목명을 입력해주세요.')
 
-  const typeItem = types.value.find(t => t.value === modalFieldType.value)
+  const typeItem = types.value.find((t) => t.value === modalFieldType.value)
 
   const payload = {
     fieldName: modalFieldName.value,
-    dataType: modalFieldType.value,      // 서버 전송용
+    dataType: modalFieldType.value, // 서버 전송용
     dataTypeLabel: typeItem?.label || '', // 화면 표시용
     description: modalFieldDescription.value,
     isRequired: modalIsRequired.value,
@@ -98,7 +98,7 @@ const addFieldFromModal = () => {
       :disabled="true"
     />
     <div class="field-delete-button">
-      <img src="/public/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
+      <img src="/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
     </div>
   </div>
 
@@ -107,10 +107,10 @@ const addFieldFromModal = () => {
     <div class="fake-input-style">항목명</div>
     <div class="fake-dropdown-style">
       <span>데이터 타입</span>
-      <img src="/public/assets/icons/ic-down-arrow-black.png" alt="드롭다운" />
+      <img src="/assets/icons/ic-down-arrow-black.png" alt="드롭다운" />
     </div>
     <button class="add-button-style" @click="openModal">
-      <img src="/public/assets/icons/ic-plus-white.png" alt="추가" />
+      <img src="/assets/icons/ic-plus-white.png" alt="추가" />
     </button>
   </div>
 

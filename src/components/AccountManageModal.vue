@@ -75,7 +75,7 @@ watch(
       name: newVal.name || '',
       phone: newVal.phone || '',
       logoFile: null,
-      logoUrl: newVal.logoUrl || '/public/assets/images/admin_logo.png',
+      logoUrl: newVal.logoUrl || '/assets/images/admin_logo.png',
     }
   },
   { immediate: true },
@@ -189,11 +189,7 @@ const formatPhoneNumber = (e) => {
         </div>
         <div class="modal-input-section">
           <label>기업로고</label>
-          <img
-            class="modal-logo-image"
-            src="/public/assets/images/admin_logo.png"
-            alt="기업로고 이미지"
-          />
+          <img class="modal-logo-image" src="/assets/images/admin_logo.png" alt="기업로고 이미지" />
         </div>
 
         <div class="modal-button-container">

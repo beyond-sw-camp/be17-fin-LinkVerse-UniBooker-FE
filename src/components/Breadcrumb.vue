@@ -29,7 +29,7 @@ const goTo = (path) => {
 
       <!-- 마지막 항목에는 '>' 표시 안함 -->
       <span v-if="index < items.length - 1">
-        <img class="arrow-style" src="/public/assets/icons/ic-down-arrow-gray-dark.png" alt="방향" />
+        <img class="arrow-style" src="/assets/icons/ic-down-arrow-gray-dark.png" alt="방향" />
       </span>
     </template>
   </div>
@@ -49,6 +49,6 @@ const goTo = (path) => {
 }
 
 .arrow-style {
-  @apply -rotate-90 w-[14px] h-[14px]
+  @apply -rotate-90 w-[14px] h-[14px];
 }
 </style>
