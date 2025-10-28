@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
 import PageNation from '@/components/PageNation.vue'
 import adminApi from '@/services/admin/admin_api'
@@ -143,6 +143,7 @@ const handleAddManager = async () => {
 
       // 목록을 첫 페이지로 갱신 (1-based)
       currentPage.value = 1
+      await fetchManagers(1)
     } else {
       alert(response.message || '매니저 추가에 실패했습니다.')
     }
@@ -273,7 +274,7 @@ const handleUpdateManager = async () => {
       isEditMode.value = false
 
       // 목록 갱신 (watch가 자동 호출하므로 값만 재할당)
-      currentPage.value = currentPage.value
+      await fetchManagers(currentPage.value)
     } else {
       alert(response.message || '매니저 수정에 실패했습니다.')
     }
@@ -317,13 +318,6 @@ const formatDate = (dateString) => {
 }
 
 // ========== 컴포넌트 마운트 시 실행 ==========
-
-/**
- * 페이지 변경 감지
- */
-watch(currentPage, (newPage) => {
-  fetchManagers(newPage)
-})
 
 onMounted(() => {
   fetchManagers()
