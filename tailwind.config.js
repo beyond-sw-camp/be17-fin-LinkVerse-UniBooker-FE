@@ -32,4 +32,5 @@ export default {
     },
   },
   plugins: [], // ✅ line-clamp 제거 (v3.3 이상 기본 내장)
+  safelist: ['components-white-container', 'components-super-table-container'],
 };
