@@ -15,7 +15,7 @@ const editingIndex = ref(null)
 
 // 입력 상태
 const date = ref('')
-const isHoliday = ref(false)
+const closed = ref(false)
 const startHour = ref('')
 const startMinute = ref('')
 const endHour = ref('')
@@ -61,6 +61,83 @@ const updateModalTimes = () => {
 // 시·분 선택 시마다 갱신
 watch([startHour, startMinute, endHour, endMinute], updateModalTimes)
 
+// 시간을 분으로 변환
+const toMinutes = (hhmm) => {
+  const [h, m] = hhmm.split(':').map(Number)
+  return h * 60 + m
+}
+
+// 분 → hh:mm
+const toHHMM = (min) => {
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+// 서버에서 받아온 excludedTimes를 날짜별로 합치고 selectTimes 생성
+watch(
+  () => props.excludedTimes,
+  (newVal) => {
+    if (!newVal || !newVal.length) return
+
+    const grouped = {}
+
+    newVal.forEach((ex) => {
+      if (!grouped[ex.date]) grouped[ex.date] = []
+      if (!ex.closed) {
+        grouped[ex.date].push({
+          start: ex.startTime,
+          end: ex.endTime,
+        })
+      } else {
+        grouped[ex.date].push({
+          closed: true,
+          note: ex.note || '',
+        })
+      }
+    })
+
+    const result = []
+
+    Object.entries(grouped).forEach(([date, items]) => {
+      const closedItem = items.find((i) => i.closed)
+      if (closedItem) {
+        result.push({
+          date,
+          closed: true,
+          note: closedItem.note,
+          selectedTimes: [],
+        })
+      } else {
+        // 날짜별로 interval 기준으로 나눠서 selectTimes 생성
+        let allTimes = []
+        items.forEach(({ start, end }) => {
+          const startMin = toMinutes(start)
+          const endMin = toMinutes(end)
+          for (let t = startMin; t < endMin; t += props.interval) {
+            allTimes.push(t)
+          }
+        })
+
+        // 중복 제거 & 정렬
+        allTimes = Array.from(new Set(allTimes)).sort((a, b) => a - b)
+
+        result.push({
+          date,
+          closed: false,
+          note: '',
+          startTime: toHHMM(allTimes[0]),
+          endTime: toHHMM(allTimes[allTimes.length - 1] + props.interval), 
+          selectedTimes: allTimes.map(toHHMM),
+        })
+      }
+    })
+
+    emit('update:modelValue', result)
+  },
+  { immediate: true },
+)
+
 // 선택 토글
 const toggleSelectedTime = (timeLabel) => {
   const idx = selectedTimes.value.indexOf(timeLabel)
@@ -82,13 +159,7 @@ const toggleSelectedTime = (timeLabel) => {
 // 모달 열기/닫기
 const openModal = () => {
   // 휴무일이 아니면 선택 가능한 시간 초기화
-  if (
-    !isHoliday.value &&
-    startHour.value &&
-    startMinute.value &&
-    endHour.value &&
-    endMinute.value
-  ) {
+  if (!closed.value && startHour.value && startMinute.value && endHour.value && endMinute.value) {
     const startMin = Number(startHour.value) * 60 + Number(startMinute.value)
     const endMin = Number(endHour.value) * 60 + Number(endMinute.value)
     selectedTimes.value = []
@@ -120,17 +191,17 @@ const closeModal = () => {
 const addException = () => {
   if (!date.value) return alert('날짜를 선택해주세요.')
 
-  if (!isHoliday.value) {
+  if (!closed.value) {
     if (!startHour.value || !startMinute.value || !endHour.value || !endMinute.value)
       return alert('시작시간과 종료시간을 입력해주세요.')
   }
 
   const newItems = []
-  if (isHoliday.value) {
+  if (closed.value) {
     newItems.push({
       date: date.value,
       note: note.value,
-      isHoliday: true,
+      closed: true,
       selectedTimes: [],
     })
   } else {
@@ -139,7 +210,7 @@ const addException = () => {
       startTime: selectedTimes.value[0],
       endTime: selectedTimes.value[selectedTimes.value.length - 1],
       note: note.value,
-      isHoliday: false,
+      closed: false,
       selectedTimes: [...selectedTimes.value],
     })
   }
@@ -160,7 +231,7 @@ const checkBeforeOpenModal = () => {
     return alert('날짜를 선택해주세요.')
   }
 
-  if (!isHoliday.value) {
+  if (!closed.value) {
     if (!startHour.value || !startMinute.value || !endHour.value || !endMinute.value) {
       return alert('시작시간과 종료시간을 입력해주세요.')
     }
@@ -173,10 +244,10 @@ const checkBeforeOpenModal = () => {
 const editException = (ex, idx) => {
   editingIndex.value = idx
   date.value = ex.date
-  isHoliday.value = ex.isHoliday
+  closed.value = ex.closed
   note.value = ex.note || ''
 
-  if (!ex.isHoliday) {
+  if (!ex.closed) {
     startHour.value = (ex.startTime || '').split(':')[0] || ''
     startMinute.value = (ex.startTime || '').split(':')[1] || ''
     endHour.value = (ex.endTime || '').split(':')[0] || ''
@@ -207,7 +278,7 @@ const removeException = (idx) => {
 // 초기화
 const resetForm = () => {
   date.value = ''
-  isHoliday.value = false
+  closed.value = false
   startHour.value = ''
   startMinute.value = ''
   endHour.value = ''
@@ -219,7 +290,7 @@ const resetForm = () => {
 const resetAll = () => {
   // 내부 상태 초기화
   date.value = ''
-  isHoliday.value = false
+  closed.value = false
   startHour.value = ''
   startMinute.value = ''
   endHour.value = ''
@@ -240,7 +311,7 @@ defineExpose({
     const slots = []
 
     props.modelValue.forEach((ex) => {
-      if (ex.isHoliday) {
+      if (ex.closed) {
         slots.push({
           date: ex.date,
           startTime: null,
@@ -299,13 +370,13 @@ defineExpose({
       <div class="modal-input-section">
         <div class="date-setting-container">
           <input type="date" v-model="date" class="text-input" />
-          <Input type="checkbox" v-model="isHoliday" label="휴무일" class="w-[100px]" />
+          <Input type="checkbox" v-model="closed" label="휴무일" class="w-[100px]" />
         </div>
       </div>
 
       <!-- 시간 선택 영역: 휴무일이면 숨김 -->
       <div class="time-select-section">
-        <div v-if="!isHoliday" class="flex gap-2 items-center">
+        <div v-if="!closed" class="flex gap-2 items-center">
           <Dropdown
             v-model="startHour"
             :options="hourOptions"
@@ -350,18 +421,18 @@ defineExpose({
         <div class="modal-exclude-time-select">
           <h2>
             {{
-              isHoliday
+              closed
                 ? '예외 사유/비고 입력'
                 : editingIndex !== null
                   ? '예외 일정 수정'
                   : '예외 일정 추가'
             }}
           </h2>
-          <p v-if="!isHoliday">제외할 시간을 선택해주세요.</p>
+          <p v-if="!closed">제외할 시간을 선택해주세요.</p>
         </div>
 
         <!-- 시간 선택: 휴무일이 아니면만 -->
-        <div v-if="!isHoliday" class="flex flex-wrap gap-2 mb-4">
+        <div v-if="!closed" class="flex flex-wrap gap-2 mb-4">
           <button
             v-for="time in modalTimes"
             :key="time.label"
@@ -400,8 +471,8 @@ defineExpose({
     <div v-if="props.modelValue.length" class="space-y-2 mt-5">
       <div v-for="(ex, idx) in props.modelValue" :key="idx" class="list-item-card">
         <div>
-          <p class="item-date-section">{{ ex.date }} <span v-if="ex.isHoliday">(휴무)</span></p>
-          <p v-if="!ex.isHoliday" class="text-sm text-gray-600">
+          <p class="item-date-section">{{ ex.date }} <span v-if="ex.closed">(휴무)</span></p>
+          <p v-if="!ex.closed" class="text-sm text-gray-600">
             {{ ex.startTime }} ~ {{ ex.endTime }}
           </p>
           <p v-if="ex.note" class="item-note">{{ ex.note }}</p>
