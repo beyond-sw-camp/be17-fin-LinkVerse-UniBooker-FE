@@ -16,22 +16,16 @@ spec:
         type: app
         ver: new
     spec:
-      nodeSelector:               
+      nodeSelector:
         kubernetes.io/hostname: k8s-worker5
       containers:
-      - name: container
-        image: linkverseunibooker/frontend:v2
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 20
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /test
-            port: 8080
-          initialDelaySeconds: 20
-          periodSeconds: 10
-          successThreshold: 3
+        - name: container
+          image: linkverseunibooker/frontend:v2
+          ports:
+            - containerPort: 80
+          lifecycle:
+            postStart:
+              exec:
+                # Jenkins나 kubectl fast-install에서 curl 필요할 때 대비
+                command: ['sh', '-c', 'which curl || (apk add --no-cache curl)']
       terminationGracePeriodSeconds: 0
