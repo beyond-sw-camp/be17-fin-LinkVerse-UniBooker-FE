@@ -16,16 +16,18 @@ spec:
         type: app
         ver: new
     spec:
+      nodeSelector:               
+        kubernetes.io/hostname: k8s-worker5
       containers:
       - name: container
         image: linkverseunibooker/frontend:v2
-        livenessProbe:		
+        livenessProbe:
           httpGet:
             path: /health
             port: 8080
           initialDelaySeconds: 20
           periodSeconds: 10
-        readinessProbe:		
+        readinessProbe:
           httpGet:
             path: /test
             port: 8080
