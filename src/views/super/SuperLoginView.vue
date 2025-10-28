@@ -3,8 +3,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import superApi from '@/services/super/super_api'
-import Input from '@/components/Input.vue'
-import Button from '@/components/Button.vue'
+import { connectWebSocket } from '@/utils/webSocket'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -38,7 +37,7 @@ const handleLogin = async () => {
     const responseData = response.data
 
     if (responseData.isSuccess) {
-      const result = responseData.data // ⬅️ 수정
+      const result = responseData.data 
 
       authStore.login(
         {
@@ -49,6 +48,15 @@ const handleLogin = async () => {
         null,
         null,
       )
+      
+      // WebSocket 연결
+      try {
+        console.log('🛰️ 로그인 성공 → WebSocket 연결 시도 중...')
+        await connectWebSocket()
+        console.log('✅ WebSocket 연결 완료!')
+      } catch (wsError) {
+        console.error('❌ WebSocket 연결 실패:', wsError)
+      }
 
       alert('로그인 성공!')
       router.push('/super/applications')
