@@ -103,11 +103,6 @@ axiosInstance.interceptors.response.use(
       if (isLoggingOut) {
         return Promise.reject(error)
       }
-      
-      // 비밀번호 재설정 페이지는 예외 처리
-      if (currentPath.includes('/admin/firstPassword')) {
-        return Promise.reject(error)
-      }
 
       // refresh 요청 자체가 실패한 경우 → 즉시 로그아웃
       if (originalRequest.url === '/api/auth/refresh') {
@@ -179,6 +174,16 @@ axiosInstance.interceptors.response.use(
     // ===== 500 Internal Server Error =====
     if (error.response?.status === 500) {
       console.error('💥 서버 오류가 발생했습니다.')
+    }
+
+    // ===== 400 Bad Request: 비즈니스 로직 에러 =====
+    if (error.response?.status === 400) {
+      const { code, message } = error.response.data || {}
+      
+      // 에러 코드별 로깅 (디버깅용)
+      if (code >= 4000 && code < 5000) {
+        console.warn(`⚠️ 비즈니스 에러 [${code}]:`, message)
+      }
     }
 
     return Promise.reject(error)

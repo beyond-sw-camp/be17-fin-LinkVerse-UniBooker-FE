@@ -77,9 +77,10 @@ const resetPassword = async (payload) => {
 }
 
 /**
- * 내 정보 조회
+ * 내 프로필 조회
+ * - ADMIN/MANAGER 공통
  */
-const getManagerInfo = async (email, companyId) => {
+const getMyProfile = async () => {
   try {
     const response = await axiosInstance.get('/api/admins/me')
     return response.data
@@ -131,6 +132,68 @@ const logout = async () => {
   }
 }
 
+/**
+ * 매니저 목록 조회 (페이징)
+ */
+const getManagers = async (page = 0, size = 10) => {
+  try {
+    const response = await axiosInstance.get('/api/admins/managers', {
+      params: { page, size }
+    })
+    return response.data
+  } catch (error) {
+    console.error('매니저 목록 조회 실패', error)
+    throw error
+  }
+}
+
+/**
+ * 매니저 계정 생성
+ */
+const createManager = async (managerData) => {
+  try {
+    console.log('📤 매니저 생성 요청 데이터:', managerData)
+    const response = await axiosInstance.post('/api/admins/managers', managerData)
+    console.log('✅ 매니저 생성 성공:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('❌ 매니저 생성 실패:', error)
+    console.error('📋 에러 상세:', error.response?.data)
+    console.error('📋 에러 상태:', error.response?.status)
+    throw error
+  }
+}
+
+/**
+ * 매니저 계정 삭제
+ */
+const deleteManager = async (managerId) => {
+  try {
+    const response = await axiosInstance.delete(`/api/admins/managers/${managerId}`)
+    return response.data
+  } catch (error) {
+    console.error('매니저 삭제 실패', error)
+    throw error
+  }
+}
+
+/**
+ * 매니저 정보 수정
+ * @param {number} managerId - 매니저 ID
+ * @param {Object} updateData - 수정할 정보
+ * @param {string} updateData.name - 이름
+ * @param {string} [updateData.phone] - 연락처 (선택)
+ */
+const updateManager = async (managerId, updateData) => {
+  try {
+    const response = await axiosInstance.patch(`/api/admins/managers/${managerId}`, updateData)
+    return response.data
+  } catch (error) {
+    console.error('매니저 수정 실패:', error)
+    throw error
+  }
+}
+
 
 export default {
   signUpAdmin,
@@ -140,8 +203,12 @@ export default {
   getSignUpStatus,
   login,
   resetPassword,
-  getManagerInfo,
+  getMyProfile,
   managerInfoEdit,
   managerInfoDelete,
   logout,
+  getManagers,
+  createManager,
+  deleteManager,
+  updateManager
 }
