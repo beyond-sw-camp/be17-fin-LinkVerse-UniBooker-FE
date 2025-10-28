@@ -88,14 +88,14 @@ const createServiceGroup = async () => {
           description: f.description || '', // description 그대로
           dataType: mapToEnum(f.dataType),      // 문자열 → Enum
           targetType: 'RESOURCE',
-          required: f.required || false
+          required: f.isRequired || false
         })),
         ...userCustomFields.value.map(f => ({
           fieldName: f.fieldName,
           description: f.description || '',
           dataType: mapToEnum(f.dataType),
           targetType: 'USER',
-          required: f.required || false,
+          required: f.isRequired || false,
           options: f.options
         }))
       ]
