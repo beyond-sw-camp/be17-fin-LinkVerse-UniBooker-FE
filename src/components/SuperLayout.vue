@@ -6,11 +6,13 @@ import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import { useAuthStore } from '@/stores/UseStore'
 import superApi from '@/services/super/super_api'
 import { computed } from 'vue'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const selectedMenu = ref(route.path)
+const notificationStore = useNotificationStore()
 
 /**
  * 현재 로그인한 사용자 이름 계산
@@ -41,6 +43,7 @@ const notifications = ref([
 ])
 // 알림 아이콘 클릭 토글
 const toggleDropdown = () => {
+  notificationStore.reset() // 알림 이미지 변경
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
@@ -108,7 +111,15 @@ const handleLogout = async () => {
           <img src="/assets/images/unibooker_blue_logo.svg" alt="기업 로고 이미지" />
           <span>{{ userName }}님</span>
           <button @click.stop="toggleDropdown" class="super-notify-btn">
-            <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
+            <img
+              :src="
+                notificationStore.hasNotification
+                  ? '/assets/icons/ic-new-notify.png'
+                  : '/assets/icons/ic-no-notify.png'
+              "
+              alt="알림 아이콘"
+              class="notify-icon"
+            />
           </button>
           <NotificationDropdown
             type="super"
@@ -193,7 +204,7 @@ const handleLogout = async () => {
 }
 
 .super-badge {
-  @apply bg-white flex items-center rounded-[20px] px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer relative;
+  @apply bg-white flex gap-2 items-center rounded-[20px] px-[15px] py-[10px] text-[13px] text-[#7D7D7D] font-medium cursor-pointer relative;
 }
 
 .super-badge img:first-child {
@@ -201,7 +212,7 @@ const handleLogout = async () => {
 }
 
 .super-badge span {
-  @apply ml-[3px] mr-[12px];
+  @apply ml-[3px];
 }
 
 .super-badge img:last-child {
