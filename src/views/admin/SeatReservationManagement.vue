@@ -49,7 +49,7 @@ services.forEach((s) => {
 
 const seats = computed(() => seatsMap[selectedService.value.id])
 
-// 좌석 클릭 시 모달 오픈
+// 좌석 클릭 시 모달 오픈픈
 const openSeatDetail = (seat) => {
   if (!seat.reservationInfo) return
   selectedSeat.value = seat
