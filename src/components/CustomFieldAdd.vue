@@ -14,6 +14,7 @@ const emit = defineEmits(['add-field', 'delete-field'])
 const modalFieldName = ref('')
 const modalFieldType = ref('')
 const modalFieldDescription = ref('')
+const modalIsRequired = ref(false)
 const isModalOpen = ref(false)
 
 // 단일/다중 선택용 옵션
@@ -26,6 +27,7 @@ const openModal = () => {
   modalFieldName.value = ''
   modalFieldDescription.value = ''
   modalFieldType.value = 'TEXT'
+  modalIsRequired.value = false
   modalOptions.value = []
   newOption.value = ''
 }
@@ -65,6 +67,7 @@ const addFieldFromModal = () => {
     dataType: modalFieldType.value,      // 서버 전송용
     dataTypeLabel: typeItem?.label || '', // 화면 표시용
     description: modalFieldDescription.value,
+    isRequired: modalIsRequired.value,
   }
 
   if (modalFieldType.value === 'RADIO' || modalFieldType.value === 'CHECKBOX') {
@@ -165,6 +168,16 @@ const addFieldFromModal = () => {
             <button @click="removeOption(idx)" class="remove-option-button">ㅡ</button>
           </li>
         </ul>
+      </div>
+
+      <div class="add-field-items-container">
+        <div class="field-label-container">필수여부 <span>*</span></div>
+        <Input
+          class="modal-field-checkbox"
+          type="checkbox"
+          v-model="modalIsRequired"
+          placeholder="항목명을 작성해주세요."
+        />
       </div>
 
       <div class="button-container">
@@ -273,5 +286,9 @@ textarea {
 ::-webkit-scrollbar-thumb {
   border-radius: 6px; /* 모서리 둥글게 */
   border: 3px solid #f0f0f0; /* 주변 여백 색 */
+}
+
+.modal-field-checkbox {
+  @apply mt-[6px] ml-[2px]
 }
 </style>

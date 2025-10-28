@@ -18,8 +18,6 @@ const description = ref('')
 const capacity = ref(null)
 const startDate = ref('')
 const endDate = ref('')
-const startTime = ref('')
-const endTime = ref('')
 const timeInterval = ref(60)
 const row = ref(null)
 const col = ref(null)
@@ -80,8 +78,6 @@ const createService = async () => {
       resourceImage: thumbnail.value || null,
       startDate: formatDate(startDate.value),
       endDate: formatDate(endDate.value),
-      startTime: startTime.value || null,
-      endTime: endTime.value || null,
       timeInterval: timeInterval.value,
       capacity: capacity.value ? Number(capacity.value) : null,
       row: row.value ? Number(row.value) : null,
@@ -113,8 +109,6 @@ const resetValues = () => {
   capacity.value = null
   startDate.value = ''
   endDate.value = ''
-  startTime.value = ''
-  endTime.value = ''
   timeInterval.value = 60
   row.value = null
   col.value = null
@@ -345,7 +339,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 커스텀 필드 -->
         <!-- 커스텀 필드 -->
         <div v-if="customFieldDefinitions.length" class="service-info-section mt-[40px]">
           <div v-for="(field, index) in customFieldDefinitions" :key="field.id" class="mb-[20px]">

@@ -1,4 +1,4 @@
-  import axiosInstance from '@/plugin/axiosInterceptor'
+import axiosInstance from '@/plugin/axiosInterceptor'
 import axios from 'axios'
 
 /**
@@ -92,7 +92,7 @@ const getServiceList = async (serviceGroupId) => {
 
 // 서비스 단건 조회 (수정용)
 const getServiceInfo = async (serviceId) => {
-  return await axiosInstance.get(`http://localhost:8080/api/resource/${serviceId}/edit`)
+  return await axiosInstance.get(`http://localhost:8080/api/resource/${serviceId}`)
 }
 
 // 서비스 리소스 커스텀 필드 값 조회
@@ -102,7 +102,7 @@ const getResourceCustomFieldAndValue = async (resourceId) => {
 
 // 서비스 정규시간 조회
 const getDailyTimeSlots = async (serviceId) => {
-    return await axiosInstance.get(`/api/timeslot/${serviceId}/timeslots`)
+  return await axiosInstance.get(`/api/timeslot/${serviceId}/timeslots`)
 }
 
 // 서비스 예외시간 조회

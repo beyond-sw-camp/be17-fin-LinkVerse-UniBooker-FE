@@ -431,12 +431,8 @@ watch(
   @apply flex items-start gap-2 mt-[10px];
 }
 
-.service-info-description-container > .info-label {
-  @apply w-[150px];
-}
-
 .service-info-description-container p {
-  @apply text-[14px] mb-[20px] ml-[2px] max-w-[650px];
+  @apply text-[14px] mb-[20px] max-w-[650px];
 }
 
 ::-webkit-scrollbar-track {
