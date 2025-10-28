@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import notifyApi from '@/services/notification/notification_api'
 
 const props = defineProps({
   notifications: { type: Array, required: true },
@@ -13,6 +14,17 @@ const selectedNotification = ref(null)
 function openDetailModal(item) {
   selectedNotification.value = item
   detailOpen.value = true
+}
+
+const markAsReadAndClose = async (notificationId) => {
+  try {
+    await notifyApi.notifyRead(notificationId)
+    detailOpen.value = false
+    // 페이지 새로고침
+    window.location.reload()
+  } catch (error) {
+    console.error(error)
+  }
 }
 </script>
 
@@ -40,14 +52,14 @@ function openDetailModal(item) {
         <tr
           v-for="(item, index) in notifications"
           :key="item.id"
-          :class="{ unread: item.status === '안읽음' }"
+          :class="{ unread: item.isRead === false }"
         >
           <td>{{ index + 1 }}</td>
-          <td>[{{ item.room }}] {{ item.title }}</td>
+          <td>{{ item.title }}</td>
           <td>{{ item.message }}</td>
-          <td>{{ item.time }}</td>
+          <td>{{ item.createdAt }}</td>
           <td class="text-center">
-            <span v-if="item.status === '읽음'" class="text-gray-dark/70 text-sm font-medium">읽음</span>
+            <span v-if="item.isRead === true" class="text-gray-dark/70 text-sm font-medium">읽음</span>
             <span v-else class="text-primary">읽지 않음</span>
           </td>
           <td class="text-center">
@@ -64,6 +76,7 @@ function openDetailModal(item) {
 
     <Modal :open="detailOpen" @close="detailOpen = false">
       <div class="edit-modal-container">
+        <h2 class="notification-header">알림 상세</h2>
         <div class="notification-detail">
           <span>제목</span>
           <p>{{ selectedNotification?.title }}</p>
@@ -74,10 +87,10 @@ function openDetailModal(item) {
         </div>
         <div class="notification-detail">
           <span>발생 시각</span>
-          <p>{{ selectedNotification?.time }}</p>
+          <p>{{ selectedNotification?.createdAt }}</p>
         </div>
         <div class="edit-modal-button-container">
-          <Button @click="detailOpen = false">확인</Button>
+          <Button @click="markAsReadAndClose(selectedNotification?.id)">확인</Button>
         </div>
       </div>
     </Modal>
@@ -86,24 +99,32 @@ function openDetailModal(item) {
 
 <style scoped>
 .edit-modal-container {
-  @apply flex flex-col gap-5 p-6;
+  @apply flex flex-col gap-5 p-2;
 }
 .notification-detail {
   @apply flex flex-col gap-1;
 }
 .notification-detail span {
-  @apply text-gray-dark/70 text-sm font-medium;
+  @apply text-gray-dark/70 text-sm;
 }
 .notification-detail p {
-  @apply text-gray-dark text-base;
+  @apply text-gray-dark font-medium text-[15px];
 }
 .edit-modal-button-container {
-  @apply flex justify-end mt-6;
+  @apply flex justify-end mt-2;
 }
 .notification-table {
   @apply w-full border-collapse text-[13px] mt-6 max-w-5xl mx-auto;
 }
 .notification-table.components-super-table {
   @apply table-auto text-sm m-0 max-w-none;
+}
+
+.notification-header {
+  @apply font-medium text-[18px]
+}
+
+td {
+  @apply !font-normal
 }
 </style>

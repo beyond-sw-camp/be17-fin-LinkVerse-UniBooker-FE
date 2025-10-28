@@ -1,13 +1,16 @@
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
 const emit = defineEmits(['close'])
+const dropdownRef = ref(null)
 
 const props = defineProps({
   notifications: {
     type: Array,
     default: () => [],
   },
-  type: { // super / admin
-    type: String,
+  type: {
+    type: String, // super / admin
     required: true,
   },
 })
@@ -27,21 +30,32 @@ const goToNotificationPage = () => {
   window.location.href = target
   emit('close')
 }
+
+// 외부 클릭 시 닫기
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    emit('close') 
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
-  <div class="notification-dropdown-container relative">
+  <div ref="dropdownRef" class="notification-dropdown-container relative">
     <div class="notification-tail" />
 
     <div v-if="notifications.length > 0">
       <ul class="notification-dropdown-list">
-        <li
-          v-for="item in notifications"
-          :key="item.id"
-          class="notification-dropdown-item"
-        >
-          <p class="notification-message">{{ item.message }}</p>
-          <span class="notification-time">{{ item.time }}</span>
+        <li v-for="item in notifications" :key="item.id" class="notification-dropdown-item">
+          <p class="notification-message"><span v-if="!item.isRead"></span>{{ item.message }}</p>
+          <span class="notification-time">{{ item.createdAt }}</span>
         </li>
       </ul>
     </div>
@@ -60,7 +74,7 @@ const goToNotificationPage = () => {
 
 <style scoped>
 .notification-dropdown-container {
-  @apply absolute top-[110%] right-0 mt-2 w-60 bg-white rounded-md shadow-md z-50 border border-gray-100;
+  @apply absolute top-[110%] right-0 mt-2 bg-white rounded-md shadow-md z-50 border border-gray-100;
   animation: dropdown-appear 0.2s ease-out;
 }
 
@@ -97,7 +111,11 @@ const goToNotificationPage = () => {
 }
 
 .notification-message {
-  @apply text-xs text-gray-800 truncate font-normal;
+  @apply text-xs text-gray-800 truncate font-normal flex gap-2 items-center;
+}
+
+.notification-message > span {
+  @apply rounded-full w-[5px] h-[5px] bg-[#FF5D73] block
 }
 
 .notification-time {
