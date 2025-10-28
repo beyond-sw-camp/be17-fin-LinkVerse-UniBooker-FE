@@ -230,11 +230,11 @@ const formatDate = (dateString) => {
 
 /* 이메일 입력 폼 */
 .admin-status-email-form {
-  @apply space-y-4;
+  @apply space-y-4 flex flex-col items-center py-10;
 }
 
 .admin-status-field {
-  @apply flex items-center justify-center w-full mb-5 px-5;
+  @apply flex items-center justify-center max-w-xsdddddd w-full mb-5 px-5;
 }
 
 .admin-status-label {
@@ -246,7 +246,7 @@ const formatDate = (dateString) => {
 }
 
 .admin-status-check-button {
-  @apply w-full rounded-full text-sm font-medium;
+  @apply w-full  max-w-xs rounded-full text-sm font-medium;
 }
 
 .admin-status-error-message {

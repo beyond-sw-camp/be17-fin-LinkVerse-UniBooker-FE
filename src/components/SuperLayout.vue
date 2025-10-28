@@ -76,7 +76,7 @@ const handleLogout = async () => {
     <div class="sub-bar-container">
       <!-- UniBooker 로고 -->
       <div class="logo-section">
-        <img src="/public/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
+        <img src="/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
       </div>
 
       <!-- 메뉴 섹션 -->
@@ -96,7 +96,7 @@ const handleLogout = async () => {
 
       <!-- 로그아웃 버튼 -->
       <div class="sub-menu-logout-button-container" @click="handleLogout">
-        <img src="/public/assets/icons/ic-logout.png" alt="로그아웃" />
+        <img src="/assets/icons/ic-logout.png" alt="로그아웃" />
         Logout
       </div>
     </div>
@@ -105,7 +105,7 @@ const handleLogout = async () => {
     <div class="content-body">
       <div class="content-top">
         <div class="super-badge">
-          <img src="/public/assets/images/unibooker_blue_logo.svg" alt="기업 로고 이미지" />
+          <img src="/assets/images/unibooker_blue_logo.svg" alt="기업 로고 이미지" />
           <span>{{ userName }}님</span>
           <button @click.stop="toggleDropdown" class="super-notify-btn">
             <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />

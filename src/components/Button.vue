@@ -4,7 +4,7 @@ const props = defineProps({
   size: { default: 'md' }, 
 })
 
-// 크기별 공통 클래스
+/// 크기별 공통 클래스
 const sizeClasses = {
   sm: 'px-3 py-1 text-sm',
   md: 'px-6 py-2 text-base', 

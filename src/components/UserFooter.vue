@@ -33,7 +33,7 @@ const goToContact = () => {
         <div class="user-footer-copyright-text">
           Copyright LinkVerse. All rights reserved.
           <img
-            src="/public/assets/images/unibooker_blue_logo.svg"
+            src="/assets/images/unibooker_blue_logo.svg"
             alt="UniBooker"
             class="user-footer-logo"
           />

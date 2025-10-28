@@ -94,7 +94,7 @@ const breadcrumbItems = [
           <tr v-for="(s, i) in serviceGroups" :key="i">
             <td>
               <div class="service-link" @click="goToServiceList(s.groupName)">
-                {{ s.groupName }} <img src="/public/assets/icons/ic-arrow-outward.png" />
+                {{ s.groupName }} <img src="/assets/icons/ic-arrow-outward.png" />
               </div>
             </td>
             <td>{{ s.groupCode }}</td>
