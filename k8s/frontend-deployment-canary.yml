@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: inkverseunibooker/frontend:IMAGE_TAG_PLACEHOLDER
+        image: linkverseunibooker/frontend:IMAGE_TAG_PLACEHOLDER
         ports:
           - containerPort: 80
