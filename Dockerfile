@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . .    
 RUN npm i && npm run build
 
-# 2단계: 실행 (정적 파일 서빙)
+# 2단계: 실행
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
