@@ -87,7 +87,7 @@ const onSeatHoverList = (seat) => {
   <AdminLayout>
     <div class="container">
       <!-- 좌석판 + 예약 리스트 -->
-      <div class="seat-wrapper">
+      <div class="components-white-container flex-1 flex flex-col gap-4">
         <!-- 좌석판 -->
         <div class="seat-board">
           <h2 class="title">좌석</h2>
@@ -204,10 +204,6 @@ const onSeatHoverList = (seat) => {
 <style scoped>
 .container {
   @apply flex gap-6;
-}
-
-.seat-wrapper {
-  @apply components-white-container flex-1 flex flex-col gap-4;
 }
 
 .seat-board {
