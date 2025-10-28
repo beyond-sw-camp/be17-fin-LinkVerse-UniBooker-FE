@@ -271,10 +271,6 @@ const onSeatHoverList = (seat) => {
   @apply rounded p-4 text-sm text-gray-700;
 }
 
-.table-container {
-  @apply components-super-table-container max-h-64 overflow-y-auto;
-}
-
 .row-hover {
   @apply bg-gray-100;
 }
