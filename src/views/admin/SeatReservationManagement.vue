@@ -176,7 +176,7 @@ const onSeatHoverList = (seat) => {
           <p class="service-date">{{ service.date }}</p>
           <p class="service-time">{{ service.time }}</p>
           <p class="service-seat-info">
-            <span class="material-icons seat-icon">좌석</span>
+            <span class="material-icons seat-icon">event_seat</span>
             {{ service.reserved }} / {{ service.total }}
           </p>
         </div>
@@ -280,11 +280,11 @@ const onSeatHoverList = (seat) => {
 }
 
 .service-card {
-  @apply border cursor-pointer transition components-white-container mb-0;
+  @apply border rounded-md bg-white p-4 shadow-sm cursor-pointer transition-all mb-0 hover:shadow-md hover:border-blue-400;
 }
 
 .service-card.selected {
-  @apply border-blue-500 bg-blue-50;
+  @apply border-blue-500 bg-blue-50 shadow-md;
 }
 
 .service-title {
