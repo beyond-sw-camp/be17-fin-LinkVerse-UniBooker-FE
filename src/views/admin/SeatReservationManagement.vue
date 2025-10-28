@@ -206,10 +206,11 @@ const onSeatHoverList = (seat) => {
   @apply flex gap-6;
 }
 
-.seat-wrapper {
-  @apply components-white-container flex-1 flex flex-col gap-4;
+@layer components {
+  .seat-wrapper {
+    @apply components-white-container flex-1 flex flex-col gap-4;
+  }
 }
-
 .seat-board {
   @apply relative p-4 overflow-visible;
 }
@@ -275,8 +276,10 @@ const onSeatHoverList = (seat) => {
   @apply rounded p-4 text-sm text-gray-700;
 }
 
+@layer components {
 .table-container {
   @apply components-super-table-container max-h-64 overflow-y-auto;
+  }
 }
 
 .row-hover {
@@ -287,8 +290,10 @@ const onSeatHoverList = (seat) => {
   @apply flex flex-col gap-4 w-64;
 }
 
+@layer components {
 .service-card {
   @apply border cursor-pointer transition components-white-container mb-0;
+  }
 }
 
 .service-card.selected {

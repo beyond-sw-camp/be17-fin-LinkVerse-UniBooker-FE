@@ -1,7 +1,7 @@
 # 1단계: 빌드
 FROM node:20 AS builder
 WORKDIR /app
-COPY . .
+COPY . .    
 RUN npm i && npm run build
 
 # 2단계: 실행 (정적 파일 서빙)
