@@ -1,7 +1,14 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
 import Modal from '@/components/Modal.vue'
+import serviceApi from '@/services/service/service_api'
+import reservationApi from '@/services/reservation/reservation_api'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+
+const serviceGroupId = route.params.serviceGroupId
 
 // ========== 상태 관리 ==========
 
@@ -38,63 +45,70 @@ const showDatePicker = ref(false)
 /** 임시 날짜 값 (YYYY-MM-DD) */
 const tempDateValue = ref('')
 
-// ========== 더미 데이터 ==========
+/** 색상 팔레트 (10개) */
+const colorPalette = [
+  '#FF69B4', // 핑크
+  '#FFD700', // 골드
+  '#32CD32', // 라임그린
+  '#1E90FF', // 블루
+  '#FF8C00', // 오렌지
+  '#BA55D3', // 퍼플
+  '#00CED1', // 터콰이즈
+  '#DC143C', // 레드
+  '#8A2BE2', // 블루바이올렛
+  '#20B2AA', // 라이트시그린
+]
 
-/** 예약 데이터 */
-const reservations = ref([
-  {
-    id: 1,
-    resourceId: 1,
-    resourceName: '회의실 A',
-    resourceColor: '#FF69B4',
-    reservationDate: '2025.10.08',
-    startTime: '08:00',
-    endTime: '09:00',
-    createdAt: '2025.08.08 14:23',
-    userName: '김아영',
-  },
-  {
-    id: 2,
-    resourceId: 2,
-    resourceName: '회의실 D',
-    resourceColor: '#FFD700',
-    reservationDate: '2025.10.08',
-    startTime: '16:00',
-    endTime: '17:00',
-    createdAt: '2025.08.08 14:23',
-    userName: '유현경',
-  },
-  {
-    id: 3,
-    resourceId: 3,
-    resourceName: '대강장 회의실 102',
-    resourceColor: '#32CD32',
-    reservationDate: '2025.10.08',
-    startTime: '16:00',
-    endTime: '17:00',
-    createdAt: '2025.08.08 14:23',
-    userName: '윤소민',
-  },
-  {
-    id: 4,
-    resourceId: 4,
-    resourceName: '회의실 B',
-    resourceColor: '#1E90FF',
-    reservationDate: '2025.10.08',
-    startTime: '16:00',
-    endTime: '17:00',
-    createdAt: '2025.08.08 14:23',
-    userName: '홍서연',
-  },
-])
+/** 상태 */
+const services = ref([])
+const resources = ref([])
+const reservations = ref([])
 
-/** 리소스 목록 */
-const resources = ref([
-  { resourceId: 1, name: '회의실 A', color: '#FF69B4' },
-  { resourceId: 2, name: '회의실 D', color: '#FFD700' },
-  { resourceId: 3, name: '대강장 회의실 102', color: '#32CD32' },
-  { resourceId: 4, name: '회의실 B', color: '#1E90FF' },
-])
+// ✅ 서비스 목록 불러오기
+const getServices = async () => {
+  try {
+    const response = await serviceApi.getServices(serviceGroupId)
+    services.value = response.map((service, index) => ({
+      ...service,
+      color: colorPalette[index % colorPalette.length], // 색상 자동 배정
+    }))
+
+    console.log('services:', services.value)
+
+    // 서비스별 예약 데이터 불러오기
+    for (const service of services.value) {
+      const serviceReservations = await getReservations(service.id, service.color)
+      reservations.value.push(...serviceReservations)
+    }
+
+    console.log('reservations:', reservations.value)
+  } catch (error) {
+    console.error('getServices error:', error)
+  }
+}
+
+// ✅ 예약 데이터 불러오기
+const getReservations = async (serviceId, color) => {
+  try {
+    const response = await reservationApi.getServiceReservations(serviceId)
+    // 예약 데이터에 색상과 리소스명 추가
+    return response.map((r) => {
+      const start = new Date(r.startDate)
+      const end = new Date(r.endDate)
+      return {
+        ...r,
+        reservationDate: r.startDate.split('T')[0], // YYYY-MM-DD
+        startTime: `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`,
+        endTime: `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`,
+        resourceColor: color,
+        resourceName: services.value.find((s) => s.id === serviceId)?.name || 'Unknown',
+      }
+    })
+  } catch (error) {
+    console.error(`getReservations(${serviceId}) error:`, error)
+    return []
+  }
+}
 
 /** 시간 슬롯 (00:00 ~ 23:00, 1시간 단위) */
 const timeSlots = ref([
@@ -366,6 +380,10 @@ const getCellHeight = (cellReservations) => {
 
   return `${baseHeight + (count - 1) * (badgeHeight + padding)}px`
 }
+
+onMounted(() => {
+  getServices()
+})
 </script>
 
 <template>

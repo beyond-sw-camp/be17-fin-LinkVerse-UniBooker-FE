@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import AdminLayout from '@/components/AdminLayout.vue'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 import { onMounted, reactive } from 'vue'
 
 const router = useRouter()

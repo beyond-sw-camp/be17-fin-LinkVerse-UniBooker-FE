@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/UseStore'
 import { useRouter } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 import adminApi from '@/services/admin/admin_api'
 
 const isModalOpen = ref(false)
@@ -77,21 +77,26 @@ const getServiceGroups = async () => {
     const data = response.data.data
 
     Object.assign(serviceGroups, data.resourceGroups)
+    console.log(serviceGroups)
   } catch (error) {
     // 서비스 그룹 목록 조회 실패
   }
 }
 
 // 서비스 그룹의 드롭다운 메뉴 항목
-const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
-const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
+const dropdownItems = ['전체 분석', '예약 현황', '서비스 관리']
+const getMenuLink = (menu, serviceGroupId, serviceGroupName, serviceCategory) => {
   switch (menu) {
     case '서비스 관리':
       return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
-    case '예약 관리':
-      return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
     case '예약 현황':
-      return '#'
+      if (serviceCategory === 'RESERVATION') {
+        return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      } else if (serviceCategory === 'SEAT') {
+        return `/admin/seat-reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      } else {
+        return `/admin/event-reservation-status/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      }
     case '전체 분석':
       return '#'
     default:
@@ -187,7 +192,7 @@ onMounted(() => {
               <router-link
                 v-for="child in dropdownItems"
                 :key="child"
-                :to="getMenuLink(child, item.id, item.name)"
+                :to="getMenuLink(child, item.id, item.name, item.serviceCategory)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"

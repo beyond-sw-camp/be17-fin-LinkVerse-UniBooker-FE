@@ -1,7 +1,7 @@
 <script setup>
 import PageNation from '@/components/PageNation.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import serviceApi from '@/services/user/service_api'
 
@@ -61,8 +61,8 @@ const paginatedServices = computed(() => {
 
 // 예약 버튼 클릭시 서비스 항목 상세 페이지
 const goToServiceDetail = (item) => {
-    if (item.status !== '예약 가능') return
-    router.push({
+  if (item.status !== '예약 가능') return
+  router.push({
     path: `/c/${slug}/serivce/detail/${item.id}`,
   })
 }

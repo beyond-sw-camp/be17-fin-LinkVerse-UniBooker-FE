@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
@@ -204,7 +204,7 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd :customFields="serviceCustomFields" @add-field="serviceCustomFields.push($event)" />
+        <CustomFieldAdd :customFields="serviceCustomFields" @add-field="serviceCustomFields.push($event)" @delete-field="serviceCustomFields.splice($event, 1)"/>
       </div>
     </section>
 

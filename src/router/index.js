@@ -159,13 +159,13 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/reservation-management/:serviceId',
+      path: '/admin/reservation-management/:serviceGroupId',
       name: 'ReservationManagement',
       component: () => import('../views/admin/ReservationManagement.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/seat-reservation-management',
+      path: '/admin/seat-reservation-management/:serviceGroupId',
       name: 'SeatReservationManagement',
       component: () => import('@/views/admin/SeatReservationManagement.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
@@ -177,7 +177,7 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/service-edit/:serviceId',
+      path: '/admin/service-management/:serviceGroupId/service-edit/:serviceId',
       name: 'ServiceEdit',
       component: () => import('@/views/admin/ServiceEdit.vue'),
     },
@@ -188,13 +188,13 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/event-reservation-management',
+      path: '/admin/event-reservation-management/:serviceId',
       name: 'EventReservationManagement',
       component: () => import('@/views/admin/EventReservationManagement.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/event-reservation-status',
+      path: '/admin/event-reservation-status/:serviceGroupId',
       name: 'EventReservationStatus',
       component: () => import('../views/admin/EventReservationStatus.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
@@ -302,9 +302,9 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // ===== 역할 검증 헬퍼 함수 =====
-  
+
   /**
    * 역할 검증 헬퍼 함수
    * - ADMIN 페이지는 ADMIN과 MANAGER 모두 허용
@@ -315,16 +315,16 @@ router.beforeEach(async (to, from, next) => {
     if (onlyAdmin === true) {
       return currentRole === 'ADMIN'
     }
-  
+
     // Admin 페이지는 ADMIN과 MANAGER 모두 허용
     if (requiredRole === 'ADMIN' && (currentRole === 'ADMIN' || currentRole === 'MANAGER')) {
       return true
     }
-  
+
     // 나머지는 정확히 일치해야 함
     return currentRole === requiredRole
   }
-  
+
   // ===== 1. 인증 상태 복원 (localStorage 기반) =====
   authStore.checkAuth()
 
