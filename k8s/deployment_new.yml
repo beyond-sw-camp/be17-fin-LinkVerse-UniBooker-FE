@@ -20,7 +20,7 @@ spec:
         kubernetes.io/hostname: k8s-worker5
       containers:
         - name: container
-          image: linkverseunibooker/frontend:v2
+          image: linkverseunibooker/frontend:latest
           ports:
             - containerPort: 80
           lifecycle:
