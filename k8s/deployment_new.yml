@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment-new
+spec:
+  selector:
+    matchLabels:
+      type: app
+      ver: new
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        type: app
+        ver: new
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-worker5
+      containers:
+        - name: container
+          image: linkverseunibooker/frontend:latest
+          ports:
+            - containerPort: 80
+          lifecycle:
+            postStart:
+              exec:
+                # Jenkins나 kubectl fast-install에서 curl 필요할 때 대비
+                command: ['sh', '-c', 'which curl || (apk add --no-cache curl)']
+      terminationGracePeriodSeconds: 0

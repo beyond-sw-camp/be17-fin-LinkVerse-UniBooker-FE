@@ -189,8 +189,4 @@ const onSeatHoverBoard = (seat) => {
 .no-reservation {
   @apply text-gray-400;
 }
-
-.table-container {
-  @apply components-super-table-container max-h-64 overflow-y-auto;
-}
 </style>

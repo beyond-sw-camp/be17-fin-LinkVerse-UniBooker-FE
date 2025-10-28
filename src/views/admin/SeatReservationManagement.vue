@@ -49,7 +49,7 @@ services.forEach((s) => {
 
 const seats = computed(() => seatsMap[selectedService.value.id])
 
-// 좌석 클릭 시 모달 오픈
+// 좌석 클릭 시 모달 오픈픈
 const openSeatDetail = (seat) => {
   if (!seat.reservationInfo) return
   selectedSeat.value = seat
@@ -87,7 +87,7 @@ const onSeatHoverList = (seat) => {
   <AdminLayout>
     <div class="container">
       <!-- 좌석판 + 예약 리스트 -->
-      <div class="seat-wrapper">
+      <div class="components-white-container flex-1 flex flex-col gap-4">
         <!-- 좌석판 -->
         <div class="seat-board">
           <h2 class="title">좌석</h2>
@@ -133,7 +133,7 @@ const onSeatHoverList = (seat) => {
         <!-- 예약 리스트 -->
         <div class="reservation-list">
           <h2 class="title">예약 리스트</h2>
-          <div class="components-super-table-container table-container">
+          <div class="components-super-table-container max-h-64 overflow-y-auto">
             <table class="components-super-table">
               <thead>
                 <tr>
@@ -176,7 +176,7 @@ const onSeatHoverList = (seat) => {
           <p class="service-date">{{ service.date }}</p>
           <p class="service-time">{{ service.time }}</p>
           <p class="service-seat-info">
-            <span class="material-icons seat-icon">좌석</span>
+            <span class="material-icons seat-icon">event_seat</span>
             {{ service.reserved }} / {{ service.total }}
           </p>
         </div>
@@ -204,10 +204,6 @@ const onSeatHoverList = (seat) => {
 <style scoped>
 .container {
   @apply flex gap-6;
-}
-
-.seat-wrapper {
-  @apply components-white-container flex-1 flex flex-col gap-4;
 }
 
 .seat-board {
@@ -275,10 +271,6 @@ const onSeatHoverList = (seat) => {
   @apply rounded p-4 text-sm text-gray-700;
 }
 
-.table-container {
-  @apply components-super-table-container max-h-64 overflow-y-auto;
-}
-
 .row-hover {
   @apply bg-gray-100;
 }
@@ -288,11 +280,11 @@ const onSeatHoverList = (seat) => {
 }
 
 .service-card {
-  @apply border cursor-pointer transition components-white-container mb-0;
+  @apply border rounded-md bg-white p-4 shadow-sm cursor-pointer transition-all mb-0 hover:shadow-md hover:border-blue-400;
 }
 
 .service-card.selected {
-  @apply border-blue-500 bg-blue-50;
+  @apply border-blue-500 bg-blue-50 shadow-md;
 }
 
 .service-title {
