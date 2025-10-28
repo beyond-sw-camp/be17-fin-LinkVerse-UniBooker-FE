@@ -48,10 +48,30 @@ const rejectCompany = async (companyId, rejectionReason) => {
   })
 }
 
+/**
+ * 전체 기업 목록 조회
+ */
+const getAllCompanies = async (page = 0, size = 10, status = null, keyword = null) => {
+  const params = { page, size }
+  if (status) params.status = status
+  if (keyword) params.keyword = keyword
+  
+  return await axiosInstance.get('/api/companies', { params })
+}
+
+/**
+ * 기업 상태 변경
+ */
+const updateCompanyStatus = async (companyId, status) => {
+  return await axiosInstance.patch(`/api/companies/${companyId}/status`, { status })
+}
+
 export default {
   checkSlug,
   getPendingCompanies,
   getCompanyDetail,
   approveCompany,
   rejectCompany,
+  getAllCompanies,       
+  updateCompanyStatus,   
 }

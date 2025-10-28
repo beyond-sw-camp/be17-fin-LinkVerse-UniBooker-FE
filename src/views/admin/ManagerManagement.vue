@@ -196,11 +196,14 @@ const handleDeleteManager = async () => {
       isEditModalOpen.value = false
       selectedManager.value = null
 
-      // 목록 갱신 (현재 페이지가 비었으면 이전 페이지로)
+      // ✅ 수정: fetchManagers() 직접 호출
       if (managers.value.length === 1 && currentPage.value > 1) {
+        // 현재 페이지에 1개만 있고, 첫 페이지가 아니면 이전 페이지로
         currentPage.value = currentPage.value - 1
+        await fetchManagers(currentPage.value)
       } else {
-        currentPage.value = currentPage.value // watch가 자동 호출
+        // 그 외의 경우 현재 페이지 새로고침
+        await fetchManagers(currentPage.value)
       }
     } else {
       alert(response.message || '매니저 삭제에 실패했습니다.')
@@ -343,7 +346,7 @@ onMounted(() => {
     <div v-else class="manage-list-container">
       <!-- 매니저 추가 버튼 -->
       <div class="manage-add-button-container card" @click="openAddModal">
-        <img src="/public/assets/icons/ic-plus-circle.png" alt="매니저 추가" />
+        <img src="/assets/icons/ic-plus-circle.png" alt="매니저 추가" />
       </div>
 
       <!-- 매니저 정보 카드 -->
@@ -358,11 +361,11 @@ onMounted(() => {
         </div>
 
         <div class="manager-info-row">
-          <img src="/public/assets/icons/ic-email.png" alt="이메일" />
+          <img src="/assets/icons/ic-email.png" alt="이메일" />
           <span>{{ manager.email }}</span>
         </div>
         <div class="manager-info-row">
-          <img src="/public/assets/icons/ic-phone.png" alt="연락처" />
+          <img src="/assets/icons/ic-phone.png" alt="연락처" />
           <span>{{ manager.phone || '미등록' }}</span>
         </div>
       </div>
@@ -386,7 +389,7 @@ onMounted(() => {
     <Modal :open="isEditModalOpen" @close="isEditModalOpen = false">
       <div class="edit-modal-container" v-if="selectedManager">
         <div class="manager-profile-image">
-          <img src="/public/assets/icons/ic-manager-profile.png" alt="관리자 프로필 이미지" />
+          <img src="/assets/icons/ic-manager-profile.png" alt="관리자 프로필 이미지" />
         </div>
 
         <!-- 조회 모드 -->

@@ -80,6 +80,42 @@ const updateAdminStatus = async (userId, status) => {
   return response.data
 }
 
+/**
+ * 전체 기업 목록 조회 (페이징 + 필터)
+ */
+const getAllCompanies = async (page = 0, size = 10, status = null, keyword = null) => {
+  const params = { page, size }
+  if (status) params.status = status
+  if (keyword) params.keyword = keyword
+  
+  const response = await axiosInstance.get('/api/companies', { params })
+  return response.data
+}
+
+/**
+ * 기업 상태 변경
+ */
+const updateCompanyStatus = async (companyId, status) => {
+  const response = await axiosInstance.patch(`/api/companies/${companyId}/status`, { status })
+  return response.data
+}
+
+/**
+ * 특정 기업의 관리자 목록 조회
+ */
+const getCompanyManagers = async (companyId) => {
+  const response = await axiosInstance.get(`/api/companies/${companyId}/managers`)
+  return response.data
+}
+
+/**
+ * 관리자 상태 변경
+ */
+const updateManagerStatus = async (userId, status) => {
+  const response = await axiosInstance.patch(`/api/super/managers/${userId}/status`, { status })
+  return response.data
+}
+
 export default {
   // 인증
   login,
@@ -90,6 +126,10 @@ export default {
   getCompanyDetail,
   approveCompany,
   rejectCompany,
+  getAllCompanies,        
+  updateCompanyStatus, 
+  getCompanyManagers,      
+  updateManagerStatus,
 
   // 전체 관리자/매니저 조회
   getAllAdmins,
