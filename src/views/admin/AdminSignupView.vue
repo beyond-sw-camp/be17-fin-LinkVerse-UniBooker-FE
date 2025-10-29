@@ -1,9 +1,10 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import adminApi from '@/services/admin/admin_api'
+import serviceApi from '@/services/admin/service_api'
 
 const router = useRouter()
 
@@ -16,9 +17,11 @@ const formData = reactive({
   email: '',
   phone: '',
   logo: null,
+  logoUrl: '',
 })
 
 const fileName = ref('')
+const thumbnail = ref('')
 
 // ===== 중복확인 상태 =====
 const duplicateCheckState = reactive({
@@ -172,25 +175,38 @@ const checkEmail = async () => {
 }
 
 // ===== 파일 업로드 =====
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const file = event.target.files[0]
-  if (file) {
-    // 파일 크기 검증 (5MB 제한)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하만 업로드 가능합니다.')
-      event.target.value = ''
-      return
-    }
+  if (!file) return
 
-    // 이미지 파일 형식 검증
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.')
-      event.target.value = ''
-      return
-    }
+  fileName.value = file.name
+  formData.logo = file  // 프리뷰용
+  thumbnail.value = URL.createObjectURL(file) // 임시 미리보기
 
-    formData.logo = file
-    fileName.value = file.name
+  try {
+    const uploadForm = new FormData()
+    uploadForm.append('file', file)
+    uploadForm.append('imageType', 'serviceGroup')
+
+    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(uploadForm)
+    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
+
+    // 실제 업로드
+    await serviceApi.uploadImage(presignedUrl, file)
+
+    // CloudFront URL 생성
+    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
+    const s3Path = presignedUrl.split('.com')[1].split('?')[0]
+    const fullUrl = cloudFrontDomain + s3Path
+
+    // 프리뷰와 폼 데이터에 적용
+    thumbnail.value = fullUrl
+    formData.logoUrl = fullUrl
+
+    // 서버에 파일은 보내지 않음 (logoFile 제거)
+  } catch (err) {
+    console.error('이미지 업로드 오류:', err)
+    alert('이미지 업로드 중 오류가 발생했습니다.')
   }
 }
 
@@ -263,6 +279,7 @@ const handleSubmit = async () => {
     name: formData.name,
     email: formData.email,
     phone: formData.phone,
+    logoUrl: formData.logoUrl,
   }
 
   submitFormData.append(
@@ -271,10 +288,6 @@ const handleSubmit = async () => {
       type: 'application/json',
     }),
   )
-
-  if (formData.logo) {
-    submitFormData.append('logoFile', formData.logo)
-  }
 
   // 11. API 호출
   try {
@@ -446,8 +459,20 @@ const goToLogin = () => {
         <div class="admin-signup-field">
           <label class="admin-signup-label">기업로고</label>
           <div class="admin-signup-input-wrapper">
-            <Input id="logo-upload" type="file" accept="image/*" @change="handleFileUpload" />
-            <span v-if="fileName" class="file-name">{{ fileName }}</span>
+            <label for="logo-upload" class="file-upload-label">
+              <!-- 이미지가 있으면 보여주기, 없으면 안내 문구 -->
+              <template v-if="thumbnail">
+                <img :src="thumbnail" class="preview-img" alt="로고 미리보기" />
+              </template>
+              <template v-else> 이미지 업로드 </template>
+            </label>
+            <input
+              id="logo-upload"
+              type="file"
+              accept="image/*"
+              class="file-upload-input hidden"
+              @change="handleFileUpload"
+            />
           </div>
         </div>
 
@@ -585,5 +610,9 @@ const goToLogin = () => {
 
 .admin-signup-signup-link {
   @apply text-gray-600 font-medium hover:text-primary-hover ml-2 underline cursor-pointer bg-transparent border-none;
+}
+
+.preview-img {
+  @apply h-[50px] border border-gray-deep rounded-[3px];
 }
 </style>
