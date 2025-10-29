@@ -5,7 +5,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue'
 import TimeSlotModal from '@/components/TimeSlotModal.vue'
 import ExceptionModal from '@/components/ExceptionModal.vue'
 import { useRoute, useRouter } from 'vue-router'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 
 const route = useRoute()
 const router = useRouter()

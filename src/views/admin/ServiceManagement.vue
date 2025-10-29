@@ -4,7 +4,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue'
 import { reactive, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
-import serviceApi from '@/services/admin/service_api.js'
+import serviceApi from '@/services/service/service_api.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -150,10 +150,9 @@ const finishedServices = createStatusComputed('CLOSED')
 // 서비스 리스트 조회
 const getServiceList = async (serviceGroupId) => {
   try {
-    const response = await serviceApi.getServiceList(serviceGroupId)
-    console.log('서비스 리스트 응답 : ', response.data)
-    // 실제 배열은 resources
-    services.splice(0, services.length, ...response.data.data.resources)
+    const response = await serviceApi.getServices(serviceGroupId)
+    console.log('서비스 리스트 응답 : ', response)
+    services.splice(0, services.length, ...response)
   } catch (error) {
     console.log('서비스 리스트 조회 실패: ', error)
   }

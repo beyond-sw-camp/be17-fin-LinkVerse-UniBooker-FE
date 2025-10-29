@@ -86,8 +86,13 @@ const createService = async (formdata) => {
   return await axiosInstance.post(`api/resource`, formdata)
 }
 
-const getServiceList = async (serviceGroupId) => {
-  return await axiosInstance.get(`api/resource/group/${serviceGroupId}`)
+const getServices = async (serviceGroupId) => {
+  try {
+    const response = await axiosInstance.get(`api/resource/group/${serviceGroupId}`)
+    return response.data.data.resources
+  } catch (error) {
+    console.log('서비스 목록 조회 실패:', error)
+  }
 }
 
 // 서비스 단건 조회 (수정용)
@@ -138,7 +143,7 @@ export default {
   deleteServiceGroup,
   createService,
   getServiceGroupFieldInfo,
-  getServiceList,
+  getServices,
   getResourceCustomFieldAndValue,
   getServiceCustomFields,
   getServiceInfo,

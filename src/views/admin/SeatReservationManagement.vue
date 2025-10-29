@@ -2,54 +2,78 @@
 import AdminLayout from '@/components/AdminLayout.vue'
 import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
-import { ref, reactive, computed } from 'vue'
+import serviceApi from '@/services/service/service_api'
+import reservationApi from '@/services/reservation/reservation_api'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
-const rows = 10
-const cols = 12
+const route = useRoute()
+const rows = ref(10)
+const cols = ref(12)
+const serviceGroupId = route.params.serviceGroupId
 
-// 예시 공연/서비스
-const services = reactive([
-  { id: 1, name: '공연 A', date: '2025-10-30', time: '19:00', reserved: 20, total: 40 },
-  { id: 2, name: '공연 B', date: '2025-11-05', time: '18:00', reserved: 15, total: 40 },
-])
-const selectedService = ref(services[0])
-
-const hoverSeat = ref(null)
-const selectedSeat = ref(null)
-const isModalOpen = ref(false)
-
+// 서비스 목록
+const services = reactive([])
+// 서비스별 예약 목록 저장
+const serviceReservationsMap = reactive({})
+// 선택된 서비스
+const selectedService = ref(null)
+// 좌석판 저장
 const seatsMap = reactive({})
+// 선택/호버 좌석
+const selectedSeat = ref(null)
+const hoverSeat = ref(null)
+// 모달 상태
+const isModalOpen = ref(false)
+// 예약 리스트 참조
+const seatRefs = reactive({})
 
-// 좌석 데이터 생성 (더미 포함)
+// 서비스 불러오기
+const getServices = async () => {
+  const response = await serviceApi.getServices(serviceGroupId)
+  services.splice(0, services.length, ...response)
+  if (services.length) selectedService.value = services[0]
+}
+
+// 서비스별 예약 불러오기
+const getReservations = async (serviceId) => {
+  // 이미 예약이 있으면 업데이트만
+  if (!serviceReservationsMap[serviceId]) {
+    const response = await reservationApi.getServiceReservations(serviceId)
+    serviceReservationsMap[serviceId] = response.map((r) => ({
+      id: r.id,
+      name: r.userName,
+      date: r.startDate,
+      time: new Date(r.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      row: r.row || 0,
+      col: r.col || 0,
+    }))
+  }
+  // 좌석판 갱신
+  seatsMap[serviceId] = generateSeats(serviceId)
+}
+
+// 좌석 데이터 생성
 const generateSeats = (serviceId) =>
-  Array.from({ length: rows }, (_, r) =>
-    Array.from({ length: cols }, (_, c) => {
-      const reserved = Math.random() < 0.3
-      const service = services.find((s) => s.id === serviceId)
+  Array.from({ length: rows.value }, (_, r) =>
+    Array.from({ length: cols.value }, (_, c) => {
+      const reservedSeat = serviceReservationsMap[serviceId]?.find(
+        (res) => res.row === r + 1 && res.col === c + 1,
+      )
       return {
-        id: serviceId * 10000 + r * cols + c,
+        id: serviceId * 10000 + r * cols.value + c,
         row: r + 1,
         col: c + 1,
-        reserved,
-        reservationInfo: reserved
-          ? {
-              id: 1000 + r * cols + c,
-              name: `유저 ${r * cols + c + 1}`,
-              date: service.date,
-              time: service.time,
-            }
-          : null,
+        reserved: !!reservedSeat,
+        reservationInfo: reservedSeat || null,
       }
     }),
   )
 
-services.forEach((s) => {
-  seatsMap[s.id] = generateSeats(s.id)
-})
+// 좌석판 계산
+const seats = computed(() => seatsMap[selectedService.value?.id] || [])
 
-const seats = computed(() => seatsMap[selectedService.value.id])
-
-// 좌석 클릭 시 모달 오픈픈
+// 좌석 클릭
 const openSeatDetail = (seat) => {
   if (!seat.reservationInfo) return
   selectedSeat.value = seat
@@ -66,10 +90,7 @@ const closeModal = () => {
   isModalOpen.value = false
 }
 
-// 예약 리스트 트랙킹용 refs
-const seatRefs = reactive({})
-
-// 좌석판에서 호버 -> 스크롤 포함
+// 좌석판 호버
 const onSeatHoverBoard = (seat) => {
   hoverSeat.value = seat
   if (seat.reservationInfo && seatRefs[seat.id]) {
@@ -77,10 +98,31 @@ const onSeatHoverBoard = (seat) => {
   }
 }
 
-// 리스트에서 호버 -> 스크롤 X
+// 예약 리스트 호버
 const onSeatHoverList = (seat) => {
   hoverSeat.value = seat
 }
+
+// 선택 서비스 변경 시 예약과 좌석판 갱신
+watch(selectedService, async (newService) => {
+  if (!newService) return
+
+  rows.value = newService.row || 10
+  cols.value = newService.col || 12
+
+  await getReservations(newService.id)
+  seatsMap[newService.id] = generateSeats(newService.id)
+})
+
+// 초기 마운트
+onMounted(async () => {
+  await getServices()
+  if (selectedService.value) {
+    rows.value = selectedService.value.row || 10
+    cols.value = selectedService.value.col || 12
+    await getReservations(selectedService.value.id)
+  }
+})
 </script>
 
 <template>
@@ -94,7 +136,7 @@ const onSeatHoverList = (seat) => {
           <!-- 좌석 범례 -->
           <div class="legend">
             <div class="legend-seat empty"></div>
-            <span class="legend-text">빈 좌석</span>
+            <span class="legend-text">예약 가능한 좌석</span>
             <div class="legend-seat reserved"></div>
             <span class="legend-text">예약 완료</span>
           </div>
@@ -173,11 +215,13 @@ const onSeatHoverList = (seat) => {
           :class="['service-card', selectedService?.id === service.id ? 'selected' : '']"
         >
           <h3 class="service-title">{{ service.name }}</h3>
-          <p class="service-date">{{ service.date }}</p>
+          <p v-if="service.startDate" class="service-date">
+            {{ service.startDate }} - {{ service.endDate }}
+          </p>
           <p class="service-time">{{ service.time }}</p>
           <p class="service-seat-info">
             <span class="material-icons seat-icon">event_seat</span>
-            {{ service.reserved }} / {{ service.total }}
+            {{ serviceReservationsMap[service.id]?.length || 0 }} / {{ service.capacity }}
           </p>
         </div>
       </div>
