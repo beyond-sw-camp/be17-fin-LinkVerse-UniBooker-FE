@@ -87,7 +87,7 @@ onMounted(() => {
 
 /* 헤더 */
 .service-header {
-  @apply flex justify-between items-center mb-6;
+  @apply flex justify-between items-center mb-6 pl-[12px];
 }
 
 .service-title {
