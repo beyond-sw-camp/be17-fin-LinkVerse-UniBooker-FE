@@ -4,10 +4,16 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import userApi from '@/services/user/user_api'
 import axiosInstance from '@/plugin/axiosInterceptor'
+import notifyApi from '@/services/notification/notification_api'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
+const isDropdownOpen = ref(false)
+const notifications = ref([])
+const slug = route.params.companySlug || authStore.companySlug || 'default'
 
 // ===== 실제 인증 상태 (서버 검증) =====
 const isActuallyAuthenticated = ref(false)
@@ -183,32 +189,27 @@ const isValidLogin = computed(() => {
 
 // ===== 네비게이션 핸들러 =====
 const goToHome = () => {
-  const currentSlug = route.params.companySlug || authStore.companySlug || 'default'
-
   if (isValidLogin.value) {
-    router.push(`/c/${currentSlug}/service/list`)
+    router.push(`/c/${slug}/service/list`)
   } else {
-    router.push(`/c/${currentSlug}`)
+    router.push(`/c/${slug}`)
   }
 }
 
 const goToService = () => {
-  const slug = authStore.companySlug || 'default'
   router.push(`/c/${slug}/services`)
 }
 
 const goToReservation = () => {
-  const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push(`/c/${slug}/reservations`)
 }
 
 const goToMypage = () => {
-  const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push(`/c/${slug}/user/mypage`)
 }
 
-const goToNotification = () => {
-  const slug = route.params.companySlug || authStore.companySlug || 'default'
+// 알림 아이콘 클릭 토글
+const notiToggleDropdown = async () => {
   router.push(`/c/${slug}/notification`)
 }
 
@@ -250,8 +251,16 @@ const handleLogout = async () => {
 
       <!-- 로그인 후 알림 + 로그아웃 버튼 (서버 검증 기반) -->
       <div v-if="isValidLogin" class="user-btn-container">
-        <button @click="goToNotification" class="notification-btn">
-          <img src="/assets/icons/ic-no-notify.png" class="user-header-alam" alt="알림" />
+        <button @click.stop="notiToggleDropdown" class="notify-btn">
+          <img
+            :src="
+              notificationStore.hasNotification
+                ? '/assets/icons/ic-new-notify.png'
+                : '/assets/icons/ic-no-notify.png'
+            "
+            alt="알림 아이콘"
+            class="user-header-alam"
+          />
         </button>
         <button @click="handleLogout" class="logout-btn">로그아웃</button>
       </div>

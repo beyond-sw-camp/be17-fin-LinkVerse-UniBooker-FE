@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { connectWebSocket, disconnectWebSocket } from '@/utils/webSocket'
 
 // ===== BroadcastChannel 생성 =====
-const authChannel = typeof BroadcastChannel !== 'undefined' 
-  ? new BroadcastChannel('unibooker-auth') 
-  : null
+const authChannel =
+  typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('unibooker-auth') : null
 
 export const useAuthStore = defineStore('auth', () => {
   // ===== 상태 =====
@@ -15,7 +15,12 @@ export const useAuthStore = defineStore('auth', () => {
   const companySlug = ref(null)
 
   // ===== 로그인 액션 =====
-  const login = (userData, userRole = 'USER', userCompanyId = null, userCompanySlug = null) => {
+  const login = async (
+    userData,
+    userRole = 'USER',
+    userCompanyId = null,
+    userCompanySlug = null,
+  ) => {
     // 1. 기존 상태 초기화
     localStorage.clear()
 
@@ -45,9 +50,16 @@ export const useAuthStore = defineStore('auth', () => {
         type: 'LOGIN',
         role: userRole,
         companySlug: userCompanySlug,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
       console.log('다른 탭에 로그인 이벤트 전송:', { role: userRole, slug: userCompanySlug })
+    }
+
+    try {
+      await connectWebSocket()
+      console.log('🛰️ 웹소켓 자동 재연결 완료')
+    } catch (err) {
+      console.error('❌ 웹소켓 재연결 실패:', err)
     }
 
     console.log('로그인 완료:', {
@@ -98,10 +110,14 @@ export const useAuthStore = defineStore('auth', () => {
       authChannel.postMessage({
         type: 'LOGOUT',
         role: tempRole,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
       console.log('다른 탭에 로그아웃 이벤트 전송')
     }
+
+    // WebSocket 연결 해제
+    disconnectWebSocket()
+    console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
 
     console.log('로그아웃 완료')
 
@@ -109,7 +125,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // ===== 인증 상태 복원 =====
-  const checkAuth = () => {
+  const checkAuth = async () => {
     const savedAuthState = localStorage.getItem('isLoggedIn')
     const savedUser = localStorage.getItem('user')
     const savedRole = localStorage.getItem('role')
@@ -128,6 +144,13 @@ export const useAuthStore = defineStore('auth', () => {
         role: role.value,
         companySlug: companySlug.value,
       })
+
+      try {
+        await connectWebSocket()
+        console.log('🛰️ 웹소켓 자동 재연결 완료')
+      } catch (err) {
+        console.error('❌ 웹소켓 재연결 실패:', err)
+      }
     } else {
       // localStorage 없으면 로그아웃 상태
       isLoggedIn.value = false
@@ -135,7 +158,11 @@ export const useAuthStore = defineStore('auth', () => {
       role.value = null
       companyId.value = null
       companySlug.value = null
-      
+
+      // WebSocket 연결 해제
+      disconnectWebSocket()
+      console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
+
       console.log('저장된 인증 상태 없음')
     }
   }
@@ -143,7 +170,7 @@ export const useAuthStore = defineStore('auth', () => {
   // ===== 주기적 상태 검증 (좀비 세션 방지) =====
   const syncWithLocalStorage = () => {
     const savedAuthState = localStorage.getItem('isLoggedIn')
-    
+
     // localStorage가 없는데 메모리는 로그인 상태 → 강제 로그아웃
     if (isLoggedIn.value && savedAuthState !== 'true') {
       console.warn('localStorage 불일치 감지 - 강제 로그아웃')
@@ -170,9 +197,9 @@ export const useAuthStore = defineStore('auth', () => {
   if (authChannel) {
     authChannel.onmessage = (event) => {
       const { type, role: eventRole, companySlug: eventSlug, timestamp } = event.data
-      
+
       console.log('BroadcastChannel 메시지 수신:', event.data)
-      
+
       if (type === 'LOGIN') {
         // 다른 탭에서 로그인 → 현재 탭이 로그인 상태면 강제 로그아웃
         if (isLoggedIn.value) {
@@ -191,7 +218,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ===== 주기적 상태 검증 타이머 시작 =====
   if (typeof window !== 'undefined') {
-    setInterval(syncWithLocalStorage, 1000)  // 1초마다 검증
+    setInterval(syncWithLocalStorage, 1000) // 1초마다 검증
   }
 
   // ===== 강제 로그아웃 (다른 탭/서버 검증 실패 시) =====
@@ -201,7 +228,11 @@ export const useAuthStore = defineStore('auth', () => {
     role.value = null
     companyId.value = null
     companySlug.value = null
-  
+
+    // WebSocket 연결 해제
+    disconnectWebSocket()
+    console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
+
     console.log('강제 로그아웃 - 세션 무효화')
   }
 
