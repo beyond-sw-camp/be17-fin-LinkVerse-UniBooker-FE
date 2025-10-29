@@ -274,7 +274,7 @@ const handleLogout = async () => {
 }
 
 .user-header-container {
-  @apply w-full mx-auto px-20 py-1 flex justify-between;
+  @apply w-full mx-auto px-20 py-1 pt-[8px] flex justify-between min-h-[50px];
 }
 
 .user-header-logo-wrapper {
