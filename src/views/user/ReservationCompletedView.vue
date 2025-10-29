@@ -1,7 +1,10 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+const route = useRoute()
 const router = useRouter()
+
+const reservationData = route.state?.reservation // state로 받으면 새로고침 했을 때 사라짐.. 나중에 pinia나 어떻게 보여줄지 생각
 
 const goToReservationDetail = () => {
   router.push('')
@@ -32,19 +35,19 @@ const goToHome = () => {
         <div class="reservation-completed-info">
           <div>
             <label class="reservation-completed-label">예약 번호</label>
-            <p>123456789</p>
+            <p>{{ reservationData.id }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">예약자</label>
-            <p>유현경</p>
+            <p>{{ reservationData.userName }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">예약 일자</label>
-            <p>2025/10/13 (월) 19:00</p>
+            <p>{{ reservationData.startDate ?  reservationData.startDate : reservationData.createdAt}}</p>
           </div>
           <div>
             <label class="reservation-completed-label">서비스명</label>
-            <p>회의실 A</p>
+            <p>{{ reservationData.resourceName }}</p>
           </div>
         </div>
   
