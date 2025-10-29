@@ -100,7 +100,7 @@ onMounted(() => {
 }
 
 .service-card {
-  @apply bg-gray-50 h-80 shadow-sm overflow-hidden hover:shadow-md transition p-2 cursor-pointer;
+  @apply bg-gray-50 h-80 shadow-sm overflow-hidden hover:shadow-sm transition p-2 cursor-pointer border border-gray-line rounded-[5px];
 }
 
 .service-img {
