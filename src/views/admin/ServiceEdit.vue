@@ -5,7 +5,7 @@ import Breadcrumb from '@/components/Breadcrumb.vue'
 import TimeSlotModal from '@/components/TimeSlotModal.vue'
 import ExceptionModal from '@/components/ExceptionModal.vue'
 import { useRoute, useRouter } from 'vue-router'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 
 const route = useRoute()
 const router = useRouter()
@@ -139,7 +139,6 @@ const getServiceInfo = async () => {
         closed: ex.closed || false,
       }))
     }
-
   } catch (error) {
     console.error('서비스 정보 조회 실패:', error)
     alert('서비스 정보를 불러오는 중 오류가 발생했습니다.')
@@ -181,7 +180,6 @@ const updateService = async () => {
       exceptionSlots,
     }
 
-
     await serviceApi.updateService(serviceId, formData)
     alert('서비스가 성공적으로 수정되었습니다!')
     router.push(
@@ -196,7 +194,7 @@ const updateService = async () => {
 const breadcrumbItems = computed(() => [
   { label: 'Service Groups', path: '#!' },
   { label: serviceGroup.value?.name || '', path: `/admin/service-management/${serviceGroupId}` },
-  { label: name, path: '' }
+  { label: name, path: '' },
 ])
 
 const resetValues = () => {
