@@ -37,7 +37,14 @@ const selectedFilter = ref('전체')
 // 필터 적용된 목록
 const filteredServices = computed(() => {
   if (selectedFilter.value === '전체') return services.value
-  return services.value.filter((item) => item.status === selectedFilter.value)
+
+  return services.value.filter((item) => {
+    if (selectedFilter.value === '예약 가능') {
+      return item.status === 'IN_PROGRESS'
+    } else if (selectedFilter.value === '예약 불가') {
+      return item.status === 'PROGRESS_BEFORE' || item.status === 'CLOSED'
+    }
+  })
 })
 
 // 필터 드롭다운 메뉴 선택
@@ -159,7 +166,7 @@ onMounted(() => {
 
 /* 전체 컨테이너 */
 .service-item-container {
-  @apply max-w-6xl mx-auto flex flex-col px-10 pt-10 pb-0 bg-white h-screen overflow-hidden;
+  @apply max-w-6xl mx-auto flex flex-col px-10 pt-10 pb-0 bg-white overflow-hidden;
 }
 
 /* 헤더 */

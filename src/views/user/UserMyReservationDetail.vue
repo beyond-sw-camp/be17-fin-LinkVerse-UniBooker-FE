@@ -54,7 +54,7 @@ const getDate = (item) => {
   else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
 }
 
-onMounted(() => {
+onMounted(() => { 
   getUserReservation()
 })
 </script>
