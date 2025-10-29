@@ -9,6 +9,16 @@ const getServiceReservations = async (serviceId) => {
   }
 }
 
+const getServiceReservationDetail = async (reservationId) => {
+  try {
+    const response = await axiosInstance.get(`/api/reservation/detail/${reservationId}`)
+    return response.data.data
+  } catch (error) {
+    console.log('예약 상세 조회 실패:', error)
+  }
+}
+
 export default {
   getServiceReservations,
+  getServiceReservationDetail,
 }

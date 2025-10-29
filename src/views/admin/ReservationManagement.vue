@@ -62,7 +62,6 @@ const colorPalette = [
 /** 상태 */
 const loading = ref(true)
 const services = ref([])
-const resources = ref([])
 const reservations = ref([])
 
 // ✅ 서비스 목록 불러오기
@@ -83,6 +82,7 @@ const getServices = async () => {
     }
 
     console.log('reservations:', reservations.value)
+    loading.value = false
   } catch (error) {
     console.error('getServices error:', error)
   }
@@ -109,6 +109,11 @@ const getReservations = async (serviceId, color) => {
     console.error(`getReservations(${serviceId}) error:`, error)
     return []
   }
+}
+
+const getReservationDetail = async (reservationId) => {
+  const selectedReservationDetail = await reservationApi.getServiceReservationDetail(reservationId)
+  console.log(selectedReservationDetail)
 }
 
 /** 시간 슬롯 (00:00 ~ 23:00, 1시간 단위) */
@@ -146,7 +151,7 @@ const dateToStr = (date) => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
-  return `${y}.${m}.${d}`
+  return `${y}-${m}-${d}`
 }
 
 /** 현재 날짜 문자열 */
@@ -272,8 +277,24 @@ const selectedReservations = computed(() => {
 // ========== 이벤트 핸들러 ==========
 
 /** 예약 카드 클릭 - 상세 모달 열기 */
-const openDetailModal = (reservation) => {
-  selectedReservation.value = reservation
+const openDetailModal = async (reservation) => {
+  const reservationDetail = await reservationApi.getServiceReservationDetail(reservation.id)
+  selectedReservation.value = {
+    id: reservationDetail.id,
+    userName: reservationDetail.userName,
+    reservationDate: reservationDetail.startDate.split('T')[0], // YYYY-MM-DD
+    startTime: reservationDetail.startDate.split('T')[1].slice(0, 5), // HH:MM
+    endTime: reservationDetail.endDate.split('T')[1].slice(0, 5), // HH:MM
+    attendeeCount: reservationDetail.headCount,
+    customFieldValues: reservationDetail.customFieldValues || [],
+    resourceName: reservationDetail.resourceName,
+    resourceGroupName: reservationDetail.resourceGroupName,
+    thumbnail: reservationDetail.thumbnail,
+    createdAt: reservationDetail.createdAt,
+    updatedAt: reservationDetail.updatedAt,
+    status: reservationDetail.status,
+  }
+  console.log(selectedReservation.value)
   detailModalOpen.value = true
 }
 
@@ -384,13 +405,13 @@ const getCellHeight = (cellReservations) => {
 
 onMounted(() => {
   getServices()
-  loading.value = false
+  console.log('getReservationsAt result:', getReservationsAt('2025-10-29', 14, 0))
 })
 </script>
 
 <template>
   <AdminLayout>
-    <div v-if="!loading.value">
+    <div v-if="!loading.valueOf()">
       <div class="reservation-management-container">
         <!-- 브레드크럼 -->
         <div class="breadcrumb">
@@ -441,7 +462,7 @@ onMounted(() => {
             <div class="filter-dropdown">
               <select v-model="selectedResourceFilter" class="filter-select">
                 <option value="all">전체</option>
-                <option v-for="service in services.value" :key="service.id" :value="service.id">
+                <option v-for="service in services" :key="service.id" :value="service.id">
                   {{ service.name }}
                 </option>
               </select>
@@ -686,9 +707,16 @@ onMounted(() => {
             </div>
 
             <!-- 인원수 -->
-            <div class="detail-field">
-              <label class="detail-label">인원수</label>
-              <input type="text" value="5명" class="detail-input" disabled />
+            <!-- 고객 입력 항목(customFieldValues) -->
+            <div v-if="selectedReservation.customFieldValues?.length">
+              <div
+                v-for="field in selectedReservation.customFieldValues"
+                :key="field.fieldId"
+                class="detail-field"
+              >
+                <label class="detail-label">{{ field.fieldName }}</label>
+                <input type="text" :value="field.fieldValue" class="detail-input" disabled />
+              </div>
             </div>
           </div>
 
