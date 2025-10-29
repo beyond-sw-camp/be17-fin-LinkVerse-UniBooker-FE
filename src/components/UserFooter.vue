@@ -49,7 +49,7 @@ const goToContact = () => {
 }
 
 .user-footer-container {
-  @apply max-w-7xl mx-auto px-6 flex flex-col items-center;
+  @apply max-w-7xl mx-auto px-6 pb-[30px] flex flex-col items-center min-h-[150px] justify-center;
 }
 
 .user-footer-nav {
