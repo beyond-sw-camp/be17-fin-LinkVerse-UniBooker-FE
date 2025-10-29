@@ -1,10 +1,12 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ReservationApi from '@/services/user/reservation_api'
 
 const route = useRoute()
 const router = useRouter()
 
-const reservationData = route.state?.reservation // state로 받으면 새로고침 했을 때 사라짐.. 나중에 pinia나 어떻게 보여줄지 생각
+const reservationData = reactive({})
 
 const goToReservationDetail = () => {
   router.push('')
@@ -13,6 +15,17 @@ const goToReservationDetail = () => {
 const goToHome = () => {
   router.push('')
 }
+
+// 예약 상세 조회
+const getReservation = async () => {
+  const response = await ReservationApi.getUserReservation(route.params.reservationId)
+  Object.assign(reservationData, response.data)
+}
+
+onMounted(() => {
+  console.log('🌟예약 완료 페이지')
+  getReservation()
+})
 </script>
 
 <template>

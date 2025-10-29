@@ -42,7 +42,6 @@ const selectedRow = ref(null)                                   // 선택한 좌
 const selectedCol = ref(null)                                   // 선택한 좌석 열
 
 // 예약 요청 폼
-const reservationRes = reactive({})             // 예약하고 받은 응답 정보
 const reservationForm = computed(() => ({
   date: selectedDate.value,
   time: selectedTime.value,
@@ -132,6 +131,7 @@ const getResourceReservations = async (startDate, endDate) => {
   if (response && response.isSuccess) {
     resourceReservations.value = response.data.list
     reservedTimes.value = response.data.list.map(res => res.startDate.slice(11, 16)) // 예약된 시간만 추출해서 배열로 저장 "09:00"
+    console.log('🌟예약된 시간 추출 : ', reservedTimes)
   } else {
     alert('잘못된 요청입니다.')
   }
@@ -140,7 +140,7 @@ const getResourceReservations = async (startDate, endDate) => {
 // --- 예약 요청
 const postReserve = async (reservationForm) => {
   const response = await ReservationApi.reserve(route.params.itemId, reservationForm)
-  Object.assign(reservationRes, response.data)
+  return response.data
 }
 
 // ================ function ==================
@@ -207,6 +207,9 @@ watch(selectedDate, () => {
   selectedCol.value = null
   selectedHeadCount.value = 1
   availableTimes.value = []
+  userCustomFieldValuesForm.forEach(field => {
+    field.values = field.values.map(() => '')  // 기존 값들을 모두 빈 문자열로 초기화
+  })
 
   if (!selectedDate.value || yearMonthTimeSlots.value.length === 0) return
 
@@ -239,13 +242,32 @@ watch(selectedTime, () => {
   selectedRow.value = null
   selectedCol.value = null
   selectedHeadCount.value = 1
+  userCustomFieldValuesForm.forEach(field => {
+    field.values = field.values.map(() => '') 
+  })
 })
-
 
 // --- 년/월 선택 변경에 따른 예외 포함 운영 가능 시간 변경
 watch([selectedYear, selectedMonth], async ([year, month]) => {
   await getYearMonthTimeSlots(route.params.itemId, year, month)
 })
+
+// --- 해당 시간대 마감 여부 계산
+const isTimeClosed = (time) => {
+  if (service.category === 'RESERVATION') {
+    return reservedTimes.value.includes(time)
+  }
+
+  if (service.category === 'SEAT') {
+    // 현재 시간대에 예약된 좌석 수
+    const reservedCount = resourceReservations.value.filter((r) => r.startDate.slice(11, 16) === time).length
+
+    // 좌석 전부 예약되었으면 마감
+    return reservedCount >= service.capacity
+  }
+
+  return false
+}
 
 // --- 인원수 증감
 const increase = () => { if (selectedHeadCount.value < service.capacity) selectedHeadCount.value += 1 }
@@ -261,28 +283,27 @@ const selectSeat = ({ row, col }) => {
 const reserve = () => {
   const confirmed = window.confirm('예약을 하시겠습니까?')
   if (!confirmed) return // 취소
-
-  postReserve(reservationForm.value)
+  const reservationRes = postReserve(reservationForm.value)
 
   const slug = route.params.companySlug || authStore.companySlug || 'default'
   router.push({
-    path: `/c/${slug}/reservation/completed`,
-    state: { reservation: reservationRes }
+    path: `/c/${slug}/reservation/completed/${reservationRes.id}`,
   })
 }
 
 
 // =============== 화면 로드시 데이터 조회 ===============
 onMounted(() => {
-  console.log('🌟 화면 로드시 예약 폼 : ', reservationForm)
-
   const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10) // yyyy-mm-dd
+
   getService()
   getResourceCustomFieldValues()
   getUserCustomFields()
   getTimeSlots()
   getExceptionTimeSlots()
   getYearMonthTimeSlots(route.params.itemId, today.getFullYear(), today.getMonth() + 1)
+  getResourceReservations(toLocalDateTimeStart(todayStr), toLocalDateTimeEnd(todayStr))
 })
 </script>
 
@@ -345,7 +366,7 @@ onMounted(() => {
 
       <!-- 오른쪽 영역 : 사용자 예약 박스 -->
       <div class="reservation-box">
-        <div class="form-group">
+        <div v-if="(service.category === 'RESERVATION' || service.category === 'SEAT')" class="form-group">
           <label>날짜</label>
            <div class="relative" @click="toggleCalendar">
             <Input type="text" class="cursor-pointer" v-model="selectedDate" readonly />
@@ -359,9 +380,10 @@ onMounted(() => {
           <label>시간</label>
           <div v-if="availableTimes.length" class="time-grid">
             <button v-for="(time, index) in availableTimes" :key="index" 
-            
-            :class="['time-btn', { active: selectedTime === time.startTime}]" 
-            @click="(selectedTime = time.startTime)">
+              :disabled="isTimeClosed(time.startTime)"
+              :class="['time-btn', { active: selectedTime === time.startTime, block: isTimeClosed(time.startTime)}]" 
+              @click="!isTimeClosed(time.startTime) && (selectedTime = time.startTime)"
+            >
               {{ time.startTime }}
             </button>
           </div>
@@ -490,6 +512,10 @@ onMounted(() => {
 
 .time-btn.active {
   @apply bg-blue-600 text-white border-blue-600;
+}
+
+.time-btn.block {
+  @apply opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300
 }
 
 /* 인원수 */
