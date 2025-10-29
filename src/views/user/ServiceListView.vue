@@ -90,7 +90,11 @@ onMounted(() => {
     <div class="service-item-container">
       <!-- 헤더 -->
       <div class="service-header">
-        <img :src="serviceGroup.thumbnail || '/assets/images/no-image.png'"  alt="리소스 이미지" class="service-header-img" />
+        <img
+          :src="serviceGroup.thumbnail || '/assets/images/no-image.png'"
+          alt="리소스 이미지"
+          class="service-header-img"
+        />
 
         <div class="service-header-right">
           <!-- 서비스 설명 -->
@@ -114,41 +118,50 @@ onMounted(() => {
       </div>
 
       <!-- 서비스 항목 카드 목록 -->
+      <!-- 서비스 항목 카드 목록 -->
       <div class="service-item-grid">
-        <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
-          <img :src="item.resourceImage  || '/assets/images/no-image.png'" :alt="item.name" class="service-item-card-img" />
-          <div class="service-item-card-body">
-            <div class="service-item-card-header">
-              <h3 class="service-item-card-name">{{ item.name }}</h3>
-              <span class="status">
-                <span
-                  class="dot"
-                  :class="{
-                    'dot-active': item.status === 'IN_PROGRESS',
-                    'dot-end': item.status !== 'IN_PROGRESS',
-                  }"
-                />
-                {{ item.status === 'IN_PROGRESS' ? '예약 가능' : '예약 불가' }}
-              </span>
+        <template v-if="paginatedServices.length > 0">
+          <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
+            <img
+              :src="item.resourceImage || '/assets/images/no-image.png'"
+              :alt="item.name"
+              class="service-item-card-img"
+            />
+            <div class="service-item-card-body">
+              <div class="service-item-card-header">
+                <h3 class="service-item-card-name">{{ item.name }}</h3>
+                <span class="status">
+                  <span
+                    class="dot"
+                    :class="{
+                      'dot-active': item.status === 'IN_PROGRESS',
+                      'dot-end': item.status !== 'IN_PROGRESS',
+                    }"
+                  />
+                  {{ item.status === 'IN_PROGRESS' ? '예약 가능' : '예약 불가' }}
+                </span>
+              </div>
+              <p class="service-item-card-desc">
+                {{ item.location }} | 최대인원 {{ item.capacity }}명
+              </p>
             </div>
-            <p class="service-item-card-desc">
-              {{ item.location }} | 최대인원 {{ item.capacity }}명
-            </p>
-          </div>
 
-          <!-- 버튼 -->
-          <button
-            class="reservation-btn"
-            :class="item.status === 'IN_PROGRESS' ? 'btn-available' : 'btn-disabled'"
-            @click="goToServiceDetail(item)"
-          >
-            {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
-          </button>
-        </div>
+            <button
+              class="reservation-btn"
+              :class="item.status === 'IN_PROGRESS' ? 'btn-available' : 'btn-disabled'"
+              @click="goToServiceDetail(item)"
+            >
+              {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
+            </button>
+          </div>
+        </template>
+
+        <!-- 필터링 결과 없음 -->
+        <div v-else class="no-service-message">조회된 서비스가 없습니다.</div>
       </div>
 
       <!-- 페이지네이션 -->
-      <div class="service-item-pagination">
+      <div v-if="paginatedServices.length > 0" class="service-item-pagination">
         <PageNation
           v-model="currentPage"
           :total-items="filteredServices.length"
@@ -260,5 +273,9 @@ onMounted(() => {
 /* 페이지네이션 */
 .service-item-pagination {
   @apply flex justify-center items-center py-4;
+}
+
+.no-service-message {
+  @apply flex justify-center items-center min-h-[300px] border border-gray-line rounded-[5px]
 }
 </style>
