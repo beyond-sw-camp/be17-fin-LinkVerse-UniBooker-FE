@@ -234,7 +234,7 @@ const formatDate = (dateString) => {
 }
 
 .admin-status-field {
-  @apply flex items-center justify-center max-w-xsdddddd w-full mb-5 px-5;
+  @apply flex items-center justify-center max-w-xs w-full mb-5 px-5;
 }
 
 .admin-status-label {
