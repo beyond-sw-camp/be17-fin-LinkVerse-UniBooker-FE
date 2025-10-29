@@ -60,6 +60,7 @@ const colorPalette = [
 ]
 
 /** 상태 */
+const loading = ref(true)
 const services = ref([])
 const resources = ref([])
 const reservations = ref([])
@@ -383,102 +384,130 @@ const getCellHeight = (cellReservations) => {
 
 onMounted(() => {
   getServices()
+  loading.value = false
 })
 </script>
 
 <template>
   <AdminLayout>
-    <div class="reservation-management-container">
-      <!-- 브레드크럼 -->
-      <div class="breadcrumb">
-        <span class="breadcrumb-item">서비스 그룹</span>
-        <span class="breadcrumb-separator">></span>
-        <span class="breadcrumb-item">회의실 예약</span>
-      </div>
-
-      <!-- 제목 -->
-      <h1 class="page-title">예약 현황</h1>
-
-      <!-- 상단 컨트롤 바 -->
-      <div class="control-bar">
-        <!-- 좌측: 월 이동 -->
-        <div class="period-controls">
-          <button @click="prevPeriod" class="period-nav-btn">&lt;</button>
-          <button @click="openDatePicker" class="period-label-btn">
-            <span class="period-label">{{ currentPeriodLabel }}</span>
-          </button>
-          <button @click="nextPeriod" class="period-nav-btn">&gt;</button>
+    <div v-if="!loading.value">
+      <div class="reservation-management-container">
+        <!-- 브레드크럼 -->
+        <div class="breadcrumb">
+          <span class="breadcrumb-item">서비스 그룹</span>
+          <span class="breadcrumb-separator">></span>
+          <span class="breadcrumb-item">회의실 예약</span>
         </div>
 
-        <!-- 우측: 뷰 전환 + 필터 -->
-        <div class="right-controls">
-          <!-- 뷰 전환 탭 -->
-          <div class="view-tabs">
-            <button @click="viewMode = 'day'" :class="['view-tab', { active: viewMode === 'day' }]">
-              Day
+        <!-- 제목 -->
+        <h1 class="page-title">예약 현황</h1>
+
+        <!-- 상단 컨트롤 바 -->
+        <div class="control-bar">
+          <!-- 좌측: 월 이동 -->
+          <div class="period-controls">
+            <button @click="prevPeriod" class="period-nav-btn">&lt;</button>
+            <button @click="openDatePicker" class="period-label-btn">
+              <span class="period-label">{{ currentPeriodLabel }}</span>
             </button>
-            <button
-              @click="viewMode = 'week'"
-              :class="['view-tab', { active: viewMode === 'week' }]"
-            >
-              Week
-            </button>
-            <button
-              @click="viewMode = 'month'"
-              :class="['view-tab', { active: viewMode === 'month' }]"
-            >
-              Month
-            </button>
+            <button @click="nextPeriod" class="period-nav-btn">&gt;</button>
           </div>
 
-          <!-- 리소스 필터 드롭다운 -->
-          <div class="filter-dropdown">
-            <select v-model="selectedResourceFilter" class="filter-select">
-              <option value="all">전체</option>
-              <option
-                v-for="resource in resources"
-                :key="resource.resourceId"
-                :value="resource.resourceId"
+          <!-- 우측: 뷰 전환 + 필터 -->
+          <div class="right-controls">
+            <!-- 뷰 전환 탭 -->
+            <div class="view-tabs">
+              <button
+                @click="viewMode = 'day'"
+                :class="['view-tab', { active: viewMode === 'day' }]"
               >
-                {{ resource.name }}
-              </option>
-            </select>
+                Day
+              </button>
+              <button
+                @click="viewMode = 'week'"
+                :class="['view-tab', { active: viewMode === 'week' }]"
+              >
+                Week
+              </button>
+              <button
+                @click="viewMode = 'month'"
+                :class="['view-tab', { active: viewMode === 'month' }]"
+              >
+                Month
+              </button>
+            </div>
+
+            <!-- 리소스 필터 드롭다운 -->
+            <div class="filter-dropdown">
+              <select v-model="selectedResourceFilter" class="filter-select">
+                <option value="all">전체</option>
+                <option v-for="service in services.value" :key="service.id" :value="service.id">
+                  {{ service.name }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 캘린더 영역 -->
-      <div class="calendar-wrapper">
-        <div class="calendar-container">
-          <!-- Week 뷰 -->
-          <div v-if="viewMode === 'week'" class="week-view">
-            <!-- 헤더 -->
-            <div class="week-header">
-              <div class="time-column-header"></div>
-              <div v-for="day in weekDays" :key="day.date" class="day-header">
-                <div class="day-label">{{ day.dayLabel }} {{ day.dayNum }}</div>
+        <!-- 캘린더 영역 -->
+        <div class="calendar-wrapper">
+          <div class="calendar-container">
+            <!-- Week 뷰 -->
+            <div v-if="viewMode === 'week'" class="week-view">
+              <!-- 헤더 -->
+              <div class="week-header">
+                <div class="time-column-header"></div>
+                <div v-for="day in weekDays" :key="day.date" class="day-header">
+                  <div class="day-label">{{ day.dayLabel }} {{ day.dayNum }}</div>
+                </div>
+              </div>
+
+              <!-- 시간 슬롯 그리드 -->
+              <div class="week-grid">
+                <div v-for="slot in timeSlots" :key="slot.time" class="time-row">
+                  <!-- 시간 라벨 -->
+                  <div class="time-label">{{ slot.time }}</div>
+
+                  <!-- 요일별 셀 -->
+                  <div
+                    v-for="day in weekDays"
+                    :key="day.date + '-' + slot.time"
+                    class="time-cell"
+                    :style="{
+                      minHeight: getCellHeight(getReservationsAt(day.date, slot.hour, slot.minute)),
+                    }"
+                    @click="selectTimeSlot(day.date, slot.hour, slot.minute)"
+                  >
+                    <!-- 예약 뱃지 -->
+                    <div
+                      v-for="reservation in getReservationsAt(day.date, slot.hour, slot.minute)"
+                      :key="reservation.id"
+                      class="reservation-badge"
+                      :style="{ backgroundColor: reservation.resourceColor }"
+                    >
+                      <span class="badge-dot"></span>
+                      <span class="badge-text">{{ reservation.resourceName }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <!-- 시간 슬롯 그리드 -->
-            <div class="week-grid">
-              <div v-for="slot in timeSlots" :key="slot.time" class="time-row">
-                <!-- 시간 라벨 -->
+            <!-- Day 뷰 -->
+            <div v-if="viewMode === 'day'" class="day-view">
+              <div v-for="slot in timeSlots" :key="slot.time" class="day-time-row">
                 <div class="time-label">{{ slot.time }}</div>
-
-                <!-- 요일별 셀 -->
                 <div
-                  v-for="day in weekDays"
-                  :key="day.date + '-' + slot.time"
-                  class="time-cell"
+                  class="day-time-cell"
                   :style="{
-                    minHeight: getCellHeight(getReservationsAt(day.date, slot.hour, slot.minute)),
+                    minHeight: getCellHeight(
+                      getReservationsAt(currentDateStr, slot.hour, slot.minute),
+                    ),
                   }"
-                  @click="selectTimeSlot(day.date, slot.hour, slot.minute)"
+                  @click="selectTimeSlot(currentDateStr, slot.hour, slot.minute)"
                 >
-                  <!-- 예약 뱃지 -->
                   <div
-                    v-for="reservation in getReservationsAt(day.date, slot.hour, slot.minute)"
+                    v-for="reservation in getReservationsAt(currentDateStr, slot.hour, slot.minute)"
                     :key="reservation.id"
                     class="reservation-badge"
                     :style="{ backgroundColor: reservation.resourceColor }"
@@ -489,214 +518,189 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Day 뷰 -->
-          <div v-if="viewMode === 'day'" class="day-view">
-            <div v-for="slot in timeSlots" :key="slot.time" class="day-time-row">
-              <div class="time-label">{{ slot.time }}</div>
-              <div
-                class="day-time-cell"
-                :style="{
-                  minHeight: getCellHeight(
-                    getReservationsAt(currentDateStr, slot.hour, slot.minute),
-                  ),
-                }"
-                @click="selectTimeSlot(currentDateStr, slot.hour, slot.minute)"
-              >
-                <div
-                  v-for="reservation in getReservationsAt(currentDateStr, slot.hour, slot.minute)"
-                  :key="reservation.id"
-                  class="reservation-badge"
-                  :style="{ backgroundColor: reservation.resourceColor }"
-                >
-                  <span class="badge-dot"></span>
-                  <span class="badge-text">{{ reservation.resourceName }}</span>
-                </div>
+            <!-- Month 뷰 -->
+            <div v-if="viewMode === 'month'" class="month-view">
+              <!-- 요일 헤더 -->
+              <div class="month-weekday-header">
+                <div class="month-weekday-label text-red-600">Sun</div>
+                <div class="month-weekday-label">Mon</div>
+                <div class="month-weekday-label">Tue</div>
+                <div class="month-weekday-label">Wed</div>
+                <div class="month-weekday-label">Thu</div>
+                <div class="month-weekday-label">Fri</div>
+                <div class="month-weekday-label text-primary">Sat</div>
               </div>
-            </div>
-          </div>
 
-          <!-- Month 뷰 -->
-          <div v-if="viewMode === 'month'" class="month-view">
-            <!-- 요일 헤더 -->
-            <div class="month-weekday-header">
-              <div class="month-weekday-label text-red-600">Sun</div>
-              <div class="month-weekday-label">Mon</div>
-              <div class="month-weekday-label">Tue</div>
-              <div class="month-weekday-label">Wed</div>
-              <div class="month-weekday-label">Thu</div>
-              <div class="month-weekday-label">Fri</div>
-              <div class="month-weekday-label text-primary">Sat</div>
-            </div>
+              <!-- 날짜 그리드 -->
+              <div class="month-grid">
+                <!-- 빈 칸 -->
+                <div v-for="n in blanksBefore" :key="'blank-' + n" class="month-cell-blank"></div>
 
-            <!-- 날짜 그리드 -->
-            <div class="month-grid">
-              <!-- 빈 칸 -->
-              <div v-for="n in blanksBefore" :key="'blank-' + n" class="month-cell-blank"></div>
-
-              <!-- 날짜 셀 -->
-              <div
-                v-for="day in daysInMonth"
-                :key="day.dateStr"
-                class="month-cell"
-                @click="selectDate(day.dateStr)"
-              >
+                <!-- 날짜 셀 -->
                 <div
-                  class="month-day-num"
-                  :class="{
-                    'text-red-600': day.dayOfWeek === 0,
-                    'text-primary': day.dayOfWeek === 6,
-                  }"
+                  v-for="day in daysInMonth"
+                  :key="day.dateStr"
+                  class="month-cell"
+                  @click="selectDate(day.dateStr)"
                 >
-                  {{ day.dayNum }}
-                </div>
-                <div class="month-badges">
                   <div
-                    v-for="(reservation, index) in getReservationsAtDate(day.dateStr).slice(0, 3)"
-                    :key="reservation.id"
-                    class="reservation-badge-small"
-                    :style="{ backgroundColor: reservation.resourceColor }"
+                    class="month-day-num"
+                    :class="{
+                      'text-red-600': day.dayOfWeek === 0,
+                      'text-primary': day.dayOfWeek === 6,
+                    }"
                   >
-                    {{ reservation.resourceName }}
+                    {{ day.dayNum }}
                   </div>
-                  <div v-if="getReservationsAtDate(day.dateStr).length > 3" class="more-badge">
-                    +{{ getReservationsAtDate(day.dateStr).length - 3 }}
+                  <div class="month-badges">
+                    <div
+                      v-for="(reservation, index) in getReservationsAtDate(day.dateStr).slice(0, 3)"
+                      :key="reservation.id"
+                      class="reservation-badge-small"
+                      :style="{ backgroundColor: reservation.resourceColor }"
+                    >
+                      {{ reservation.resourceName }}
+                    </div>
+                    <div v-if="getReservationsAtDate(day.dateStr).length > 3" class="more-badge">
+                      +{{ getReservationsAtDate(day.dateStr).length - 3 }}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 우측 사이드바 (슬라이드) -->
-        <transition name="slide">
-          <div v-if="sidebarOpen" class="sidebar">
-            <!-- 닫기 버튼 -->
-            <button @click="closeSidebar" class="sidebar-close-btn">&times;</button>
+          <!-- 우측 사이드바 (슬라이드) -->
+          <transition name="slide">
+            <div v-if="sidebarOpen" class="sidebar">
+              <!-- 닫기 버튼 -->
+              <button @click="closeSidebar" class="sidebar-close-btn">&times;</button>
 
-            <!-- 예약 카드 목록 -->
-            <div class="sidebar-content">
-              <div
-                v-for="reservation in selectedReservations"
-                :key="reservation.id"
-                class="reservation-card"
-                :style="{ borderLeftColor: reservation.resourceColor }"
-                @click="openDetailModal(reservation)"
-              >
-                <h3 class="card-title">{{ reservation.resourceName }}</h3>
-                <p class="card-info">
-                  <span class="card-icon">📅</span>
-                  {{ reservation.createdAt }}
-                </p>
-                <p class="card-info">
-                  <span class="card-icon">👤</span>
-                  {{ reservation.userName }}
-                </p>
-              </div>
+              <!-- 예약 카드 목록 -->
+              <div class="sidebar-content">
+                <div
+                  v-for="reservation in selectedReservations"
+                  :key="reservation.id"
+                  class="reservation-card"
+                  :style="{ borderLeftColor: reservation.resourceColor }"
+                  @click="openDetailModal(reservation)"
+                >
+                  <h3 class="card-title">{{ reservation.resourceName }}</h3>
+                  <p class="card-info">
+                    <span class="card-icon">📅</span>
+                    {{ reservation.createdAt }}
+                  </p>
+                  <p class="card-info">
+                    <span class="card-icon">👤</span>
+                    {{ reservation.userName }}
+                  </p>
+                </div>
 
-              <!-- 예약 없음 -->
-              <div v-if="selectedReservations.length === 0" class="no-reservations">
-                선택된 시간대에 예약이 없습니다.
+                <!-- 예약 없음 -->
+                <div v-if="selectedReservations.length === 0" class="no-reservations">
+                  선택된 시간대에 예약이 없습니다.
+                </div>
               </div>
             </div>
-          </div>
-        </transition>
-      </div>
+          </transition>
+        </div>
 
-      <!-- 날짜 픽커 모달 (TODO: 추후 구현) -->
-      <!-- <CreateReservationModal :open="createModalOpen" @close="closeCreateModal" /> -->
+        <!-- 날짜 픽커 모달 (TODO: 추후 구현) -->
+        <!-- <CreateReservationModal :open="createModalOpen" @close="closeCreateModal" /> -->
 
-      <!-- 날짜 픽커 모달 -->
-      <div v-if="showDatePicker" class="date-picker-overlay" @click="closeDatePicker">
-        <div class="date-picker-modal" @click.stop>
-          <div class="date-picker-header">
-            <h3 class="date-picker-title">날짜 선택</h3>
-            <button @click="closeDatePicker" class="date-picker-close-btn">&times;</button>
-          </div>
+        <!-- 날짜 픽커 모달 -->
+        <div v-if="showDatePicker" class="date-picker-overlay" @click="closeDatePicker">
+          <div class="date-picker-modal" @click.stop>
+            <div class="date-picker-header">
+              <h3 class="date-picker-title">날짜 선택</h3>
+              <button @click="closeDatePicker" class="date-picker-close-btn">&times;</button>
+            </div>
 
-          <div class="date-picker-body">
-            <label class="date-picker-label">날짜 선택</label>
-            <input v-model="tempDateValue" type="date" class="date-picker-input" />
-          </div>
+            <div class="date-picker-body">
+              <label class="date-picker-label">날짜 선택</label>
+              <input v-model="tempDateValue" type="date" class="date-picker-input" />
+            </div>
 
-          <div class="date-picker-footer">
-            <button @click="closeDatePicker" class="date-picker-cancel-btn">취소</button>
-            <button @click="applyDatePicker" class="date-picker-confirm-btn">적용</button>
+            <div class="date-picker-footer">
+              <button @click="closeDatePicker" class="date-picker-cancel-btn">취소</button>
+              <button @click="applyDatePicker" class="date-picker-confirm-btn">적용</button>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- 예약 상세 모달 -->
+      <Modal :open="detailModalOpen" @close="closeDetailModal">
+        <div class="detail-modal">
+          <!-- 모달 헤더 -->
+          <div class="detail-modal-header">
+            <h2 class="detail-modal-title">예약 상세</h2>
+            <button @click="closeDetailModal" class="detail-modal-close-btn">✕</button>
+          </div>
+
+          <!-- 모달 본문 -->
+          <div v-if="selectedReservation" class="detail-modal-body">
+            <!-- 예약자 -->
+            <div class="detail-field">
+              <label class="detail-label">예약자 *</label>
+              <input
+                type="text"
+                :value="selectedReservation.userName"
+                class="detail-input"
+                disabled
+              />
+            </div>
+
+            <!-- 예약 일시 -->
+            <div class="detail-field">
+              <label class="detail-label">예약 일시</label>
+              <input
+                type="text"
+                :value="selectedReservation.reservationDate"
+                class="detail-input"
+                disabled
+              />
+            </div>
+
+            <!-- 예약 날짜 -->
+            <div class="detail-field">
+              <label class="detail-label">예약 날짜 *</label>
+              <input
+                type="text"
+                :value="selectedReservation.reservationDate"
+                class="detail-input"
+                disabled
+              />
+            </div>
+
+            <!-- 예약 시간 -->
+            <div class="detail-field">
+              <label class="detail-label">예약 시간 *</label>
+              <input
+                type="text"
+                :value="`${selectedReservation.startTime} ~ ${selectedReservation.endTime}`"
+                class="detail-input"
+                disabled
+              />
+            </div>
+
+            <!-- 인원수 -->
+            <div class="detail-field">
+              <label class="detail-label">인원수</label>
+              <input type="text" value="5명" class="detail-input" disabled />
+            </div>
+          </div>
+
+          <!-- 모달 푸터 -->
+          <div class="detail-modal-footer">
+            <button @click="closeDetailModal" class="detail-cancel-btn">삭제</button>
+            <button @click="closeDetailModal" class="detail-submit-btn">수정</button>
+          </div>
+        </div>
+      </Modal>
     </div>
-
-    <!-- 예약 상세 모달 -->
-    <Modal :open="detailModalOpen" @close="closeDetailModal">
-      <div class="detail-modal">
-        <!-- 모달 헤더 -->
-        <div class="detail-modal-header">
-          <h2 class="detail-modal-title">예약 상세</h2>
-          <button @click="closeDetailModal" class="detail-modal-close-btn">✕</button>
-        </div>
-
-        <!-- 모달 본문 -->
-        <div v-if="selectedReservation" class="detail-modal-body">
-          <!-- 예약자 -->
-          <div class="detail-field">
-            <label class="detail-label">예약자 *</label>
-            <input
-              type="text"
-              :value="selectedReservation.userName"
-              class="detail-input"
-              disabled
-            />
-          </div>
-
-          <!-- 예약 일시 -->
-          <div class="detail-field">
-            <label class="detail-label">예약 일시</label>
-            <input
-              type="text"
-              :value="selectedReservation.reservationDate"
-              class="detail-input"
-              disabled
-            />
-          </div>
-
-          <!-- 예약 날짜 -->
-          <div class="detail-field">
-            <label class="detail-label">예약 날짜 *</label>
-            <input
-              type="text"
-              :value="selectedReservation.reservationDate"
-              class="detail-input"
-              disabled
-            />
-          </div>
-
-          <!-- 예약 시간 -->
-          <div class="detail-field">
-            <label class="detail-label">예약 시간 *</label>
-            <input
-              type="text"
-              :value="`${selectedReservation.startTime} ~ ${selectedReservation.endTime}`"
-              class="detail-input"
-              disabled
-            />
-          </div>
-
-          <!-- 인원수 -->
-          <div class="detail-field">
-            <label class="detail-label">인원수</label>
-            <input type="text" value="5명" class="detail-input" disabled />
-          </div>
-        </div>
-
-        <!-- 모달 푸터 -->
-        <div class="detail-modal-footer">
-          <button @click="closeDetailModal" class="detail-cancel-btn">삭제</button>
-          <button @click="closeDetailModal" class="detail-submit-btn">수정</button>
-        </div>
-      </div>
-    </Modal>
+    <div v-else>loading...</div>
   </AdminLayout>
 </template>
 

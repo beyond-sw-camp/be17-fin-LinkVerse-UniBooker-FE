@@ -36,6 +36,18 @@ const getUserReservation = async (reservationId) => {
   return data
 }
 
+/** 예약하기 */
+const reserve = async (resourceId, formData) => {
+  let data = {}
+
+  await axiosInstance
+    .post(`api/reservation/${resourceId}`, formData)
+  
+  return data
+}
+
 export default {
-    getUserReservations, getUserReservation,
+  getUserReservations,
+  getUserReservation,
+  reserve
 }

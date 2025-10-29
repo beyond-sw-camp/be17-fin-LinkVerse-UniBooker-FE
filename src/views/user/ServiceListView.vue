@@ -61,10 +61,10 @@ const paginatedServices = computed(() => {
 
 // 예약 버튼 클릭시 서비스 항목 상세 페이지
 const goToServiceDetail = (item) => {
-  if (item.status !== '예약 가능') return
-  router.push({
-    path: `/c/${slug}/serivce/detail/${item.id}`,
-  })
+  if (item.status !== 'IN_PROGRESS') return
+  const slug = route.params.companySlug || authStore.companySlug || 'default'
+  const serviceGroupId = route.params.serviceGroupId
+  router.push({ path: `/c/${slug}/services/${serviceGroupId}/detail/${item.id}` })
 }
 
 // 화면 로드시 데이터 받아오기

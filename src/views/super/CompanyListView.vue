@@ -17,10 +17,8 @@ const searchKeyword = ref('')
 // ===== 드롭다운 옵션 =====
 const statusOptions = [
   { value: '', label: '전체' },
-  { value: 'PENDING', label: '승인 대기' },
   { value: 'ACTIVE', label: '활성' },
   { value: 'SUSPENDED', label: '정지' },
-  { value: 'REJECTED', label: '승인 거절' },
 ]
 
 // ===== API 호출 =====
@@ -115,26 +113,28 @@ onMounted(() => {
 
 <template>
   <div class="page-container">
-    <h1 class="components-page-title">플랫폼 이용 기업 목록</h1>
+    <div class="header-with-controls">
+      <h3 class="page-title">플랫폼 이용 기업 목록</h3>
 
-    <div class="controls-bar">
-      <Dropdown
-        v-model="selectedStatus"
-        :options="statusOptions"
-        placeholder="전체"
-        @update:modelValue="handleStatusChange"
-        class="w-40"
-      />
+      <div class="controls-group">
+        <Input
+          v-model="searchKeyword"
+          type="text"
+          placeholder="기업명 또는 슬러그 검색"
+          @keyup.enter="handleSearch"
+          class="search-bar h-[35px]"
+        />
 
-      <Input
-        v-model="searchKeyword"
-        type="text"
-        placeholder="기업명 또는 슬러그 검색"
-        @keyup.enter="handleSearch"
-        class="search-bar"
-      />
+        <Dropdown
+          v-model="selectedStatus"
+          :options="statusOptions"
+          placeholder="전체"
+          @update:modelValue="handleStatusChange"
+          class="w-40 custom-dropdown"
+        />
 
-      <button @click="handleSearch" class="search-button">검색</button>
+        <button @click="handleSearch" class="search-button h-[35px]">검색</button>
+      </div>
     </div>
 
     <div class="components-white-container">
@@ -199,19 +199,30 @@ onMounted(() => {
 
 <style scoped>
 .page-container {
-  @apply flex flex-col gap-4;
+  @apply flex flex-col gap-1 py-5;
 }
 
-.controls-bar {
+/* 제목과 컨트롤을 같은 줄에 배치 */
+.header-with-controls {
+  @apply flex justify-between items-center;
+}
+
+/* 제목 스타일 */
+.page-title {
+  @apply text-2xl font-semibold text-text;
+}
+
+/* 검색/필터 그룹 */
+.controls-group {
   @apply flex gap-3 items-center;
 }
 
 .search-bar {
-  @apply ml-auto w-64;
+  @apply w-64;
 }
 
 .search-button {
-  @apply px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover transition-colors;
+  @apply px-4 bg-primary text-white rounded hover:bg-primary-hover transition-colors;
 }
 
 .list-row {
@@ -228,5 +239,9 @@ onMounted(() => {
 
 .page-info {
   @apply text-sm text-gray-600;
+}
+
+.custom-dropdown :deep(.dropdown-selected-container) {
+  @apply !h-[35px] !pt-0 !pb-0 !flex !items-center;
 }
 </style>
