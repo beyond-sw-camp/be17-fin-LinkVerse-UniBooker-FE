@@ -116,6 +116,30 @@ const updateManagerStatus = async (userId, status) => {
   return response.data
 }
 
+/**
+ * 특정 기업의 서비스 그룹 목록 조회
+ */
+const getCompanyResourceGroups = async (companyId) => {
+  const response = await axiosInstance.get(`/api/resource-group/company/${companyId}`)
+  return response.data
+}
+
+/**
+ * 서비스 그룹 활성화
+ */
+const activateResourceGroup = async (resourceGroupId) => {
+  const response = await axiosInstance.patch(`/api/resource-group/${resourceGroupId}/activate`)
+  return response.data
+}
+
+/**
+ * 서비스 그룹 비활성화
+ */
+const deactivateResourceGroup = async (resourceGroupId) => {
+  const response = await axiosInstance.patch(`/api/resource-group/${resourceGroupId}/deactivate`)
+  return response.data
+}
+
 export default {
   // 인증
   login,
@@ -135,5 +159,10 @@ export default {
   getAllAdmins,
 
   // 계정 상태 변경
-  updateAdminStatus
+  updateAdminStatus,
+
+  // 서비스 그룹 관리
+  getCompanyResourceGroups,
+  activateResourceGroup,
+  deactivateResourceGroup,
 }

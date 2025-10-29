@@ -24,13 +24,11 @@ const fetchManagers = async () => {
     const response = await superApi.getCompanyManagers(companyId.value)
 
     if (response.isSuccess) {
-      managers.value = response.data.managers // ← .managers 추가
-      console.log('✅ 관리자 목록:', managers.value)
+      managers.value = response.data.managers
     } else {
       error.value = response.message || '데이터를 불러오는 데 실패했습니다.'
     }
   } catch (err) {
-    console.error('❌ 관리자 목록 조회 실패:', err)
     error.value = '서버와의 연결에 실패했습니다.'
   } finally {
     loading.value = false
@@ -57,7 +55,6 @@ const handleStatusChange = async (manager, newStatus) => {
       alert(`상태 변경에 실패했습니다: ${response.message}`)
     }
   } catch (err) {
-    console.error('❌ 상태 변경 실패:', err)
     alert('상태 변경 중 오류가 발생했습니다.')
   }
 }
@@ -72,6 +69,17 @@ const formatDateTime = (dateString) => {
 }
 
 /**
+ * 역할 뱃지 CSS 클래스 반환
+ */
+const getRoleBadgeClass = (role) => {
+  const roleMap = {
+    ADMIN: 'px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium',
+    MANAGER: 'px-2 py-1 bg-gray-200 text-gray-800 rounded text-xs font-medium',
+  }
+  return roleMap[role] || 'px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs font-medium'
+}
+
+/**
  * 역할 텍스트 변환
  */
 const getRoleText = (role) => {
@@ -79,15 +87,29 @@ const getRoleText = (role) => {
 }
 
 /**
+ * 상태 뱃지 CSS 클래스 반환
+ */
+const getStatusBadgeClass = (status) => {
+  const statusMap = {
+    ACTIVE: 'bg-green-100 text-green-800',
+    INACTIVE: 'bg-gray-100 text-gray-800',
+    SUSPENDED: 'bg-red-100 text-red-800',
+    DELETED: 'bg-red-100 text-red-800',
+  }
+  return `px-2 py-1 rounded text-xs font-medium ${statusMap[status] || 'bg-gray-100 text-gray-800'}`
+}
+
+/**
  * 상태 텍스트 변환
  */
 const getStatusText = (status) => {
-  const statusMap = {
+  const map = {
     ACTIVE: '활성',
-    INACTIVE: '비활성',
-    SUSPENDED: '정지',
+    INACTIVE: '승인대기',
+    SUSPENDED: ' 정지 ',
+    DELETED: ' 삭제 ',
   }
-  return statusMap[status] || status
+  return map[status] || status
 }
 
 onMounted(() => {
@@ -103,6 +125,7 @@ onMounted(() => {
       { label: '관리자 계정 목록' },
     ]"
   />
+  <span class="components-page-title">관리자 계정 목록</span>
 
   <div class="components-white-container">
     <!-- 로딩 상태 -->
@@ -139,12 +162,20 @@ onMounted(() => {
         <tbody>
           <tr v-for="manager in managers" :key="manager.userId">
             <td>{{ manager.name }}</td>
-            <td>{{ getRoleText(manager.role) }}</td>
-            <td>{{ manager.email }}</td>
-            <td>{{ manager.phone }}</td>
-            <td>{{ getStatusText(manager.status) }}</td>
-            <td>{{ formatDateTime(manager.createdAt) }}</td>
-            <td>{{ formatDateTime(manager.updatedAt) }}</td>
+            <td>
+              <span :class="getRoleBadgeClass(manager.role)">
+                {{ getRoleText(manager.role) }}
+              </span>
+            </td>
+            <td class="info-text">{{ manager.email }}</td>
+            <td class="info-text">{{ manager.phone || '-' }}</td>
+            <td>
+              <span :class="getStatusBadgeClass(manager.status)">
+                {{ getStatusText(manager.status) }}
+              </span>
+            </td>
+            <td class="info-text">{{ formatDateTime(manager.createdAt) }}</td>
+            <td class="info-text">{{ formatDateTime(manager.updatedAt) }}</td>
             <td>
               <div class="action-buttons">
                 <!-- ACTIVE 상태일 때 -->
@@ -166,6 +197,9 @@ onMounted(() => {
                 >
                   활성화
                 </Button>
+
+                <!-- INACTIVE 상태일 때는 버튼 없음 -->
+                <span v-else class="text-gray-400 text-sm">-</span>
               </div>
             </td>
           </tr>
@@ -192,5 +226,9 @@ onMounted(() => {
 
 .action-buttons {
   @apply flex gap-2 justify-center;
+}
+
+.info-text {
+  @apply text-[12px];
 }
 </style>
