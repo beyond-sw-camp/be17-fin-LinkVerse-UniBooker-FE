@@ -250,7 +250,7 @@ onMounted(() => {
     </Modal>
 
     <!-- 상단 이미지 -->
-    <img :src="service.resourceImage" alt="회의실" class="header-image" />
+    <img :src="service.resourceImage || '/assets/images/no-image.png'" alt="회의실" class="header-image" />
 
     <div class="content-wrapper">
       <!-- 왼쪽 영역 -->
