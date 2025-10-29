@@ -104,7 +104,7 @@ onMounted(() => {
 
 /* 카드 */
 .content-card {
-  @apply bg-white rounded-2xl shadow p-7 flex-1;
+  @apply bg-white p-7 flex-1 pt-[10px] mt-[20px];
 }
 
 /* 상세 카드 중앙 정렬 */
@@ -122,7 +122,7 @@ onMounted(() => {
 
 /* 이미지 */
 .thumbnail {
-  @apply rounded-xl shadow-md w-full h-[450px] object-cover;
+  @apply rounded-xl w-full h-[450px] object-cover;
 }
 
 /* 상세 테이블 */
