@@ -59,4 +59,8 @@ onMounted(async () => {
 :deep(.notification-table tbody td img) {
   @apply w-3.5 h-3.5 opacity-60 cursor-pointer transition-transform hover:scale-110 hover:opacity-100;
 }
+
+.content-card {
+  @apply min-h-[570px]
+}
 </style>

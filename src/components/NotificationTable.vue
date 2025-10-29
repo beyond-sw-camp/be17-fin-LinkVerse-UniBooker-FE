@@ -32,47 +32,55 @@ const markAsReadAndClose = async (notificationId) => {
   <div>
     <slot name="title" />
 
-    <table
-      :class="[
-        'notification-table',
-        theme === 'super' ? 'components-super-table' : ''
-      ]"
-    >
-      <thead>
-        <tr>
-          <th>번호</th>
-          <th>제목</th>
-          <th>내용</th>
-          <th>발생 시각</th>
-          <th>확인 여부</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(item, index) in notifications"
-          :key="item.id"
-          :class="{ unread: item.isRead === false }"
-        >
-          <td>{{ index + 1 }}</td>
-          <td>{{ item.title }}</td>
-          <td>{{ item.message }}</td>
-          <td>{{ item.createdAt }}</td>
-          <td class="text-center">
-            <span v-if="item.isRead === true" class="text-gray-dark/70 text-sm font-medium">읽음</span>
-            <span v-else class="text-primary">읽지 않음</span>
-          </td>
-          <td class="text-center">
-            <img
-              src="/assets/icons/ic-open-modal.png"
-              alt="상세보기"
-              class="w-4 h-4 mx-auto opacity-50 cursor-pointer transition-transform hover:scale-110 hover:opacity-100"
-              @click="openDetailModal(item)"
-            />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <template v-if="notifications && notifications.length > 0">
+      <table
+        :class="[
+          'notification-table',
+          theme === 'super' ? 'components-super-table' : ''
+        ]"
+      >
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>내용</th>
+            <th>발생 시각</th>
+            <th>확인 여부</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(item, index) in notifications"
+            :key="item.id"
+            :class="{ unread: item.isRead === false }"
+          >
+            <td>{{ index + 1 }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.message }}</td>
+            <td>{{ item.createdAt }}</td>
+            <td class="text-center">
+              <span v-if="item.isRead" class="text-gray-dark/70 text-sm font-medium">읽음</span>
+              <span v-else class="text-primary">읽지 않음</span>
+            </td>
+            <td class="text-center">
+              <img
+                src="/assets/icons/ic-open-modal.png"
+                alt="상세보기"
+                class="w-4 h-4 mx-auto opacity-50 cursor-pointer transition-transform hover:scale-110 hover:opacity-100"
+                @click="openDetailModal(item)"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+
+    <template v-else>
+      <div class="notification-empty">
+        <p> 새로운 알림이 없습니다.</p>
+      </div>
+    </template>
 
     <Modal :open="detailOpen" @close="detailOpen = false">
       <div class="edit-modal-container">
@@ -126,5 +134,9 @@ const markAsReadAndClose = async (notificationId) => {
 
 td {
   @apply !font-normal
+}
+
+.notification-empty {
+  @apply flex justify-center items-center h-full
 }
 </style>

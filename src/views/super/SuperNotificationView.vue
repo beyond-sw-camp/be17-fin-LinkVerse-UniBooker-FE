@@ -38,4 +38,8 @@ onMounted(async () => {
 :deep(.notification-table tbody tr.unread:hover td) {
   @apply bg-gray-100;
 }
+
+.components-super-table-container {
+  @apply min-h-[520px] flex items-center justify-center
+}
 </style>
