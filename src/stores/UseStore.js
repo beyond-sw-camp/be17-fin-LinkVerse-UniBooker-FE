@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { connectWebSocket } from '@/utils/webSocket'
+import { connectWebSocket, disconnectWebSocket } from '@/utils/webSocket'
 
 // ===== BroadcastChannel 생성 =====
 const authChannel =
@@ -15,7 +15,12 @@ export const useAuthStore = defineStore('auth', () => {
   const companySlug = ref(null)
 
   // ===== 로그인 액션 =====
-  const login = (userData, userRole = 'USER', userCompanyId = null, userCompanySlug = null) => {
+  const login = async (
+    userData,
+    userRole = 'USER',
+    userCompanyId = null,
+    userCompanySlug = null,
+  ) => {
     // 1. 기존 상태 초기화
     localStorage.clear()
 
@@ -48,6 +53,13 @@ export const useAuthStore = defineStore('auth', () => {
         timestamp: Date.now(),
       })
       console.log('다른 탭에 로그인 이벤트 전송:', { role: userRole, slug: userCompanySlug })
+    }
+
+    try {
+      await connectWebSocket()
+      console.log('🛰️ 웹소켓 자동 재연결 완료')
+    } catch (err) {
+      console.error('❌ 웹소켓 재연결 실패:', err)
     }
 
     console.log('로그인 완료:', {
@@ -103,6 +115,10 @@ export const useAuthStore = defineStore('auth', () => {
       console.log('다른 탭에 로그아웃 이벤트 전송')
     }
 
+    // WebSocket 연결 해제
+    disconnectWebSocket()
+    console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
+
     console.log('로그아웃 완료')
 
     return tempSlug
@@ -142,6 +158,10 @@ export const useAuthStore = defineStore('auth', () => {
       role.value = null
       companyId.value = null
       companySlug.value = null
+
+      // WebSocket 연결 해제
+      disconnectWebSocket()
+      console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
 
       console.log('저장된 인증 상태 없음')
     }
@@ -208,6 +228,10 @@ export const useAuthStore = defineStore('auth', () => {
     role.value = null
     companyId.value = null
     companySlug.value = null
+
+    // WebSocket 연결 해제
+    disconnectWebSocket()
+    console.log('🚪 로그아웃 완료 및 WebSocket 해제됨')
 
     console.log('강제 로그아웃 - 세션 무효화')
   }
