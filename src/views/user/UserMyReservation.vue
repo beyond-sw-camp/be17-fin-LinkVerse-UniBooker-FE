@@ -88,7 +88,7 @@ onMounted(() => {
         <!-- 예약 목록 영역 -->
         <div class="reservation-list">
           <a v-for="item in reservations" :key="item.id" class="reservation-item cursor-pointer" @click="goToMyReservationDetail(item.id)">
-            <img :src="item.thumbnail" class="item-image" />
+            <img :src="item.thumbnail  || '/assets/images/no-image.png'" class="item-image" />
             <div class="item-info">
               <div class="item-header">
                 <h3 class="item-name">{{ item.resourceName }}</h3>

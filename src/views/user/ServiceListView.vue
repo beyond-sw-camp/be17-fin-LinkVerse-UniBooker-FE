@@ -83,7 +83,7 @@ onMounted(() => {
     <div class="service-item-container">
       <!-- 헤더 -->
       <div class="service-header">
-        <img :src="serviceGroup.thumbnail" alt="회의실" class="service-header-img" />
+        <img :src="serviceGroup.thumbnail || '/assets/images/no-image.png'"  alt="리소스 이미지" class="service-header-img" />
 
         <div class="service-header-right">
           <!-- 서비스 설명 -->
@@ -109,7 +109,7 @@ onMounted(() => {
       <!-- 서비스 항목 카드 목록 -->
       <div class="service-item-grid">
         <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
-          <img :src="item.resourceImage" :alt="item.name" class="service-item-card-img" />
+          <img :src="item.resourceImage  || '/assets/images/no-image.png'" :alt="item.name" class="service-item-card-img" />
           <div class="service-item-card-body">
             <div class="service-item-card-header">
               <h3 class="service-item-card-name">{{ item.name }}</h3>
@@ -164,7 +164,7 @@ onMounted(() => {
 
 /* 헤더 */
 .service-header {
-  @apply flex justify-between items-center p-2 px-5 gap-8 mb-8 bg-gray-100 rounded-sm h-64;
+  @apply flex justify-between items-center p-2 px-6 gap-8 mb-8 bg-gray-100 rounded-sm h-64;
 }
 
 .service-header-img {
@@ -172,7 +172,7 @@ onMounted(() => {
 }
 
 .service-header-right {
-  @apply flex flex-col justify-between flex-1 h-full py-2;
+  @apply flex flex-col justify-between flex-1 h-full py-5;
 }
 
 .service-title {
@@ -197,7 +197,7 @@ onMounted(() => {
 }
 
 .service-item-card {
-  @apply flex justify-between items-center bg-gray-50 rounded-md shadow-sm p-5 hover:shadow-md transition;
+  @apply flex justify-between items-center bg-gray-50 rounded-md shadow-sm p-5 hover:shadow-md transition cursor-pointer;
 }
 
 .service-item-card-img {

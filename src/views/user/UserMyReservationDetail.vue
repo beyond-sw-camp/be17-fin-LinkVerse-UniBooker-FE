@@ -65,7 +65,7 @@ onMounted(() => {
       <!-- 이미지 카드 -->
       <div class="content-card">
         <h2 class="section-title">예약/신청 상세</h2>
-        <img :src="reservation.thumbnail" alt="예약 이미지" class="thumbnail" />
+        <img :src="reservation.thumbnail  || '/assets/images/no-image.png'" alt="예약 이미지" class="thumbnail" />
       </div>
 
       <!-- 상세 정보 카드 -->
