@@ -1,3 +1,7 @@
+if (typeof global === 'undefined') {
+  window.global = window
+}
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 

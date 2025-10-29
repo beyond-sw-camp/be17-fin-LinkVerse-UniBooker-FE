@@ -7,7 +7,7 @@ import Input from '@/components/Input.vue'
 import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
 import Button from '@/components/Button.vue'
 import Modal from '@/components/Modal.vue'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 
 // 라우터
 const router = useRouter()

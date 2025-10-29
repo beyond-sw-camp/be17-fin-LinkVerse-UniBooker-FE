@@ -4,12 +4,15 @@ import { useAuthStore } from '@/stores/UseStore'
 import { useRouter } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 import adminApi from '@/services/admin/admin_api'
+import notifyApi from '@/services/notification/notification_api'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 const isModalOpen = ref(false)
 const userData = ref(null)
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 async function openModal() {
   try {
@@ -33,18 +36,6 @@ const router = useRouter()
 // 로그아웃 처리
 const handleLogout = async () => {
   try {
-    // refreshToken은 쿠키에 있으므로 자동 전송됨
-    // 하지만 DTO 요구사항에 따라 body에 포함 필요할 수 있음
-
-    // 쿠키에서 refreshToken 읽기 (필요한 경우)
-    // const refreshToken = getCookie('refreshToken')
-
-    // if (!refreshToken) {
-    //   console.warn('⚠️ refreshToken이 없습니다. 강제 로그아웃 처리')
-    //   authStore.logout()
-    //   router.push('/admin/login')
-    //   return
-    // }
 
     // 로그아웃 API 호출 (쿠키는 자동으로 전송됨)
     await adminApi.logout()
@@ -61,14 +52,6 @@ const handleLogout = async () => {
   }
 }
 
-// 쿠키 읽기 헬퍼 함수
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop().split(';').shift()
-  return null
-}
-
 // 서비스 그룹 목록 조회
 const serviceGroups = reactive([])
 const getServiceGroups = async () => {
@@ -77,21 +60,26 @@ const getServiceGroups = async () => {
     const data = response.data.data
 
     Object.assign(serviceGroups, data.resourceGroups)
+    console.log(serviceGroups)
   } catch (error) {
     // 서비스 그룹 목록 조회 실패
   }
 }
 
 // 서비스 그룹의 드롭다운 메뉴 항목
-const dropdownItems = ['전체 분석', '예약 현황', '예약 관리', '서비스 관리']
-const getMenuLink = (menu, serviceGroupId, serviceGroupName) => {
+const dropdownItems = ['전체 분석', '예약 현황', '서비스 관리']
+const getMenuLink = (menu, serviceGroupId, serviceGroupName, serviceCategory) => {
   switch (menu) {
     case '서비스 관리':
       return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
-    case '예약 관리':
-      return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
     case '예약 현황':
-      return '#'
+      if (serviceCategory === 'RESERVATION') {
+        return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      } else if (serviceCategory === 'SEAT') {
+        return `/admin/seat-reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      } else {
+        return `/admin/event-reservation-status/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      }
     case '전체 분석':
       return '#'
     default:
@@ -121,14 +109,17 @@ const selectMenuItem = (serviceIndex, menu) => {
 
 // 알림 관련 상태, 예시
 const isDropdownOpen = ref(false)
-const notifications = ref([
-  { id: 1, message: '신규 기업 회원가입 요청이 도착했습니다.', time: '2분 전' },
-  { id: 2, message: '서버 점검이 내일 오전 9시에 예정되어 있습니다.', time: '1시간 전' },
-  { id: 3, message: '신청서가 검토 완료되었습니다.', time: '어제' },
-])
+const notifications = ref([])
 
 // 알림 아이콘 클릭 토글
-const notiToggleDropdown = () => {
+const notiToggleDropdown = async () => {
+  notificationStore.reset()
+
+  if (!isDropdownOpen.value) {
+    const data = await notifyApi.getNotifyList(0, 3)
+    notifications.value = data || []
+  }
+
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
@@ -187,7 +178,7 @@ onMounted(() => {
               <router-link
                 v-for="child in dropdownItems"
                 :key="child"
-                :to="getMenuLink(child, item.id, item.name)"
+                :to="getMenuLink(child, item.id, item.name, item.serviceCategory)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"
@@ -213,7 +204,15 @@ onMounted(() => {
           <img @click="openModal" src="/assets/images/admin_logo.png" alt="기업 로고 이미지" />
           <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
-            <img src="/assets/icons/ic-new-notify.png" alt="알림 아이콘" class="notify-icon" />
+            <img
+              :src="
+                notificationStore.hasNotification
+                  ? '/assets/icons/ic-new-notify.png'
+                  : '/assets/icons/ic-no-notify.png'
+              "
+              alt="알림 아이콘"
+              class="notify-icon"
+            />
           </button>
           <NotificationDropdown
             type="admin"

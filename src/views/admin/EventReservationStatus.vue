@@ -1,21 +1,74 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'  
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '@/components/AdminLayout.vue'
+import serviceApi from '@/services/service/service_api'
+
+const route = useRoute()
+
+const serviceGroupId = route.params.serviceGroupId
+const services = ref([])
+
+const getServices = async () => {
+  const response = await serviceApi.getServices(serviceGroupId)
+  services.value = response
+}
 
 /* 예시 데이터 */
-const services = ref([
-  { id: 1, title: '보드게임 동아리 모집', startDate: '2025-10-20', endDate: '2025-10-26', isFull: false },
-  { id: 2, title: '밴드 동아리 모집', startDate: '2025-10-18', endDate: '2025-10-23', isFull: true },
-  { id: 3, title: '캠퍼스 플리마켓 부스 신청', startDate: '2025-10-21', endDate: '2025-10-27', isFull: false },
-  { id: 4, title: '공예 클래스 참가 모집', startDate: '2025-10-16', endDate: '2025-10-22', isFull: false },
-  { id: 5, title: '스포츠 체험단 신청', startDate: '2025-10-19', endDate: '2025-10-25', isFull: false },
-  { id: 6, title: '악기 대여 신청', startDate: '2025-10-22', endDate: '2025-10-29', isFull: true },
-  { id: 7, title: '사진 동아리 신규 회원 모집', startDate: '2025-10-23', endDate: '2025-10-30', isFull: true },
-  { id: 8, title: '독서 모임 신청', startDate: '2025-10-17', endDate: '2025-10-21', isFull: false },
-  { id: 9, title: '헬스클럽 회원 모집', startDate: '2025-10-25', endDate: '2025-10-31', isFull: false },
-  { id: 10, title: '봉사활동 신청', startDate: '2025-10-20', endDate: '2025-10-24', isFull: false },
-])
+// const services = ref([
+//   {
+//     id: 1,
+//     title: '보드게임 동아리 모집',
+//     startDate: '2025-10-20',
+//     endDate: '2025-10-26',
+//     isFull: false,
+//   },
+//   {
+//     id: 2,
+//     title: '밴드 동아리 모집',
+//     startDate: '2025-10-18',
+//     endDate: '2025-10-23',
+//     isFull: true,
+//   },
+//   {
+//     id: 3,
+//     title: '캠퍼스 플리마켓 부스 신청',
+//     startDate: '2025-10-21',
+//     endDate: '2025-10-27',
+//     isFull: false,
+//   },
+//   {
+//     id: 4,
+//     title: '공예 클래스 참가 모집',
+//     startDate: '2025-10-16',
+//     endDate: '2025-10-22',
+//     isFull: false,
+//   },
+//   {
+//     id: 5,
+//     title: '스포츠 체험단 신청',
+//     startDate: '2025-10-19',
+//     endDate: '2025-10-25',
+//     isFull: false,
+//   },
+//   { id: 6, title: '악기 대여 신청', startDate: '2025-10-22', endDate: '2025-10-29', isFull: true },
+//   {
+//     id: 7,
+//     title: '사진 동아리 신규 회원 모집',
+//     startDate: '2025-10-23',
+//     endDate: '2025-10-30',
+//     isFull: true,
+//   },
+//   { id: 8, title: '독서 모임 신청', startDate: '2025-10-17', endDate: '2025-10-21', isFull: false },
+//   {
+//     id: 9,
+//     title: '헬스클럽 회원 모집',
+//     startDate: '2025-10-25',
+//     endDate: '2025-10-31',
+//     isFull: false,
+//   },
+//   { id: 10, title: '봉사활동 신청', startDate: '2025-10-20', endDate: '2025-10-24', isFull: false },
+// ])
 
 const router = useRouter()
 
@@ -47,25 +100,27 @@ const currentWeekRange = computed(() => {
 })
 
 /* 주간 이동 함수 */
-const goPrevWeek = () => currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() - 7))
-const goNextWeek = () => currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() + 7))
-
+const goPrevWeek = () =>
+  (currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() - 7)))
+const goNextWeek = () =>
+  (currentDate.value = new Date(currentDate.value.setDate(currentDate.value.getDate() + 7)))
 
 /* --- 정렬 및 필터링 로직 --- */
 const sortedServices = computed(() => {
-  const weekStart = weekDates.value[0];
-  const weekEnd = new Date(weekDates.value[6]);
-  weekEnd.setHours(23, 59, 59, 999);
+  const weekStart = weekDates.value[0]
+  const weekEnd = new Date(weekDates.value[6])
+  weekEnd.setHours(23, 59, 59, 999)
 
-  const visibleServices = services.value.filter(service => {
-    const serviceStart = new Date(service.startDate);
-    const serviceEnd = new Date(service.endDate);
-    serviceEnd.setHours(23, 59, 59, 999);
-    return serviceStart <= weekEnd && serviceEnd >= weekStart;
-  });
+  const visibleServices = services.value.filter((service) => {
+    const serviceStart = new Date(service.startDate)
+    const serviceEnd = new Date(service.endDate)
+    serviceEnd.setHours(23, 59, 59, 999)
+    return serviceStart <= weekEnd && serviceEnd >= weekStart
+  })
 
   return visibleServices.sort((a, b) => {
-    const as = +new Date(a.startDate), bs = +new Date(b.startDate)
+    const as = +new Date(a.startDate),
+      bs = +new Date(b.startDate)
     if (as !== bs) return as - bs
     const ad = +new Date(a.endDate) - as
     const bd = +new Date(b.endDate) - bs
@@ -74,19 +129,26 @@ const sortedServices = computed(() => {
 })
 
 /* --- 스타일 계산 로직 --- */
-const formatDate = (date, fmt='short') => {
-  if (fmt === 'weekday') return date.toLocaleString('en-US', { weekday:'short' })
+const formatDate = (date, fmt = 'short') => {
+  if (fmt === 'weekday') return date.toLocaleString('en-US', { weekday: 'short' })
   if (fmt === 'day') return date.getDate()
-  return date.toISOString().split('T')[0].replace(/-/g,'/')
+  return date.toISOString().split('T')[0].replace(/-/g, '/')
 }
 
-const CELL_PCT = 100 / 7, ROW_H = 30, ROW_GAP = 10, TOP_OFFSET = 8
+const CELL_PCT = 100 / 7,
+  ROW_H = 30,
+  ROW_GAP = 10,
+  TOP_OFFSET = 8
 
 const getBarStyle = (service, index) => {
-  const s0 = new Date(weekDates.value[0]); s0.setHours(0,0,0,0)
-  const s6 = new Date(weekDates.value[6]); s6.setHours(0,0,0,0)
-  const svcS = new Date(service.startDate); svcS.setHours(0,0,0,0)
-  const svcE = new Date(service.endDate);   svcE.setHours(0,0,0,0)
+  const s0 = new Date(weekDates.value[0])
+  s0.setHours(0, 0, 0, 0)
+  const s6 = new Date(weekDates.value[6])
+  s6.setHours(0, 0, 0, 0)
+  const svcS = new Date(service.startDate)
+  svcS.setHours(0, 0, 0, 0)
+  const svcE = new Date(service.endDate)
+  svcE.setHours(0, 0, 0, 0)
 
   const barS = svcS < s0 ? s0 : svcS
   const barE = svcE > s6 ? s6 : svcE
@@ -129,24 +191,27 @@ const onMouseUp = (e) => {
   if (!isDragging.value) return
   isDragging.value = false
   const deltaX = e.clientX - startX.value
-  
+
   timelineEl.value.style.transition = 'transform 0.3s ease' // 애니메이션 효과 다시 켬
 
-  if (deltaX > swipeThreshold) { // 오른쪽으로 충분히 스와이프
+  if (deltaX > swipeThreshold) {
+    // 오른쪽으로 충분히 스와이프
     timelineEl.value.style.transform = 'translateX(100%)' // 오른쪽으로 완전히 슬라이드 아웃
     setTimeout(() => {
       goPrevWeek()
       timelineEl.value.style.transition = 'none'
       timelineEl.value.style.transform = 'translateX(0)'
     }, 300)
-  } else if (deltaX < -swipeThreshold) { // 왼쪽으로 충분히 스와이프
+  } else if (deltaX < -swipeThreshold) {
+    // 왼쪽으로 충분히 스와이프
     timelineEl.value.style.transform = 'translateX(-100%)' // 왼쪽으로 완전히 슬라이드 아웃
     setTimeout(() => {
       goNextWeek()
       timelineEl.value.style.transition = 'none'
       timelineEl.value.style.transform = 'translateX(0)'
     }, 300)
-  } else { // 스와이프 거리가 충분하지 않으면
+  } else {
+    // 스와이프 거리가 충분하지 않으면
     timelineEl.value.style.transform = 'translateX(0)' // 제자리로 복귀
   }
 }
@@ -160,8 +225,16 @@ const onMouseLeave = () => {
   }
 }
 
-const goToReservationPage = () => {
-  router.push('/admin/event-reservation-management')
+// 예약 관리 페이지로 이동
+const goToReservationPage = (serviceId, serviceName) => {
+  router.push({
+    name: 'EventReservationManagement',
+    params: { serviceId },
+    query: {
+      serviceGroupId: serviceGroupId, // 그룹정보도 필요할 경우
+      serviceName: serviceName,
+    },
+  })
 }
 
 /* 색상 통일 함수 */
@@ -170,6 +243,10 @@ const getBarColor = (svc) => {
     ? 'bg-gray-200 border-gray-300 text-gray-500'
     : 'bg-blue-100 border-blue-300 text-blue-800'
 }
+
+onMounted(() => {
+  getServices()
+})
 </script>
 
 <template>
@@ -179,32 +256,57 @@ const getBarColor = (svc) => {
         <h1 class="page-title">예약 현황</h1>
         <div class="flex items-center gap-2">
           <button @click="goPrevWeek" class="nav-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-          </button>          
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
           <span class="text-sm font-medium text-gray-500 hidden sm:block">
             {{ currentWeekRange }}
           </span>
           <button @click="goNextWeek" class="nav-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </button>
         </div>
       </div>
 
       <div class="bg-white rounded-xl border border-gray-200 p-4">
         <div class="grid grid-cols-7 text-center text-sm text-gray-500 mb-2">
+          <div
+            v-for="d in weekDates"
+            :key="d"
+            class="py-2"
+            :class="{ 'text-text font-semibold': d.toDateString() === new Date().toDateString() }"
+          >
+            <div>{{ formatDate(d, 'weekday') }}</div>
+            <div class="font-semibold text-gray-700">{{ formatDate(d, 'day') }}</div>
+          </div>
+        </div>
+
         <div
-          v-for="d in weekDates"
-          :key="d"
-          class="py-2"
-          :class="{ 'text-text font-semibold': d.toDateString() === new Date().toDateString() }"
-        >
-          <div>{{ formatDate(d,'weekday') }}</div>
-          <div class="font-semibold text-gray-700">{{ formatDate(d,'day') }}</div>
-        </div>
-
-        </div>
-
-        <div 
           class="relative h-[450px] rounded-lg timeline-bg overflow-hidden"
           :class="{ 'cursor-grabbing': isDragging }"
           @mousedown.prevent="onMouseDown"
@@ -219,10 +321,10 @@ const getBarColor = (svc) => {
               class="reservation-bar"
               :class="getBarColor(svc)"
               :style="getBarStyle(svc, idx)"
-              @click="goToReservationPage"
+              @click="goToReservationPage(svc.id, svc.name)"
             >
               <span class="dot"></span>
-              <span class="font-medium text-[13px] mr-2">{{ svc.title }}</span>
+              <span class="font-medium text-[13px] mr-2">{{ svc.name }}</span>
               <span class="text-[11px] opacity-70">
                 {{ formatDate(new Date(svc.startDate)) }} ~ {{ formatDate(new Date(svc.endDate)) }}
               </span>
@@ -235,8 +337,12 @@ const getBarColor = (svc) => {
 </template>
 
 <style scoped>
-.page-title { @apply text-xl font-medium text-gray-900; }
-.nav-btn { @apply p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors; }
+.page-title {
+  @apply text-xl font-medium text-gray-900;
+}
+.nav-btn {
+  @apply p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors;
+}
 
 .timeline-bg {
   cursor: grab;
@@ -255,4 +361,4 @@ const getBarColor = (svc) => {
   @apply w-2 h-2 rounded-full flex-shrink-0;
   background-color: currentColor;
 }
-</style>  
+</style>

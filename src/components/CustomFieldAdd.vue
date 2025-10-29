@@ -52,9 +52,9 @@ const addOption = () => {
   newOption.value = ''
 }
 
-// 선택 항목 삭제
-const removeOption = (index) => {
-  modalOptions.value.splice(index, 1)
+// customFields 삭제
+const deleteField = (index) => {
+  emit('delete-field', index)
 }
 
 const addFieldFromModal = () => {
@@ -97,8 +97,8 @@ const addFieldFromModal = () => {
       placeholder="데이터 타입"
       :disabled="true"
     />
-    <div class="field-delete-button">
-      <img src="/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
+    <div class="field-delete-button" @click="deleteField(index)">
+      <img src="/public/assets/icons/ic-delete-dark-gray.png" alt="삭제" />
     </div>
   </div>
 
@@ -289,6 +289,6 @@ textarea {
 }
 
 .modal-field-checkbox {
-  @apply mt-[6px] ml-[2px]
+  @apply mt-[6px] ml-[2px];
 }
 </style>

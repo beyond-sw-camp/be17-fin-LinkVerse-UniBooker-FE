@@ -5,6 +5,7 @@ import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import userApi from '@/services/user/user_api'
 import { useAuthStore } from '@/stores/UseStore'
+import { connectWebSocket } from '@/utils/webSocket'
 
 const router = useRouter()
 const route = useRoute()
@@ -106,6 +107,15 @@ const handleLogin = async () => {
         loginResult.companyId,
         companyInfo.value.companySlug,
       )
+
+      // WebSocket 연결
+      try {
+        console.log('🛰️ 로그인 성공 → WebSocket 연결 시도 중...')
+        await connectWebSocket()
+        console.log('✅ WebSocket 연결 완료!')
+      } catch (wsError) {
+        console.error('❌ WebSocket 연결 실패:', wsError)
+      }
 
       // 로그인 후 리다이렉트
       if (loginResult.passwordChangeRequired) {
