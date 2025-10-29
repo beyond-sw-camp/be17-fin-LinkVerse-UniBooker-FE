@@ -272,7 +272,7 @@ onMounted(() => {
 
 /* 페이지네이션 */
 .service-item-pagination {
-  @apply flex justify-center items-center py-4;
+  @apply flex justify-center items-center py-4 pb-[40px];
 }
 
 .no-service-message {
