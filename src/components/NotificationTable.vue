@@ -99,7 +99,7 @@ const markAsReadAndClose = async (notificationId) => {
 
 <style scoped>
 .edit-modal-container {
-  @apply flex flex-col gap-5 p-2;
+  @apply flex flex-col gap-5 p-2 w-[550px];
 }
 .notification-detail {
   @apply flex flex-col gap-1;
