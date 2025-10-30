@@ -14,7 +14,7 @@ import router from '@/router'
 // ===== Axios 인스턴스 생성 =====
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://www.unibooker.kro.kr' || 'https://www.unibooker.kro.kr:80' || 'https://www.unibooker.kro.kr:443',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://www.unibooker.kro.kr',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
