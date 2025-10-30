@@ -64,7 +64,7 @@ const formatDate = (dateString, includeTime = false) => {
 
 // 날짜 표시
 const getDate = (item) => {
-  if (item.serviceCategory === 'EVENT') return formatDateEvent(item.createdAt)
+  if (item.serviceCategory === 'EVENT') return formatDate(item.createdAt)
   else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
 }
 
@@ -80,15 +80,15 @@ onMounted(() => {
         <div class="flex justify-between items-center mb-5">
           <h2 class="section-title">예약/신청 내역</h2>
           <div class="flex items-center gap-4">
-            <Input type="checkbox" v-model="includeCancelled" label="취소 내역 제외"/>
-            <Dropdown v-model="selectedYear" :options="yearOptions" placeholder="연도 선택" width="w-35"/>
-            <Dropdown v-model="selectedMonth" :options="monthOptions" placeholder="월 선택" width="w-30"/>
+            <Input type="checkbox" v-model="includeCancelled" label="취소 내역 제외" class="filter-dropdown mr-[4px]"/>
+            <Dropdown v-model="selectedYear" :options="yearOptions" placeholder="연도 선택" width="w-35" bgColor="gray" class="filter-dropdown"/>
+            <Dropdown v-model="selectedMonth" :options="monthOptions" placeholder="월 선택" width="w-30" bgColor="gray" class="filter-dropdown"/>
           </div>
         </div>
         <!-- 예약 목록 영역 -->
         <div class="reservation-list">
           <a v-for="item in reservations" :key="item.id" class="reservation-item cursor-pointer" @click="goToMyReservationDetail(item.id)">
-            <img :src="item.thumbnail" class="item-image" />
+            <img :src="item.thumbnail  || '/assets/images/no-image.png'" class="item-image" />
             <div class="item-info">
               <div class="item-header">
                 <h3 class="item-name">{{ item.resourceName }}</h3>
@@ -161,5 +161,9 @@ onMounted(() => {
 }
 .tag-cancelled {
   @apply bg-white text-gray-dark font-medium text-xs px-2 py-0.5 rounded-full border border-gray-dark;
+}
+
+.filter-dropdown {
+  @apply text-[14px]
 }
 </style>

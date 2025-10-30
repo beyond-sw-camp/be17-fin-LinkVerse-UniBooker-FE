@@ -1,9 +1,10 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import adminApi from '@/services/admin/admin_api'
+import serviceApi from '@/services/admin/service_api'
 
 const router = useRouter()
 
@@ -15,10 +16,12 @@ const formData = reactive({
   name: '',
   email: '',
   phone: '',
-  logoUrl: null, // ← logo → logoUrl로 변경
+  logo: null,
+  logoUrl: '',
 })
 
 const fileName = ref('')
+const thumbnail = ref('')
 
 // ===== 중복확인 상태 =====
 const duplicateCheckState = reactive({
@@ -171,32 +174,39 @@ const checkEmail = async () => {
   }
 }
 
-// ===== 파일 업로드 (수정) =====
+// ===== 파일 업로드 =====
 const handleFileUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
+  fileName.value = file.name
+  formData.logo = file  // 프리뷰용
+  thumbnail.value = URL.createObjectURL(file) // 임시 미리보기
+
   try {
-    // 1. FormData 생성 (프롬프트 방식)
-    const uploadFormData = new FormData()
-    uploadFormData.append('file', file)
-    uploadFormData.append('imageType', 'companyLogo') // ← 중요!
+    const uploadForm = new FormData()
+    uploadForm.append('file', file)
+    uploadForm.append('imageType', 'serviceGroup')
 
-    // 2. Presigned URL 요청
-    const presignedUrl = await adminApi.getPresignedURL(uploadFormData)
+    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(uploadForm)
+    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
 
-    // 3. S3 업로드
-    await adminApi.uploadImage(presignedUrl, file)
+    // 실제 업로드
+    await serviceApi.uploadImage(presignedUrl, file)
 
-    // 4. S3 경로만 저장 (CloudFront 도메인 제외)
+    // CloudFront URL 생성
+    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
     const s3Path = presignedUrl.split('.com')[1].split('?')[0]
-    formData.logoUrl = s3Path //  /company-logo/xxx.jpg
+    const fullUrl = cloudFrontDomain + s3Path
 
-    fileName.value = file.name
-    alert('로고 업로드 완료!')
-  } catch (error) {
-    console.error('업로드 실패:', error)
-    alert('로고 업로드 실패')
+    // 프리뷰와 폼 데이터에 적용
+    thumbnail.value = fullUrl
+    formData.logoUrl = fullUrl
+
+    // 서버에 파일은 보내지 않음 (logoFile 제거)
+  } catch (err) {
+    console.error('이미지 업로드 오류:', err)
+    alert('이미지 업로드 중 오류가 발생했습니다.')
   }
 }
 
@@ -275,10 +285,15 @@ const handleSubmit = async () => {
     name: formData.name,
     email: formData.email,
     phone: formData.phone,
-    logoUrl: formData.logoUrl, // null이 아님을 보장
+    logoUrl: formData.logoUrl,
   }
 
-  console.log('📦 회원가입 요청 데이터:', requestData)
+  submitFormData.append(
+    'data',
+    new Blob([JSON.stringify(requestData)], {
+      type: 'application/json',
+    }),
+  )
 
   // 11. API 호출
   try {
@@ -462,18 +477,23 @@ const goToLogin = () => {
         </div>
 
         <!-- 기업로고 -->
-        <div class="admin-sigup-file-input-field">
-          <div class="admin-signup-field-file">
-            <label class="admin-signup-label">기업로고</label>
-            <div class="admin-signup-input-wrapper">
-              <input
-                id="logo-upload"
-                type="file"
-                accept="image/*"
-                @change="handleFileUpload"
-                class="file-input"
-              />
-            </div>
+        <div class="admin-signup-field">
+          <label class="admin-signup-label">기업로고</label>
+          <div class="admin-signup-input-wrapper">
+            <label for="logo-upload" class="file-upload-label">
+              <!-- 이미지가 있으면 보여주기, 없으면 안내 문구 -->
+              <template v-if="thumbnail">
+                <img :src="thumbnail" class="preview-img" alt="로고 미리보기" />
+              </template>
+              <template v-else> 이미지 업로드 </template>
+            </label>
+            <input
+              id="logo-upload"
+              type="file"
+              accept="image/*"
+              class="file-upload-input hidden"
+              @change="handleFileUpload"
+            />
           </div>
           <span v-if="fileName" class="file-name">{{ fileName }}</span>
         </div>
@@ -626,5 +646,9 @@ const goToLogin = () => {
 
 .admin-signup-signup-link {
   @apply text-gray-600 font-medium hover:text-primary-hover ml-2 underline cursor-pointer bg-transparent border-none;
+}
+
+.preview-img {
+  @apply h-[50px] border border-gray-deep rounded-[3px];
 }
 </style>

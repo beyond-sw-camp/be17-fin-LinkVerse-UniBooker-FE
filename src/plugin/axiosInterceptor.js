@@ -64,7 +64,7 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error)
-  }
+  },
 )
 
 // ===== 응답 인터셉터 =====
@@ -79,7 +79,6 @@ axiosInstance.interceptors.response.use(
 
     // ===== 401 Unauthorized: 토큰 만료 또는 인증 실패 =====
     if (error.response?.status === 401) {
-      
       // Silent Auth 모드 (헤더 인증 검증용)
       // - 알림 표시하지 않음
       // - 리다이렉트하지 않음
@@ -88,17 +87,19 @@ axiosInstance.interceptors.response.use(
         console.log('🔇 Silent Auth 실패 - 알림 없이 처리')
         return Promise.reject(error)
       }
-      
+
       // 현재 페이지가 로그인/회원가입 페이지인 경우
       // - 알림 표시하지 않음
       // - 로그아웃 처리하지 않음
-      if (currentPath.endsWith('/') || 
-          currentPath.includes('/signup') ||
-          currentPath.includes('/login')) {
+      if (
+        currentPath.endsWith('/') ||
+        currentPath.includes('/signup') ||
+        currentPath.includes('/login')
+      ) {
         console.log('🔇 인증 페이지 - 401 알림 생략')
         return Promise.reject(error)
       }
-      
+
       // 이미 로그아웃 처리 중이면 중복 실행 방지
       if (isLoggingOut) {
         return Promise.reject(error)
@@ -122,7 +123,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true
 
       // ===== 토큰 갱신 로직 =====
-      
+
       if (!isRefreshing) {
         // 최초 401 에러 발생 → refresh 시작
         isRefreshing = true
@@ -131,16 +132,15 @@ axiosInstance.interceptors.response.use(
         try {
           // /api/auth/refresh 호출
           await axiosInstance.post('/api/auth/refresh')
-          
+
           console.log('✅ 토큰 갱신 성공 - 대기 중인 요청 재시도')
           isRefreshing = false
-          
+
           // 대기 중인 모든 요청 재시도
           onRefreshed()
-          
+
           // 원래 요청 재시도
           return axiosInstance(originalRequest)
-          
         } catch (refreshError) {
           // refresh 실패 → 로그아웃
           console.error('❌ 토큰 갱신 실패:', refreshError)
@@ -149,17 +149,14 @@ axiosInstance.interceptors.response.use(
           await handleLogout(currentPath)
           return Promise.reject(refreshError)
         }
-        
       } else {
         // 이미 다른 요청이 refresh 중 → 대기열에 추가
         console.log('⏳ 토큰 갱신 대기 중...')
-        
+
         return new Promise((resolve, reject) => {
           addRefreshSubscriber(() => {
             // refresh 성공 시 원래 요청 재시도
-            axiosInstance(originalRequest)
-              .then(resolve)
-              .catch(reject)
+            axiosInstance(originalRequest).then(resolve).catch(reject)
           })
         })
       }
@@ -235,7 +232,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 // ===== 헬퍼 함수 =====
@@ -252,21 +249,21 @@ const handleLogout = async (currentPath) => {
   if (isLoggingOut) {
     return
   }
-  
+
   isLoggingOut = true
-  
+
   try {
     const authStore = useAuthStore()
-    
+
     // Store의 logout() 호출 (리다이렉트용 slug 반환)
     const tempSlug = authStore.logout()
-    
+
     // localStorage 완전 삭제 (중복 보장)
     localStorage.clear()
-    
+
     // 알림 표시 (한 번만)
     alert('로그인 세션이 만료되었습니다. 다시 로그인해주세요.')
-    
+
     // 권한별 리다이렉트
     if (currentPath.startsWith('/admin')) {
       await router.push('/admin/login')
@@ -279,7 +276,6 @@ const handleLogout = async (currentPath) => {
     } else {
       await router.push('/')
     }
-    
   } finally {
     // 일정 시간 후 플래그 초기화 (다음 로그아웃 허용)
     setTimeout(() => {

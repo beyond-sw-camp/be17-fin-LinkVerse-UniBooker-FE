@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import adminApi from '@/services/admin/admin_api'
+import serviceApi from '@/services/admin/service_api'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import { getCompanyLogoUrl } from '@/utils/imageUrl'
@@ -15,6 +16,7 @@ const emit = defineEmits(['close'])
 const mode = ref('view') // view | edit | password | withdraw
 const router = useRouter()
 const authStore = useAuthStore()
+const thumbnail = ref('')
 
 // 프로필 정보 수정용 임시 데이터
 const editInfo = ref({
@@ -140,20 +142,33 @@ const handleWithdrawSubmit = async () => {
 }
 
 // props.userData가 바뀌면 editInfo에 반영 (모달 열 때 초기화용)
+// props.userData가 바뀌면 editInfo에 반영 (모달 열 때 초기화용)
 watch(
   () => props.userData,
   (newVal) => {
-    if (!newVal) return // userData가 아직 없으면 아무 것도 안 함
+    if (!newVal || mode.value === 'edit') return // 편집 중엔 덮어쓰기 X
+
     editInfo.value = {
       businessNumber: newVal.businessNumber || '',
       name: newVal.name || '',
       phone: newVal.phone || '',
       logoFile: null,
-      logoUrl: newVal.logoUrl || '/assets/images/admin_logo.png',
+      // logoUrl이 비어있을 때만 기본 이미지 넣기
+      logoUrl: newVal.logoUrl && newVal.logoUrl.trim() !== ''
+        ? newVal.logoUrl
+        : '/assets/images/no-image.png',
     }
+
+    // 썸네일도 동일하게 처리
+    thumbnail.value =
+      newVal.logoUrl && newVal.logoUrl.trim() !== ''
+        ? newVal.logoUrl
+        : '/assets/images/no-image.png'
   },
   { immediate: true },
 )
+
+
 
 // 수정 모드 진입
 const enterEditMode = () => {
@@ -164,11 +179,26 @@ const enterEditMode = () => {
 }
 
 // 파일 선택 처리
-const handleFileChange = (e) => {
-  const file = e.target.files[0]
-  if (file) {
-    editInfo.value.logoFile = file
-    editInfo.value.logoUrl = URL.createObjectURL(file)
+const onFileChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('imageType', 'serviceGroup')
+
+    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(formData)
+    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
+    await serviceApi.uploadImage(presignedUrl, file)
+
+    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
+    const s3Path = presignedUrl.split('.com')[1].split('?')[0]
+    thumbnail.value = cloudFrontDomain + s3Path // 미리보기 변경
+    editInfo.value.logoUrl = thumbnail.value // 수정 정보에도 반영
+  } catch (error) {
+    console.error('이미지 업로드 과정에서 오류 발생:', error)
+    alert('이미지 업로드 중 오류가 발생했습니다.')
   }
 }
 
@@ -177,45 +207,15 @@ const handleFileChange = (e) => {
  */
 const handleEditSubmit = async () => {
   try {
-    // 1. 로고 파일 업로드 처리
-    if (logoFile.value) {
-      try {
-        // FormData 생성
-        const uploadFormData = new FormData()
-        uploadFormData.append('file', logoFile.value)
-        uploadFormData.append('imageType', 'companyLogo')
+    const logoUrlToSend =
+      editInfo.value.logoUrl && editInfo.value.logoUrl !== '/assets/images/no-image.png'
+        ? editInfo.value.logoUrl
+        : props.userData.logoUrl
 
-        // Presigned URL 요청
-        const presignedUrl = await adminApi.getPresignedURL(uploadFormData)
-
-        // S3 업로드
-        await adminApi.uploadImage(presignedUrl, logoFile.value)
-
-        // S3 경로 추출
-        const s3Path = presignedUrl.split('.com')[1].split('?')[0]
-
-        // 백엔드에 로고 URL 업데이트
-        await adminApi.updateCompanyLogo(s3Path)
-
-        editInfo.value.logoUrl = s3Path
-
-        // Pinia 스토어 갱신
-        authStore.updateCompany({
-          logoUrl: s3Path,
-        })
-
-        alert('기업 로고가 성공적으로 변경되었습니다.')
-      } catch (error) {
-        console.error('로고 업로드 실패:', error)
-        alert('로고 업로드에 실패했습니다.')
-        return
-      }
-    }
-
-    // 2. 사용자 정보 업데이트
     const payload = {
       name: editInfo.value.name,
       phone: editInfo.value.phone,
+      logoUrl: logoUrlToSend,
     }
 
     await adminApi.managerInfoEdit(payload)
@@ -307,12 +307,21 @@ const formatPhoneNumber = (e) => {
         </div>
         <div class="modal-input-section">
           <label>기업로고</label>
-          <img
-            class="modal-logo-image"
-            :src="displayLogoUrl"
-            alt="기업로고 이미지"
-            @error="$event.target.src = '/assets/images/admin_logo.png'"
-          />
+          <div id="service-group-image-upload">
+            <label for="file-upload" class="file-upload-label">
+              <template v-if="thumbnail">
+                <img :src="thumbnail" class="service-group-thumbnail" alt="미리보기" />
+              </template>
+              <template v-else>
+                <img
+                  src="/assets/images/no-image.png"
+                  class="service-group-thumbnail"
+                  alt="기본 이미지"
+                />
+              </template>
+            </label>
+            <input id="file-upload" type="file" class="file-upload-input hidden" @change="onFileChange"/>
+          </div>
         </div>
 
         <div class="modal-button-container">
@@ -343,39 +352,7 @@ const formatPhoneNumber = (e) => {
         <!-- 기업로고 업로드 필드 -->
         <div class="modal-input-section-logo">
           <label>기업로고</label>
-          <div class="logo-upload-wrapper">
-            <!-- 로고 미리보기 -->
-            <div class="logo-preview-container">
-              <img
-                class="logo-preview-image"
-                :src="displayLogoUrl"
-                alt="기업로고 미리보기"
-                @error="$event.target.src = '/assets/images/admin_logo.png'"
-              />
-            </div>
-
-            <!-- 파일 선택 컨트롤 -->
-            <div class="file-controls">
-              <input
-                ref="logoFileInput"
-                type="file"
-                accept="image/*"
-                class="hidden-file-input"
-                @change="handleLogoFileChange"
-              />
-              <button type="button" class="file-select-btn" @click="logoFileInput?.click()">
-                파일 선택
-              </button>
-              <button v-if="logoFile" type="button" class="file-remove-btn" @click="removeLogoFile">
-                삭제
-              </button>
-            </div>
-          </div>
-          <!-- 파일명 표시 -->
-          <div v-if="logoFileName" class="file-name-display">
-            {{ logoFileName }}
-          </div>
-          <div v-else class="file-name-display text-gray-400">선택된 파일 없음</div>
+          <input @change="onFileChange" type="file" class="modal-input-file" />
         </div>
 
         <div class="modal-button-container">
@@ -465,10 +442,6 @@ label,
   @apply text-[12px] text-gray-dark cursor-pointer hover:text-[#CE0202];
 }
 
-.modal-logo-image {
-  @apply h-[30px] border border-gray-deep;
-}
-
 .modal-input,
 .modal-input-file,
 .modal-textarea {
@@ -499,45 +472,7 @@ label,
   @apply border border-opacity-50 border-primary text-primary font-medium px-3 py-0.5 rounded-full hover:border-red-600 hover:bg-gray-line;
 }
 
-/* ===== 로고 업로드 스타일 ===== */
-
-.modal-input-section-logo {
-  @apply flex flex-col gap-3 mt-[15px] mb-[5px];
-}
-
-.modal-input-section-logo > label {
-  @apply text-[14px] text-black font-medium;
-}
-
-.logo-upload-wrapper {
-  @apply flex justify-between items-end gap-3;
-}
-
-.logo-preview-container {
-  @apply w-20 h-20 border-2 border-gray-line rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden;
-}
-
-.logo-preview-image {
-  @apply w-full h-full object-contain;
-}
-
-.file-controls {
-  @apply flex gap-2;
-}
-
-.hidden-file-input {
-  @apply hidden;
-}
-
-.file-select-btn {
-  @apply px-4 h-10 bg-primary text-white text-sm rounded hover:bg-primary-hover transition-colors cursor-pointer;
-}
-
-.file-remove-btn {
-  @apply px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600 transition-colors cursor-pointer;
-}
-
-.file-name-display {
-  @apply text-[12px] text-gray-600;
+.service-group-thumbnail {
+  @apply h-[50px] border border-gray-deep rounded-[3px];
 }
 </style>

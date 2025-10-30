@@ -28,10 +28,10 @@ const router = createRouter({
       meta: { layout: 'user', requiresAuth: true, role: 'USER' },
     },
     {
-      path: '/c/:companySlug/reservation/completed',
+      path: '/c/:companySlug/reservation/completed/:reservationId',
       name: 'userReservationCompleted',
       component: () => import('@/views/user/ReservationCompletedView.vue'),
-      meta: { layout: 'user', requiresAuth: false },
+      meta: { layout: 'user',  requiresAuth: true, role: 'USER' },
     },
     {
       path: '/c/:companySlug/services',
