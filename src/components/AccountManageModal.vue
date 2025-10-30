@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import adminApi from '@/services/admin/admin_api'
+import serviceApi from '@/services/service/service_api'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import { getCompanyLogoUrl } from '@/utils/imageUrl'
@@ -164,27 +165,28 @@ const removeLogoFile = () => {
  */
 const handleEditSubmit = async () => {
   try {
+    // 1. 개인 프로필 수정 (로고 제외)
     const payload = {
       name: editInfo.value.name,
       phone: editInfo.value.phone,
-      logoUrl: editInfo.value.logoUrl || props.userData.logoUrl,
     }
 
     await adminApi.managerInfoEdit(payload)
-
-    // AuthStore 업데이트
     authStore.updateUser({ data: payload })
 
-    // Company 정보도 업데이트 (로고 변경 시)
-    if (payload.logoUrl) {
-      authStore.updateCompany({ logoUrl: payload.logoUrl })
+    // 2. 로고가 변경된 경우 별도 API 호출
+    const isLogoChanged =
+      editInfo.value.logoUrl && editInfo.value.logoUrl !== props.userData.logoUrl
+
+    if (isLogoChanged) {
+      await adminApi.updateCompanyLogo(editInfo.value.logoUrl)
+      authStore.updateCompany({ logoUrl: editInfo.value.logoUrl })
     }
 
-    // 최신 데이터 가져오기
+    // 3. 최신 데이터 가져오기
     const response = await adminApi.getMyProfile()
     Object.assign(props.userData, response.data.data || response.data)
 
-    // 모드 전환 및 초기화
     mode.value = 'view'
     logoPreviewUrl.value = ''
     logoFileName.value = ''
@@ -265,9 +267,7 @@ const formatPhoneNumber = (e) => {
 }
 
 // ===== 로고 파일 선택 트리거 ===== (이 함수만 추가)
-/**
- * 첨부 버튼 클릭 시 파일 선택 창 열기
- */
+// 로고 파일 선택 트리거 (이 함수만 추가)
 const triggerFileInput = () => {
   if (logoFileInput.value) {
     logoFileInput.value.click()
