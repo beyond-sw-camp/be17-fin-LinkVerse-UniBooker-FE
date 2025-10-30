@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import adminApi from '@/services/admin/admin_api'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 
 const router = useRouter()
 
@@ -288,13 +288,6 @@ const handleSubmit = async () => {
     logoUrl: formData.logoUrl,
   }
 
-  submitFormData.append(
-    'data',
-    new Blob([JSON.stringify(requestData)], {
-      type: 'application/json',
-    }),
-  )
-
   // 11. API 호출
   try {
     isLoading.value = true
@@ -495,7 +488,7 @@ const goToLogin = () => {
               @change="handleFileUpload"
             />
           </div>
-          <span v-if="fileName" class="file-name">{{ fileName }}</span>
+          <span v-if="fileName" class="file-name hidden">{{ fileName }}</span>
         </div>
 
         <!-- 제출 버튼 -->

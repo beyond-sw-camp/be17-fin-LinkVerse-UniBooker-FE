@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import adminApi from '@/services/admin/admin_api'
-import serviceApi from '@/services/admin/service_api'
+import serviceApi from '@/services/service/service_api'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import { getCompanyLogoUrl } from '@/utils/imageUrl'
