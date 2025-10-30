@@ -64,7 +64,7 @@ const formatDate = (dateString, includeTime = false) => {
 
 // 날짜 표시
 const getDate = (item) => {
-  if (item.serviceCategory === 'EVENT') return formatDateEvent(item.createdAt)
+  if (item.serviceCategory === 'EVENT') return formatDate(item.createdAt)
   else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
 }
 

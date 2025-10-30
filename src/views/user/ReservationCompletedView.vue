@@ -1,7 +1,12 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { onMounted, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import ReservationApi from '@/services/user/reservation_api'
 
+const route = useRoute()
 const router = useRouter()
+
+const reservationData = reactive({})
 
 const goToReservationDetail = () => {
   router.push('')
@@ -10,6 +15,37 @@ const goToReservationDetail = () => {
 const goToHome = () => {
   router.push('')
 }
+
+const formatDate = (dateString, includeTime = false) => {
+  const date = new Date(dateString)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+
+  if (includeTime) {
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
+  }
+
+  return `${yyyy}년 ${mm}월 ${dd}일`
+}
+
+const getDate = (item) => {
+  if (item.serviceCategory === 'EVENT') return formatDate(item.createdAt)
+  else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
+}
+
+// 예약 상세 조회
+const getReservation = async () => {
+  const response = await ReservationApi.getUserReservation(route.params.reservationId)
+  Object.assign(reservationData, response.data)
+}
+
+onMounted(() => {
+  console.log('🌟예약 완료 페이지')
+  getReservation()
+})
 </script>
 
 <template>
@@ -32,19 +68,19 @@ const goToHome = () => {
         <div class="reservation-completed-info">
           <div>
             <label class="reservation-completed-label">예약 번호</label>
-            <p>123456789</p>
+            <p>{{ reservationData.id }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">예약자</label>
-            <p>유현경</p>
+            <p>{{ reservationData.userName }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">예약 일자</label>
-            <p>2025/10/13 (월) 19:00</p>
+            <p>{{ getDate(reservationData) }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">서비스명</label>
-            <p>회의실 A</p>
+            <p>{{ reservationData.resourceName }}</p>
           </div>
         </div>
   

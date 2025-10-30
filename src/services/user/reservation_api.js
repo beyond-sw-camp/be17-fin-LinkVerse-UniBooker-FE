@@ -36,12 +36,55 @@ const getUserReservation = async (reservationId) => {
   return data
 }
 
+/** 특정 서비스 예약 목록 조회 */
+const getResourceReservations = async (resourceId, startDate, endDate) => {
+  let data = {}
+
+  await axiosInstance
+    .get(`api/reservation/list/${resourceId}?startDate=${startDate}&endDate=${endDate}`)
+    .then(response => {
+      data = response.data
+      console.log('특정 서비스 예약 목록 조회 성공 : ', data)
+    })
+    .catch(error => {
+      data = error.data
+      console.log('특정 서비스 예약 목록 조회 실패 : ', data)
+    })
+  
+  return data
+}
+
 /** 예약하기 */
 const reserve = async (resourceId, formData) => {
   let data = {}
 
   await axiosInstance
     .post(`api/reservation/${resourceId}`, formData)
+    .then(response => {
+      data = response.data
+      console.log('예약 성공 : ', data)
+    })
+    .catch(error => {
+      data = error.data
+      console.log('예약 실패 : ', data)
+  })
+  
+  return data
+}
+
+/** 예약취소 */
+const cancel = async (reservationId) => {
+  let data = {}
+
+  await axiosInstance.delete(`api/reservation/cancel/${reservationId}`)
+    .then(response => {
+      data = response.data
+      console.log('예약 취소 성공 : ', data)
+    })
+    .catch(error => {
+      data = error.data
+      console.log('예약 취소 실패 : ', data)
+    })
   
   return data
 }
@@ -49,5 +92,7 @@ const reserve = async (resourceId, formData) => {
 export default {
   getUserReservations,
   getUserReservation,
-  reserve
+  getResourceReservations,
+  reserve,
+  cancel,
 }

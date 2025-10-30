@@ -1,60 +1,83 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-const rows = 10
-const cols = 12
+const props = defineProps({ service: Object, selectedTime: String, resourceReservations: Array })
+const emits = defineEmits(['selectSeat'])
 
-// 예시 공연/서비스
-const services = reactive([
-  { id: 1, name: '공연 A', date: '2025-10-30', time: '19:00', reserved: 20, total: 40 },
-  { id: 2, name: '공연 B', date: '2025-11-05', time: '18:00', reserved: 15, total: 40 },
-])
+const route = useRoute()
 
-const selectedService = ref(services[0])
+// 행, 열 정보
+const rows = props.service.row
+const cols = props.service.col
 
+// 좌석 데이터
+const seats = ref([])
+
+// 선택한 좌석
+const selectedSeat = ref(null)
+
+// 호버된 좌석
 const hoverSeat = ref(null)
 
-const seatsMap = reactive({})
+// 🌟 현재 선택한 시간대에 해당하는 예약 정보만 필터링
+const currentTimeReservations = computed(() => {
+  if (!props.selectedTime || !props.resourceReservations) return []
+  return props.resourceReservations.filter((r) =>
+    r.startDate.slice(11, 16) === props.selectedTime
+  )
+})
 
-// 좌석 데이터 생성 (더미 포함)
-const generateSeats = (serviceId) =>
-  Array.from({ length: rows }, (_, r) =>
+// 좌석 데이터 생성
+const generateSeats = () => {
+  return Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => {
-      const reserved = Math.random() < 0.3
-      const service = services.find((s) => s.id === serviceId)
+
+      // 선택된 시간과 일치하는 예약만 필터링
+      const reservedSeat = currentTimeReservations.value.find((item) =>
+        item.row === r + 1 && item.col === c + 1
+      )
+
       return {
-        id: serviceId * 10000 + r * cols + c,
+        id: route.params.itemId * 10000 + r * cols + c, // 좌석 id
         row: r + 1,
         col: c + 1,
-        reserved,
-        reservationInfo: reserved
+        reserved: !!reservedSeat,           // 예약 여부
+        reservationInfo: reservedSeat       // 예약된 경우의 예약 상세 정보
           ? {
-              id: 1000 + r * cols + c,
-              name: `유저 ${r * cols + c + 1}`,
-              date: service.date,
-              time: service.time,
-            }
+            id: reservedSeat.id,            // 예약 번호
+            name: reservedSeat.userName,    // 좌석을 예약한 사용자 
+            date: reservedSeat.startDate,   // 예약 날짜
+            time: reservedSeat.endDate,     // 예약 시간
+          }
           : null,
       }
     }),
   )
-
-services.forEach((s) => {
-  seatsMap[s.id] = generateSeats(s.id)
-})
-
-const seats = computed(() => seatsMap[selectedService.value.id])
-
-// 예약 리스트 트랙킹용 refs
-const seatRefs = reactive({})
-
-// 좌석판에서 호버 -> 스크롤 포함
+}
+  
+// 좌석 호버시 처리
 const onSeatHoverBoard = (seat) => {
   hoverSeat.value = seat
-  if (seat.reservationInfo && seatRefs[seat.id]) {
-    seatRefs[seat.id].scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
 }
+
+// 좌석 선택 시 부모 컴포넌트에 값 전달
+const sendParentSeatInfo = (seat) => {
+  selectedSeat.value = seat // 선택한 좌석 저장
+  emits('selectSeat', seat)
+}
+
+// 화면 로드시 실행
+onMounted(() => {
+  seats.value = generateSeats() // 좌석 생성
+
+  console.log('🌟props 값 확인 : ', props.selectedTime, props.resourceReservations)
+})
+
+// 선택된 시간이 바뀔때마다 좌석 재생성
+watch([() => props.selectedTime, () => props.resourceReservations], () => {
+  seats.value = generateSeats()
+})
 </script>
 
 <template>
@@ -82,10 +105,11 @@ const onSeatHoverBoard = (seat) => {
               'seat',
               seat.reserved ? 'reserved' : 'empty',
               hoverSeat?.id === seat.id ? 'hovered' : '',
+              selectedSeat?.id === seat.id ? 'selected' : '',
             ]"
             @mouseenter="onSeatHoverBoard(seat)"
             @mouseleave="hoverSeat = null"
-            @click="openSeatDetail(seat)"
+            @click="sendParentSeatInfo(seat)"
           ></div>
         </div>
       </div>
@@ -99,6 +123,7 @@ const onSeatHoverBoard = (seat) => {
           left: `${(hoverSeat.col - 1) * 1.5}rem`,
         }"
       >
+        <p>좌석 ID : {{ hoverSeat.id }}</p>
         <p>좌석: {{ hoverSeat.row }}-{{ hoverSeat.col }}</p>
         <p v-if="hoverSeat.reservationInfo">예약 번호: {{ hoverSeat.reservationInfo.id }}</p>
         <p v-else class="no-reservation">예약 없음</p>
@@ -107,15 +132,15 @@ const onSeatHoverBoard = (seat) => {
 
     <!-- 오른쪽 가격 정보 -->
     <div class="seat-info-box w-56 border-l pl-6">
-      <h3 class="title">좌석등급 / 잔여석</h3>
+      <h3 class="title">잔여석</h3>
       <div class="flex flex-col gap-3 text-sm">
-        <div class="flex justify-between">
-          <span>전석</span>
-          <span>44,000원</span>
-        </div>
         <div class="flex justify-between text-gray-500 text-xs">
           <span>총 좌석 {{ rows * cols }}</span>
-          <span>남은 좌석 {{ seats.flat().filter(s => !s.reserved).length }}</span>
+          <span>남은 좌석 {{ rows*cols - currentTimeReservations.length || 0 }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>선택한 좌석</span>
+          <span>{{ selectedSeat ? selectedSeat.row + '행 ' + selectedSeat.col + '열' : '없음'  }}</span>
         </div>
       </div>
     </div>
@@ -175,7 +200,7 @@ const onSeatHoverBoard = (seat) => {
 }
 
 .seat.reserved {
-  @apply bg-gray-200;
+  @apply bg-gray-200 cursor-not-allowed;
 }
 
 .seat.hovered {
@@ -184,6 +209,10 @@ const onSeatHoverBoard = (seat) => {
 
 .seat-tooltip {
   @apply absolute p-2 bg-gray-50 border rounded text-sm text-gray-700 shadow z-10 whitespace-nowrap pointer-events-none;
+}
+
+.seat.selected {
+  @apply ring-2 ring-yellow-400;
 }
 
 .no-reservation {
