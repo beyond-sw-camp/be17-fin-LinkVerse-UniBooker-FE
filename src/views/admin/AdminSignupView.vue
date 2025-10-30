@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
 import adminApi from '@/services/admin/admin_api'
+import serviceApi from '@/services/service/service_api'
 
 const router = useRouter()
 
@@ -271,6 +272,7 @@ const handleSubmit = async () => {
     phone: formData.phone,
     logoUrl: formData.logoUrl, // CloudFront URL
   }
+  // 11. API 호출
 
   try {
     isLoading.value = true
@@ -456,7 +458,7 @@ const goToLogin = () => {
               @change="handleFileUpload"
             />
           </div>
-          <span v-if="fileName" class="file-name">{{ fileName }}</span>
+          <span v-if="fileName" class="file-name hidden">{{ fileName }}</span>
         </div>
 
         <!-- 제출 버튼 -->

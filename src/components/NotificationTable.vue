@@ -4,8 +4,8 @@ import notifyApi from '@/services/notification/notification_api'
 
 const props = defineProps({
   notifications: { type: Array, required: true },
-  // 플랫폼 관리자페이지 테이블 스타일 테마로 선택 
-  theme: { type: String, default: 'default' }
+  // 플랫폼 관리자페이지 테이블 스타일 테마로 선택
+  theme: { type: String, default: 'default' },
 })
 
 const detailOpen = ref(false)
@@ -16,12 +16,17 @@ function openDetailModal(item) {
   detailOpen.value = true
 }
 
-const markAsReadAndClose = async (notificationId) => {
+const markAsReadAndClose = async (notification) => {
   try {
-    await notifyApi.notifyRead(notificationId)
+    if (notification.isRead) {
+      detailOpen.value = false
+      return
+    }
+
+    await notifyApi.notifyRead(notification.id)
     detailOpen.value = false
-    // 페이지 새로고침
-    window.location.reload()
+
+    notification.isRead = true
   } catch (error) {
     console.error(error)
   }
@@ -33,12 +38,7 @@ const markAsReadAndClose = async (notificationId) => {
     <slot name="title" />
 
     <template v-if="notifications && notifications.length > 0">
-      <table
-        :class="[
-          'notification-table',
-          theme === 'super' ? 'components-super-table' : ''
-        ]"
-      >
+      <table :class="['notification-table', theme === 'super' ? 'components-super-table' : '']">
         <thead>
           <tr>
             <th>번호</th>
@@ -60,7 +60,7 @@ const markAsReadAndClose = async (notificationId) => {
             <td>{{ item.message }}</td>
             <td>{{ item.createdAt }}</td>
             <td class="text-center">
-              <span v-if="item.isRead" class="text-gray-dark/70 text-sm font-medium">읽음</span>
+              <span v-if="item.isRead" class="text-gray-dark/70 text-[13px] font-medium">읽음</span>
               <span v-else class="text-primary">읽지 않음</span>
             </td>
             <td class="text-center">
@@ -78,7 +78,7 @@ const markAsReadAndClose = async (notificationId) => {
 
     <template v-else>
       <div class="notification-empty">
-        <p> 새로운 알림이 없습니다.</p>
+        <p>새로운 알림이 없습니다.</p>
       </div>
     </template>
 
@@ -98,7 +98,7 @@ const markAsReadAndClose = async (notificationId) => {
           <p>{{ selectedNotification?.createdAt }}</p>
         </div>
         <div class="edit-modal-button-container">
-          <Button @click="markAsReadAndClose(selectedNotification?.id)">확인</Button>
+          <Button @click="markAsReadAndClose(selectedNotification)">확인</Button>
         </div>
       </div>
     </Modal>
@@ -129,14 +129,14 @@ const markAsReadAndClose = async (notificationId) => {
 }
 
 .notification-header {
-  @apply font-medium text-[18px]
+  @apply font-medium text-[18px];
 }
 
 td {
-  @apply !font-normal
+  @apply !font-normal;
 }
 
 .notification-empty {
-  @apply flex justify-center items-center h-full
+  @apply flex justify-center items-center h-full;
 }
 </style>

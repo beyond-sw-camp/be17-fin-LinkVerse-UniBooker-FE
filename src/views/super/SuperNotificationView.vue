@@ -20,7 +20,7 @@ onMounted(async () => {
   <div class="components-white-container">
     <div class="components-super-table-container">
       <!-- theme="super" prop으로 테이블 테마 전달 -->
-      <NotificationTable :notifications="notifications" theme="super" />
+      <NotificationTable :notifications="notifications" theme="super" class="w-full"/>
     </div>
   </div>
 </template>
@@ -40,6 +40,6 @@ onMounted(async () => {
 }
 
 .components-super-table-container {
-  @apply min-h-[520px] flex items-center justify-center
+  @apply min-h-[520px] flex
 }
 </style>

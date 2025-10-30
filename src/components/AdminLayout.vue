@@ -338,11 +338,11 @@ watch(
 }
 
 .admin-badge img:first-child {
-  @apply w-[25px] mx-3;
+  @apply w-[75px] mx-3;
 }
 
 .admin-badge span {
-  @apply ml-[3px] mr-[12px];
+  @apply mx-[3px] mt-[1.5px];
 }
 
 .admin-badge img:last-child {
