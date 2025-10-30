@@ -339,7 +339,7 @@ watch(() => route.path, () => initMenuState())
 }
 
 .admin-badge img:first-child {
-  @apply w-[75px] mx-3;
+  @apply h-[25px] mx-3;
 }
 
 .admin-badge span {
@@ -393,9 +393,5 @@ label {
 
 .add-modal-button-container button {
   @apply py-[10px];
-}
-
-.button-px {
-  @apply px-0;
 }
 </style>
