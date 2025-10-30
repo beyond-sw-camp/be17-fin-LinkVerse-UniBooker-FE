@@ -15,10 +15,14 @@ const goToMyReservation = () => {
 }
 
 // 예약 취소
-const cancelReservation = () => {
+const cancelReservation = async () => {
   if (confirm('이 예약을 취소하시겠습니까?')) {
     alert('예약이 취소되었습니다.')
-    goToMyReservation()
+    const response = await ReservationApi.cancel(route.params.reservationId)
+
+    if (response.isSuccess) {
+      goToMyReservation()
+    }
   }
 }
 

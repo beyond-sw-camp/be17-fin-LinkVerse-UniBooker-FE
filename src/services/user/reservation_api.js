@@ -72,9 +72,27 @@ const reserve = async (resourceId, formData) => {
   return data
 }
 
+/** 예약취소 */
+const cancel = async (reservationId) => {
+  let data = {}
+
+  await axiosInstance.delete(`api/reservation/cancel/${reservationId}`)
+    .then(response => {
+      data = response.data
+      console.log('예약 취소 성공 : ', data)
+    })
+    .catch(error => {
+      data = error.data
+      console.log('예약 취소 실패 : ', data)
+    })
+  
+  return data
+}
+
 export default {
   getUserReservations,
   getUserReservation,
   getResourceReservations,
   reserve,
+  cancel,
 }

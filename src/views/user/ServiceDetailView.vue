@@ -129,7 +129,7 @@ const getResourceReservations = async (startDate, endDate) => {
   const response = await ReservationApi.getResourceReservations(route.params.itemId, startDate, endDate)
 
   if (response && response.isSuccess) {
-    resourceReservations.value = response.data.list
+    resourceReservations.value = response.data.list.filter((res) => res.status === 'CONFIRMED')
     reservedTimes.value = response.data.list.map(res => res.startDate.slice(11, 16)) // 예약된 시간만 추출해서 배열로 저장 "09:00"
     console.log('🌟예약된 시간 추출 : ', reservedTimes)
   } else {
