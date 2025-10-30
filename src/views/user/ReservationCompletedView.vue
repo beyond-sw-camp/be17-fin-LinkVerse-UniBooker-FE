@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReservationApi from '@/services/user/reservation_api'
 
@@ -14,6 +14,26 @@ const goToReservationDetail = () => {
 
 const goToHome = () => {
   router.push('')
+}
+
+const formatDate = (dateString, includeTime = false) => {
+  const date = new Date(dateString)
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+
+  if (includeTime) {
+    const hh = String(date.getHours()).padStart(2, '0')
+    const min = String(date.getMinutes()).padStart(2, '0')
+    return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
+  }
+
+  return `${yyyy}년 ${mm}월 ${dd}일`
+}
+
+const getDate = (item) => {
+  if (item.serviceCategory === 'EVENT') return formatDate(item.createdAt)
+  else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
 }
 
 // 예약 상세 조회
@@ -56,7 +76,7 @@ onMounted(() => {
           </div>
           <div>
             <label class="reservation-completed-label">예약 일자</label>
-            <p>{{ reservationData.startDate ?  reservationData.startDate : reservationData.createdAt}}</p>
+            <p>{{ getDate(reservationData) }}</p>
           </div>
           <div>
             <label class="reservation-completed-label">서비스명</label>

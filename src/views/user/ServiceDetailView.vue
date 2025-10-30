@@ -2,6 +2,7 @@
 // ================= import ==================
 import { watch, onMounted, reactive, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/UseStore'
 
 import Input from '@/components/Input.vue'
 import Button from '@/components/Button.vue'
@@ -16,6 +17,7 @@ import ReservationApi from '@/services/user/reservation_api'
 // =============== definition ================
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const dayMap = { SUN: '일', MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금', SAT: '토', }
 
@@ -138,9 +140,18 @@ const getResourceReservations = async (startDate, endDate) => {
 }
 
 // --- 예약 요청
-const postReserve = async (reservationForm) => {
-  const response = await ReservationApi.reserve(route.params.itemId, reservationForm)
-  return response.data
+const reserve = async () => {
+  const confirmed = window.confirm('예약을 하시겠습니까?')
+  if (!confirmed) return // 취소
+
+  const response = await ReservationApi.reserve(route.params.itemId, reservationForm.value)
+
+  if (response.isSuccess) {
+    const slug = route.params.companySlug || authStore.companySlug || 'default'
+    router.push(`/c/${slug}/reservation/completed/${response.data.id}`)
+  } else {
+    alert('예약 실패')
+  }
 }
 
 // ================ function ==================
@@ -277,18 +288,6 @@ const decrease = () => { if (selectedHeadCount.value > 1) selectedHeadCount.valu
 const selectSeat = ({ row, col }) => {
   selectedRow.value = row
   selectedCol.value = col
-}
-
-// --- 예약 버튼 클릭
-const reserve = () => {
-  const confirmed = window.confirm('예약을 하시겠습니까?')
-  if (!confirmed) return // 취소
-  const reservationRes = postReserve(reservationForm.value)
-
-  const slug = route.params.companySlug || authStore.companySlug || 'default'
-  router.push({
-    path: `/c/${slug}/reservation/completed/${reservationRes.id}`,
-  })
 }
 
 
