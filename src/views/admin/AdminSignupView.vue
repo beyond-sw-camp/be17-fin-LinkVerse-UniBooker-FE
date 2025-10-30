@@ -15,7 +15,7 @@ const formData = reactive({
   name: '',
   email: '',
   phone: '',
-  logo: null,
+  logoUrl: null, // ← logo → logoUrl로 변경
 })
 
 const fileName = ref('')
@@ -108,7 +108,7 @@ const checkBusinessNumber = async () => {
     isLoading.value = true
     const response = await adminApi.checkBusinessNumber(formData.businessNumber)
 
-    // ✅ response.data.result → response.data.data로 수정
+    // response.data.result → response.data.data로 수정
     if (response.data.data === false) {
       duplicateCheckState.businessNumber = true
       alert('사용 가능한 사업자등록번호입니다.')
@@ -131,7 +131,7 @@ const checkSlug = async () => {
     isLoading.value = true
     const response = await adminApi.checkSlug(formData.companySlug)
 
-    // ✅ response.data.result → response.data.data로 수정
+    // response.data.result → response.data.data로 수정
     const result = response.data.data
 
     if (result.available) {
@@ -156,7 +156,7 @@ const checkEmail = async () => {
     isLoading.value = true
     const response = await adminApi.checkEmail(formData.email)
 
-    // ✅ response.data.result → response.data.data로 수정
+    // response.data.result → response.data.data로 수정
     if (response.data.data === false) {
       duplicateCheckState.email = true
       alert('사용 가능한 이메일입니다.')
@@ -171,31 +171,39 @@ const checkEmail = async () => {
   }
 }
 
-// ===== 파일 업로드 =====
-const handleFileUpload = (event) => {
+// ===== 파일 업로드 (수정) =====
+const handleFileUpload = async (event) => {
   const file = event.target.files[0]
-  if (file) {
-    // 파일 크기 검증 (5MB 제한)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하만 업로드 가능합니다.')
-      event.target.value = ''
-      return
-    }
+  if (!file) return
 
-    // 이미지 파일 형식 검증
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.')
-      event.target.value = ''
-      return
-    }
+  try {
+    // 1. FormData 생성 (프롬프트 방식)
+    const uploadFormData = new FormData()
+    uploadFormData.append('file', file)
+    uploadFormData.append('imageType', 'companyLogo') // ← 중요!
 
-    formData.logo = file
+    // 2. Presigned URL 요청
+    const presignedUrl = await adminApi.getPresignedURL(uploadFormData)
+
+    // 3. S3 업로드
+    await adminApi.uploadImage(presignedUrl, file)
+
+    // 4. S3 경로만 저장 (CloudFront 도메인 제외)
+    const s3Path = presignedUrl.split('.com')[1].split('?')[0]
+    formData.logoUrl = s3Path //  /company-logo/xxx.jpg
+
     fileName.value = file.name
+    alert('로고 업로드 완료!')
+  } catch (error) {
+    console.error('업로드 실패:', error)
+    alert('로고 업로드 실패')
   }
 }
 
 // ===== 폼 제출 =====
 const handleSubmit = async () => {
+  console.log('📤 회원가입 제출 시작')
+  console.log('📋 현재 formData:', JSON.stringify(formData, null, 2))
   // 1. 사업자등록번호 형식 검증
   const cleanedBusinessNumber = formData.businessNumber.replace(/[^0-9]/g, '')
   if (cleanedBusinessNumber.length !== 10) {
@@ -253,9 +261,13 @@ const handleSubmit = async () => {
     return
   }
 
-  // 10. FormData 생성
-  const submitFormData = new FormData()
+  // 10. 로고 업로드 필수 검증 (새로 추가)
+  if (!formData.logoUrl) {
+    alert('기업 로고를 업로드해주세요.')
+    return
+  }
 
+  // 11. JSON 데이터 생성
   const requestData = {
     businessNumber: formData.businessNumber,
     companyName: formData.companyName,
@@ -263,23 +275,15 @@ const handleSubmit = async () => {
     name: formData.name,
     email: formData.email,
     phone: formData.phone,
+    logoUrl: formData.logoUrl, // null이 아님을 보장
   }
 
-  submitFormData.append(
-    'data',
-    new Blob([JSON.stringify(requestData)], {
-      type: 'application/json',
-    }),
-  )
-
-  if (formData.logo) {
-    submitFormData.append('logoFile', formData.logo)
-  }
+  console.log('📦 회원가입 요청 데이터:', requestData)
 
   // 11. API 호출
   try {
     isLoading.value = true
-    const response = await adminApi.signUpAdmin(submitFormData)
+    const response = await adminApi.signUpAdmin(requestData)
 
     alert(response.data.data.message || '회원가입 신청이 완료되었습니다.')
 
@@ -289,7 +293,8 @@ const handleSubmit = async () => {
       query: { email: formData.email },
     })
   } catch (error) {
-    console.error('회원가입 실패:', error)
+    console.error('❌ 회원가입 실패:', error)
+    console.error('❌ 에러 응답:', error.response?.data)
     alert(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.')
   } finally {
     isLoading.value = false
@@ -298,13 +303,27 @@ const handleSubmit = async () => {
 
 // ===== 제출 버튼 활성화 여부 =====
 const isSubmitEnabled = computed(() => {
+  const result = {
+    businessNumber: duplicateCheckState.businessNumber,
+    slug: duplicateCheckState.slug,
+    email: duplicateCheckState.email,
+    companyName: !!formData.companyName,
+    name: !!formData.name,
+    phone: !!formData.phone,
+    logoUrl: !!formData.logoUrl,
+  }
+
+  console.log('🔍 제출 버튼 활성화 조건:', result)
+  console.log('📋 현재 formData.logoUrl:', formData.logoUrl)
+
   return (
     duplicateCheckState.businessNumber &&
     duplicateCheckState.slug &&
     duplicateCheckState.email &&
     formData.companyName &&
     formData.name &&
-    formData.phone
+    formData.phone &&
+    formData.logoUrl
   )
 })
 
@@ -443,12 +462,20 @@ const goToLogin = () => {
         </div>
 
         <!-- 기업로고 -->
-        <div class="admin-signup-field">
-          <label class="admin-signup-label">기업로고</label>
-          <div class="admin-signup-input-wrapper">
-            <Input id="logo-upload" type="file" accept="image/*" @change="handleFileUpload" />
-            <span v-if="fileName" class="file-name">{{ fileName }}</span>
+        <div class="admin-sigup-file-input-field">
+          <div class="admin-signup-field-file">
+            <label class="admin-signup-label">기업로고</label>
+            <div class="admin-signup-input-wrapper">
+              <input
+                id="logo-upload"
+                type="file"
+                accept="image/*"
+                @change="handleFileUpload"
+                class="file-input"
+              />
+            </div>
           </div>
+          <span v-if="fileName" class="file-name">{{ fileName }}</span>
         </div>
 
         <!-- 제출 버튼 -->
@@ -520,10 +547,6 @@ const goToLogin = () => {
   @apply flex-1 text-sm flex flex-col gap-2;
 }
 
-.file-name {
-  @apply text-xs text-gray-500;
-}
-
 /* 입력 래퍼 (버튼 포함) */
 .admin-signup-input-with-button {
   @apply flex items-center gap-2 flex-1 text-sm;
@@ -542,9 +565,27 @@ const goToLogin = () => {
   @apply w-full;
 }
 
+/* 파일 input 스타일 */
+.admin-sigup-file-input-field {
+  @apply flex flex-col w-full max-w-[500px] mb-10;
+}
+
+.admin-signup-field-file {
+  @apply flex items-center w-full max-w-[500px] mb-2;
+}
+
+.file-input {
+  @apply w-full px-2 py-2 border-b-2 border-gray-200 rounded-md text-gray-400
+  focus:border-primary focus:ring-primary transition-all;
+}
+
+.file-name {
+  @apply text-sm text-primary-bright ml-[130px];
+}
+
 /* 중복확인 버튼 */
 .admin-signup-check-button {
-  @apply h-[30px] min-w-[70px] bg-[#f5f5f5] border border-gray-400 font-normal text-gray-400 text-[12px] px-2 py-1 rounded-[15px] shadow-sm;
+  @apply h-[32px] min-w-[70px] bg-[#f5f5f5] border border-gray-400 font-normal text-gray-400 text-[12px] px-2 py-1 rounded-full shadow-sm;
   @apply transition-all;
 }
 

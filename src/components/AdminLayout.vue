@@ -1,17 +1,26 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/UseStore'
 import { useRouter } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/service/service_api'
 import adminApi from '@/services/admin/admin_api'
+import { getCompanyLogoUrl } from '@/utils/imageUrl'
 import notifyApi from '@/services/notification/notification_api'
 import { useNotificationStore } from '@/stores/notificationStore'
 
 const isModalOpen = ref(false)
 const userData = ref(null)
 const authStore = useAuthStore()
+
+// 기업 로고 computed
+const companyLogo = computed(() => {
+  if (authStore.company?.logoUrl) {
+    return getCompanyLogoUrl(authStore.company.logoUrl)
+  }
+  return '/assets/images/admin_logo.png'
+})
 const notificationStore = useNotificationStore()
 
 async function openModal() {
@@ -36,7 +45,6 @@ const router = useRouter()
 // 로그아웃 처리
 const handleLogout = async () => {
   try {
-
     // 로그아웃 API 호출 (쿠키는 자동으로 전송됨)
     await adminApi.logout()
 
@@ -48,6 +56,20 @@ const handleLogout = async () => {
   } catch (error) {
     // 실패해도 프론트엔드 상태는 초기화
     authStore.logout()
+    router.push('/admin/login')
+  }
+}
+
+// ===== 관리자 권한 체크 =====
+const isValidAdmin = computed(() => {
+  return authStore.isLoggedIn && (authStore.role === 'ADMIN' || authStore.role === 'MANAGER')
+})
+
+// ===== 권한 검증 (마운트 시 + role 변경 감지) =====
+const validateAdminAccess = () => {
+  if (!isValidAdmin.value) {
+    authStore.logout()
+    alert('관리자 권한이 필요합니다.')
     router.push('/admin/login')
   }
 }
@@ -125,7 +147,16 @@ const notiToggleDropdown = async () => {
 
 onMounted(() => {
   getServiceGroups()
+  validateAdminAccess()
 })
+
+// role이 변경되면 즉시 검증
+watch(
+  () => authStore.role,
+  () => {
+    validateAdminAccess()
+  },
+)
 </script>
 
 <template>
@@ -201,7 +232,12 @@ onMounted(() => {
     <div class="content-body">
       <div class="content-top">
         <div class="admin-badge">
-          <img @click="openModal" src="/assets/images/admin_logo.png" alt="기업 로고 이미지" />
+          <img
+            @click="openModal"
+            :src="companyLogo"
+            alt="기업 로고 이미지"
+            @error="$event.target.src = '/assets/images/admin_logo.png'"
+          />
           <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img
@@ -302,7 +338,7 @@ onMounted(() => {
 }
 
 .admin-badge img:first-child {
-  @apply w-[90px];
+  @apply w-[25px] mx-3;
 }
 
 .admin-badge span {

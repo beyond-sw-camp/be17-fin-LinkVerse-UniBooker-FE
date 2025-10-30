@@ -8,16 +8,14 @@
  */
 
 import axiosInstance from '@/plugin/axiosInterceptor'
+import axios from 'axios'
 
 /**
  * 관리자 회원가입 신청
  */
-const signUpAdmin = async (formData) => {
-  return await axiosInstance.post('/api/admins/signup', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  })
+const signUpAdmin = async (requestData) => {
+  return await axiosInstance.post('/api/admins/signup', requestData)
+  // Content-Type은 자동으로 application/json
 }
 
 /**
@@ -194,8 +192,58 @@ const updateManager = async (managerId, updateData) => {
   }
 }
 
+/**
+ * Presigned URL 요청
+ */
+const getPresignedURL = async (formData) => {
+  const response = await axiosInstance.post('/api/image-upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+  return response.data.data || response.data.result
+}
+
+/**
+ * S3 직접 업로드
+ */
+const uploadImage = async (presignedUrl, file) => {
+  await axios.put(presignedUrl, file, {
+    headers: { 'Content-Type': file.type }
+  })
+}
+
+/**
+ * 기업 로고 Presigned URL 요청 (파일 정보만 전송)
+ */
+const getPresignedURLForCompanyLogo = async (fileName, contentType) => {
+  const response = await axiosInstance.post(
+    '/api/image-upload/presigned-url/company-logo',
+    null,
+    {
+      params: { fileName, contentType }
+    }
+  )
+  return response.data.data
+}
+
+/**
+ * 기업 로고 업데이트
+ * @param {string} logoUrl - S3 경로 (예: /company-logo/xxx.jpg)
+ */
+const updateCompanyLogo = async (logoUrl) => {
+  try {
+    const response = await axiosInstance.patch('/api/admins/company/logo', null, {
+      params: { logoUrl }
+    })
+    return response.data
+  } catch (error) {
+    console.error('기업 로고 업데이트 실패', error)
+    throw error
+  }
+}
+
 
 export default {
+  getPresignedURLForCompanyLogo,
   signUpAdmin,
   checkBusinessNumber,
   checkSlug,
@@ -210,5 +258,8 @@ export default {
   getManagers,
   createManager,
   deleteManager,
-  updateManager
+  updateManager,
+  getPresignedURL,    
+  uploadImage,
+  updateCompanyLogo,
 }

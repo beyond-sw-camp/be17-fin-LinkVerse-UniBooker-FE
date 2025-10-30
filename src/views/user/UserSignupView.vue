@@ -80,6 +80,24 @@ const loadCompanyInfo = async () => {
   }
 }
 
+// ===== 기업 정보 로드 =====  메소드 다음
+
+/**
+ * CloudFront를 포함한 완전한 로고 URL
+ */
+const logoUrlComputed = computed(() => {
+  if (!companyInfo.value?.logoUrl) return null
+
+  // 이미 https로 시작하면 그대로 반환
+  if (companyInfo.value.logoUrl.startsWith('http')) {
+    return companyInfo.value.logoUrl
+  }
+
+  // S3 경로만 있으면 CloudFront URL 붙이기
+  const cloudFrontUrl = import.meta.env.VITE_CLOUDFRONT_URL
+  return `${cloudFrontUrl}${companyInfo.value.logoUrl}`
+})
+
 // ===== 유효성 검증 =====
 
 /**
@@ -311,12 +329,7 @@ const handleSubmit = async () => {
       <div class="user-signup-card">
         <!-- 기업명 표시 (추가) -->
         <div v-if="companyInfo" class="company-header">
-          <img
-            v-if="companyInfo.logoUrl"
-            :src="companyInfo.logoUrl"
-            alt="기업 로고"
-            class="company-logo"
-          />
+          <img v-if="logoUrlComputed" :src="logoUrlComputed" alt="기업 로고" class="company-logo" />
           <h2 class="company-name">{{ companyInfo.companyName }}</h2>
         </div>
 
@@ -468,7 +481,7 @@ const handleSubmit = async () => {
 }
 
 .company-logo {
-  @apply w-16 h-16 object-contain mb-2;
+  @apply w-10 h-10 object-contain mb-2;
 }
 
 .company-name {

@@ -49,7 +49,36 @@ const loadCompanyInfo = async () => {
     }
   } catch (error) {
     console.error('기업 정보 로드 실패:', error)
-    alert('기업 정보를 불러오는데 실패했습니다.')
+
+    const errorCode = error.response?.data?.code
+    const errorMessage = error.response?.data?.message
+
+    // 1. 서비스 정지 상태 (40013)
+    if (errorCode === 40013) {
+      console.log('🔴 Company SUSPENDED 감지 - 정지 페이지로 리다이렉트')
+      router.push({
+        name: 'ServiceSuspended',
+        params: { companySlug },
+      })
+      return
+    }
+
+    // 2. 기업을 찾을 수 없음 (40000)
+    if (errorCode === 40000) {
+      alert('존재하지 않는 서비스입니다.')
+      router.push('/')
+      return
+    }
+
+    // 3. 승인되지 않은 기업 (40004)
+    if (errorCode === 40004) {
+      alert('아직 승인되지 않은 서비스입니다.')
+      router.push('/')
+      return
+    }
+
+    // 4. 기타 에러
+    alert(errorMessage || '기업 정보를 불러오는데 실패했습니다.')
     router.push('/')
   } finally {
     isLoadingCompany.value = false
@@ -142,11 +171,10 @@ const handleLogin = async () => {
 
     const errorMessage = error.response?.data?.message
 
+    // 에러 메시지 처리
     if (errorMessage) {
       if (errorMessage.includes('이메일') || errorMessage.includes('비밀번호')) {
         alert('아이디 또는 비밀번호가 일치하지 않습니다.')
-      } else if (errorMessage.includes('승인')) {
-        alert('관리자 승인 대기 중입니다.')
       } else if (errorMessage.includes('정지')) {
         alert('정지된 계정입니다. 관리자에게 문의하세요.')
       } else if (errorMessage.includes('탈퇴')) {

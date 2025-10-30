@@ -82,6 +82,12 @@ const router = createRouter({
       component: () => import('@/views/user/FindIdView.vue'),
       meta: { layout: 'user', requiresGuest: true, title: '아이디 찾기' },
     },
+    {
+      path: '/c/:companySlug/suspended',
+      name: 'ServiceSuspended',
+      component: () => import('@/views/user/ServiceSuspendedView.vue'),
+      meta: { layout: 'user', requiresAuth: false },
+    },
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 기업 관리자 관련 라우터
@@ -300,9 +306,62 @@ const router = createRouter({
  * 3. 역할 검증 (Manager는 Admin 페이지 접근 가능)
  * 4. Company slug 검증 (USER만)
  */
+/**
+ * 전역 네비게이션 가드 (강화)
+ * 1. Company 정지 상태 체크 (일반 사용자)
+ * 2. 인증 상태 복원
+ * 3. 인증 필요 페이지 접근 제어
+ * 4. 역할 검증 (Manager는 Admin 페이지 접근 가능)
+ * 5. Company slug 검증 (USER만)
+ */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // ===== 0. Company 정지 상태 체크 (일반 사용자 경로만) =====
+  if (to.path.startsWith('/c/') && to.name !== 'ServiceSuspended') {
+    const companySlug = to.params.companySlug
 
+    if (companySlug) {
+      try {
+        // Company 정보 조회
+        const response = await axiosInstance.get(`/api/companies/slug/${companySlug}`)
+        const company = response.data.data
+
+        // SUSPENDED 상태면 정지 페이지로 리다이렉트
+        if (company.status === 'SUSPENDED') {
+          console.log('🔴 Company SUSPENDED 감지:', companySlug)
+          return next({
+            name: 'ServiceSuspended',
+            params: { companySlug }
+          })
+        }
+      } catch (error) {
+        const errorCode = error.response?.data?.code
+        const errorStatus = error.response?.status
+
+        // ✅ COMPANY_SUSPENDED 에러 코드 체크 (40013)
+        if (errorCode === 40013) {
+          console.log('🔴 Company SUSPENDED 에러 감지:', companySlug)
+    
+          // ✅ 로그인 상태면 로그아웃 처리
+          if (authStore.isLoggedIn) {
+            authStore.logout()
+            localStorage.clear()
+            alert('서비스가 일시 정지되어 로그아웃됩니다.')
+          }
+    
+          return next({
+            name: 'ServiceSuspended',
+            params: { companySlug }
+          })
+        }
+
+        // 404 또는 기타 에러 → 로그만 기록하고 계속 진행
+        console.warn('⚠️ Company 상태 확인 실패:', errorStatus, error.message)
+      }
+    }
+  }
+  
   // ===== 역할 검증 헬퍼 함수 =====
 
   /**
@@ -390,30 +449,6 @@ router.beforeEach(async (to, from, next) => {
         // 로그아웃하지 않고 계속 진행 (백엔드 401 처리)
       }
     }
-
-    // 3-4. 서버 인증 상태 검증 (선택적 - 필요 시 활성화)
-    // 매번 API 호출하면 성능 저하, 필요 시에만 사용
-    /*
-    try {
-      // 역할별 현재 사용자 정보 조회
-      let apiPath = ''
-      if (requiredRole === 'USER') {
-        apiPath = '/api/users/me'
-      } else if (requiredRole === 'ADMIN') {
-        apiPath = '/api/admins/me'
-      } else if (requiredRole === 'SUPER') {
-        apiPath = '/api/super/me'
-      }
-      
-      if (apiPath) {
-        await axiosInstance.get(apiPath)
-      }
-    } catch (error) {
-      // 401 에러 → 쿠키 만료, axiosInterceptor에서 자동 로그아웃 처리
-      console.error('서버 인증 실패:', error)
-      return // axiosInterceptor가 리다이렉트 처리
-    }
-    */
   }
 
   // ===== 4. 모든 검증 통과 → 페이지 이동 =====

@@ -50,7 +50,7 @@ const fetchCompanyDetail = async () => {
         name: data.companyName,
         id: data.businessNumber,
         companyId: data.companyId,
-        status: data.status === 'APPROVED',
+        status: data.status,
         link: `https://unibooker.kro.kr/${data.companySlug}`,
         logo: data.logoUrl || '/assets/images/admin_logo.png',
         registrationDate: formatDate(data.createdAt),
@@ -155,30 +155,25 @@ onMounted(() => {
 
     <!-- 데이터 표시 -->
     <div v-else-if="company">
-      <CompanyDetail :company="company">
-        <!-- ✅ 카드 안쪽에 추가 전달사항 + 버튼 영역 주입 -->
-        <template #additional-section>
-          <div class="additional-section">
-            <h3 class="section-title">추가 전달사항</h3>
-            <p class="inline-note">
-              승인/거절 시 해당 관리자에게 메일이 전송 됩니다. 관리자에게 보낼 메일에 추가적으로
-              전달할 사항이 있다면 입력해 주세요.
-            </p>
-            <textarea
-              v-model="rejectionReason"
-              class="rejection-textarea"
-              placeholder="승인/거절 사유를 입력해주세요 (최대 500자)"
-              :maxlength="MAX_REJECTION_LENGTH"
-              rows="6"
-            ></textarea>
+      <CompanyDetail :company="company" @approve="handleApprove" @reject="handleReject">
+        <h3 class="section-title">추가 전달사항</h3>
+        <p class="inline-note">
+          승인/거절 시 해당 관리자에게 메일이 전송 됩니다. 관리자에게 보낼 메일에 추가적으로 전달할
+          사항이 있다면 입력해 주세요.
+        </p>
+        <textarea
+          v-model="rejectionReason"
+          class="rejection-textarea"
+          placeholder="승인/거절 사유를 입력해주세요 (최대 500자)"
+          :maxlength="MAX_REJECTION_LENGTH"
+          rows="6"
+        ></textarea>
 
-            <!-- ✅ 승인/거절 버튼 -->
-            <div class="button-container">
-              <Button @click="handleReject" theme="light" class="reject-button">거절</Button>
-              <Button @click="handleApprove" theme="primary">승인</Button>
-            </div>
-          </div>
-        </template>
+        <!-- ✅ 승인/거절 버튼 -->
+        <div class="button-container">
+          <Button @click="handleReject" theme="light" class="reject-button">거절</Button>
+          <Button @click="handleApprove" theme="primary">승인</Button>
+        </div>
       </CompanyDetail>
     </div>
   </div>
