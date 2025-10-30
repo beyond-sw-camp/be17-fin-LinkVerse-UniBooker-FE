@@ -88,7 +88,8 @@ const createServiceGroup = async () => {
           description: f.description || '', // description 그대로
           dataType: mapToEnum(f.dataType),      // 문자열 → Enum
           targetType: 'RESOURCE',
-          required: f.isRequired || false
+          required: f.isRequired || false,
+          options: f.options
         })),
         ...userCustomFields.value.map(f => ({
           fieldName: f.fieldName,
@@ -218,7 +219,7 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd :customFields="userCustomFields" @add-field="userCustomFields.push($event)" />
+        <CustomFieldAdd :customFields="userCustomFields" @add-field="userCustomFields.push($event)" @delete-field="userCustomFields.splice($event, 1)"/>
       </div>
     </section>
 
