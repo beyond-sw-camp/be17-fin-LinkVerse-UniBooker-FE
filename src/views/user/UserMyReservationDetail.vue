@@ -58,7 +58,7 @@ const getDate = (item) => {
   else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
 }
 
-onMounted(() => {
+onMounted(() => { 
   getUserReservation()
 })
 </script>
@@ -69,7 +69,7 @@ onMounted(() => {
       <!-- 이미지 카드 -->
       <div class="content-card">
         <h2 class="section-title">예약/신청 상세</h2>
-        <img :src="reservation.thumbnail" alt="예약 이미지" class="thumbnail" />
+        <img :src="reservation.thumbnail  || '/assets/images/no-image.png'" alt="예약 이미지" class="thumbnail" />
       </div>
 
       <!-- 상세 정보 카드 -->
@@ -108,7 +108,7 @@ onMounted(() => {
 
 /* 카드 */
 .content-card {
-  @apply bg-white rounded-2xl shadow p-7 flex-1;
+  @apply bg-white p-7 flex-1 pt-[10px] mt-[20px];
 }
 
 /* 상세 카드 중앙 정렬 */
@@ -126,7 +126,7 @@ onMounted(() => {
 
 /* 이미지 */
 .thumbnail {
-  @apply rounded-xl shadow-md w-full h-[450px] object-cover;
+  @apply rounded-xl w-full h-[450px] object-cover;
 }
 
 /* 상세 테이블 */

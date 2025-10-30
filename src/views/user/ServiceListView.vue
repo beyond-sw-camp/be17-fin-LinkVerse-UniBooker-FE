@@ -37,7 +37,14 @@ const selectedFilter = ref('전체')
 // 필터 적용된 목록
 const filteredServices = computed(() => {
   if (selectedFilter.value === '전체') return services.value
-  return services.value.filter((item) => item.status === selectedFilter.value)
+
+  return services.value.filter((item) => {
+    if (selectedFilter.value === '예약 가능') {
+      return item.status === 'IN_PROGRESS'
+    } else if (selectedFilter.value === '예약 불가') {
+      return item.status === 'PROGRESS_BEFORE' || item.status === 'CLOSED'
+    }
+  })
 })
 
 // 필터 드롭다운 메뉴 선택
@@ -82,7 +89,11 @@ onMounted(() => {
     <div class="service-item-container">
       <!-- 헤더 -->
       <div class="service-header">
-        <img :src="serviceGroup.thumbnail" alt="회의실" class="service-header-img" />
+        <img
+          :src="serviceGroup.thumbnail || '/assets/images/no-image.png'"
+          alt="리소스 이미지"
+          class="service-header-img"
+        />
 
         <div class="service-header-right">
           <!-- 서비스 설명 -->
@@ -106,41 +117,50 @@ onMounted(() => {
       </div>
 
       <!-- 서비스 항목 카드 목록 -->
+      <!-- 서비스 항목 카드 목록 -->
       <div class="service-item-grid">
-        <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
-          <img :src="item.resourceImage" :alt="item.name" class="service-item-card-img" />
-          <div class="service-item-card-body">
-            <div class="service-item-card-header">
-              <h3 class="service-item-card-name">{{ item.name }}</h3>
-              <span class="status">
-                <span
-                  class="dot"
-                  :class="{
-                    'dot-active': item.status === 'IN_PROGRESS',
-                    'dot-end': item.status !== 'IN_PROGRESS',
-                  }"
-                />
-                {{ item.status === 'IN_PROGRESS' ? '예약 가능' : '예약 불가' }}
-              </span>
+        <template v-if="paginatedServices.length > 0">
+          <div v-for="(item, index) in paginatedServices" :key="index" class="service-item-card">
+            <img
+              :src="item.resourceImage || '/assets/images/no-image.png'"
+              :alt="item.name"
+              class="service-item-card-img"
+            />
+            <div class="service-item-card-body">
+              <div class="service-item-card-header">
+                <h3 class="service-item-card-name">{{ item.name }}</h3>
+                <span class="status">
+                  <span
+                    class="dot"
+                    :class="{
+                      'dot-active': item.status === 'IN_PROGRESS',
+                      'dot-end': item.status !== 'IN_PROGRESS',
+                    }"
+                  />
+                  {{ item.status === 'IN_PROGRESS' ? '예약 가능' : '예약 불가' }}
+                </span>
+              </div>
+              <p class="service-item-card-desc">
+                {{ item.location }} | 최대인원 {{ item.capacity }}명
+              </p>
             </div>
-            <p class="service-item-card-desc">
-              {{ item.location }} | 최대인원 {{ item.capacity }}명
-            </p>
-          </div>
 
-          <!-- 버튼 -->
-          <button
-            class="reservation-btn"
-            :class="item.status === 'IN_PROGRESS' ? 'btn-available' : 'btn-disabled'"
-            @click="goToServiceDetail(item)"
-          >
-            {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
-          </button>
-        </div>
+            <button
+              class="reservation-btn"
+              :class="item.status === 'IN_PROGRESS' ? 'btn-available' : 'btn-disabled'"
+              @click="goToServiceDetail(item)"
+            >
+              {{ serviceType === 'RESERVATION' ? '예약하기' : '신청하기' }}
+            </button>
+          </div>
+        </template>
+
+        <!-- 필터링 결과 없음 -->
+        <div v-else class="no-service-message">조회된 서비스가 없습니다.</div>
       </div>
 
       <!-- 페이지네이션 -->
-      <div class="service-item-pagination">
+      <div v-if="paginatedServices.length > 0" class="service-item-pagination">
         <PageNation
           v-model="currentPage"
           :total-items="filteredServices.length"
@@ -158,12 +178,12 @@ onMounted(() => {
 
 /* 전체 컨테이너 */
 .service-item-container {
-  @apply max-w-6xl mx-auto flex flex-col px-10 pt-10 pb-0 bg-white h-screen overflow-hidden;
+  @apply max-w-6xl mx-auto flex flex-col px-10 pt-10 pb-0 bg-white overflow-hidden;
 }
 
 /* 헤더 */
 .service-header {
-  @apply flex justify-between items-center p-2 px-5 gap-8 mb-8 bg-gray-100 rounded-sm h-64;
+  @apply flex justify-between items-center p-2 px-6 gap-8 mb-8 bg-gray-100 rounded-sm h-64;
 }
 
 .service-header-img {
@@ -171,7 +191,7 @@ onMounted(() => {
 }
 
 .service-header-right {
-  @apply flex flex-col justify-between flex-1 h-full py-2;
+  @apply flex flex-col justify-between flex-1 h-full py-5;
 }
 
 .service-title {
@@ -196,7 +216,7 @@ onMounted(() => {
 }
 
 .service-item-card {
-  @apply flex justify-between items-center bg-gray-50 rounded-md shadow-sm p-5 hover:shadow-md transition;
+  @apply flex justify-between items-center bg-gray-50 rounded-md shadow-sm p-5 hover:shadow-md transition cursor-pointer;
 }
 
 .service-item-card-img {
@@ -251,6 +271,10 @@ onMounted(() => {
 
 /* 페이지네이션 */
 .service-item-pagination {
-  @apply flex justify-center items-center py-4;
+  @apply flex justify-center items-center py-4 pb-[40px];
+}
+
+.no-service-message {
+  @apply flex justify-center items-center min-h-[300px] border border-gray-line rounded-[5px]
 }
 </style>

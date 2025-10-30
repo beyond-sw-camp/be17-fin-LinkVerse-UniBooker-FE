@@ -62,7 +62,7 @@ onMounted(() => {
           class="service-card"
           @click="goToServiceGroup(item)"
         >
-          <img :src="item.thumbnail" :alt="item.label" class="service-img" />
+          <img :src="item.thumbnail  || '/assets/images/no-image.png'" :alt="item.label" class="service-img" />
           <div class="service-body">
             <div class="service-header-row">
               <h3 class="service-name">{{ item.name }}</h3>
@@ -87,7 +87,7 @@ onMounted(() => {
 
 /* 헤더 */
 .service-header {
-  @apply flex justify-between items-center mb-6;
+  @apply flex justify-between items-center mb-6 pl-[12px];
 }
 
 .service-title {
@@ -100,7 +100,7 @@ onMounted(() => {
 }
 
 .service-card {
-  @apply bg-gray-50 h-80 shadow-sm overflow-hidden hover:shadow-md transition p-2;
+  @apply bg-gray-50 h-80 shadow-sm overflow-hidden hover:shadow-sm transition p-2 cursor-pointer border border-gray-line rounded-[5px];
 }
 
 .service-img {
