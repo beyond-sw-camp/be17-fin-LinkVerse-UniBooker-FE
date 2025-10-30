@@ -66,6 +66,13 @@ const updateCompanyStatus = async (companyId, status) => {
   return await axiosInstance.patch(`/api/companies/${companyId}/status`, { status })
 }
 
+/**
+ * Company Slug로 기업 정보 조회
+ */
+const getCompanyBySlug = async (companySlug) => {
+  return await axiosInstance.get(`/api/companies/slug/${companySlug}`)
+}
+
 export default {
   checkSlug,
   getPendingCompanies,
@@ -74,4 +81,5 @@ export default {
   rejectCompany,
   getAllCompanies,       
   updateCompanyStatus,   
+  getCompanyBySlug,
 }

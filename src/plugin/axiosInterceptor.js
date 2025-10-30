@@ -164,6 +164,29 @@ axiosInstance.interceptors.response.use(
 
     // ===== 403 Forbidden: 권한 없음 =====
     if (error.response?.status === 403) {
+      const { code, message } = error.response.data || {}
+  
+      // ===== 계정 정지 감지 (50007) =====
+      if (code === 50007) {
+        console.error('🔴 계정 정지 감지 (50007)')
+    
+        // 이미 로그아웃 처리 중이면 중복 실행 방지
+        if (!isLoggingOut) {
+          const authStore = useAuthStore()
+          const userRole = authStore.role
+          const companySlug = authStore.companySlug
+      
+          // 역할별 처리
+          if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+            await handleCompanySuspendedForAdmin()
+          } else if (userRole === 'USER') {
+            await handleCompanySuspendedForUser(companySlug)
+          }
+        }
+    
+        return Promise.reject(error)
+      }
+  
       console.error('🚫 접근 권한이 없습니다.')
       alert('접근 권한이 없습니다.')
     }
@@ -176,7 +199,32 @@ axiosInstance.interceptors.response.use(
     // ===== 400 Bad Request: 비즈니스 로직 에러 =====
     if (error.response?.status === 400) {
       const { code, message } = error.response.data || {}
-
+  
+      // ===== 기업 정지 감지 (40013) =====
+      if (code === 40013) {
+        console.error('🔴 기업 서비스 정지 감지 (40013)')
+    
+        // 이미 로그아웃 처리 중이면 중복 실행 방지
+        if (isLoggingOut) {
+          return Promise.reject(error)
+        }
+    
+        const authStore = useAuthStore()
+        const userRole = authStore.role
+        const companySlug = authStore.companySlug
+    
+        // 역할별 처리
+        if (userRole === 'ADMIN' || userRole === 'MANAGER') {
+          // ✅ 관리자/매니저: alert + 로그아웃 + /admin/login
+          await handleCompanySuspendedForAdmin()
+        } else if (userRole === 'USER') {
+          // ✅ 일반 사용자: alert + 로그아웃 + /c/{slug}/suspended
+          await handleCompanySuspendedForUser(companySlug)
+        }
+    
+        return Promise.reject(error)
+      }
+  
       // 에러 코드별 로깅 (디버깅용)
       if (code >= 4000 && code < 5000) {
         console.warn(`⚠️ 비즈니스 에러 [${code}]:`, message)
@@ -230,6 +278,79 @@ const handleLogout = async (currentPath) => {
     }
   } finally {
     // 일정 시간 후 플래그 초기화 (다음 로그아웃 허용)
+    setTimeout(() => {
+      isLoggingOut = false
+    }, 1000)
+  }
+}
+
+/**
+ * 관리자/매니저 기업 정지 처리
+ * - alert 표시
+ * - 로그아웃
+ * - /admin/login으로 리다이렉트
+ */
+const handleCompanySuspendedForAdmin = async () => {
+  // 중복 실행 방지
+  if (isLoggingOut) {
+    return
+  }
+  
+  isLoggingOut = true
+  
+  try {
+    const authStore = useAuthStore()
+    
+    // Store 초기화
+    authStore.logout()
+    
+    // localStorage 완전 삭제
+    localStorage.clear()
+    
+    // 알림 표시
+    alert('소속 기업의 서비스가 정지되어 로그아웃됩니다.')
+    
+    // 관리자 로그인 페이지로 리다이렉트
+    await router.push('/admin/login')
+    
+  } finally {
+    setTimeout(() => {
+      isLoggingOut = false
+    }, 1000)
+  }
+}
+
+/**
+ * 일반 사용자 기업 정지 처리
+ * - alert 표시
+ * - 로그아웃
+ * - /c/{slug}/suspended로 리다이렉트
+ */
+const handleCompanySuspendedForUser = async (companySlug) => {
+  // 중복 실행 방지
+  if (isLoggingOut) {
+    return
+  }
+  
+  isLoggingOut = true
+  
+  try {
+    const authStore = useAuthStore()
+    
+    // Store 초기화
+    authStore.logout()
+    
+    // localStorage 완전 삭제
+    localStorage.clear()
+    
+    // 알림 표시
+    alert('서비스가 일시 정지되어 로그아웃됩니다.')
+    
+    // 정지 안내 페이지로 리다이렉트
+    const slug = companySlug || 'default'
+    await router.push(`/c/${slug}/suspended`)
+    
+  } finally {
     setTimeout(() => {
       isLoggingOut = false
     }, 1000)

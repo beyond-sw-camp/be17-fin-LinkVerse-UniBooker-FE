@@ -244,11 +244,11 @@ td {
 }
 
 .button-approve {
-  @apply px-6 py-2 rounded bg-primary text-white hover:bg-primary-hover transition-colors;
+  @apply px-20 py-2 rounded bg-primary text-white hover:bg-primary-hover transition-colors;
 }
 
 .button-reject {
-  @apply px-6 py-2 rounded bg-gray-600 text-white hover:bg-gray-700 transition-colors;
+  @apply px-20 py-2 rounded bg-red-500 text-white hover:bg-red-700 transition-colors;
 }
 
 .button-suspend {

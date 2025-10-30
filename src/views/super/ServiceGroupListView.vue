@@ -103,13 +103,11 @@ const goToServiceList = (groupId) => {
 const handleStatusChange = async (group) => {
   const isActivating = !group.isActive
   const actionText = isActivating ? '활성화' : '비활성화'
-  const warningText = isActivating 
-    ? '' 
+  const warningText = isActivating
+    ? ''
     : '\n비활성화하면 일반 사용자가 해당 서비스를 볼 수 없게 됩니다.'
 
-  const confirmed = confirm(
-    `'${group.groupName}'을(를) ${actionText}하시겠습니까?${warningText}`
-  )
+  const confirmed = confirm(`'${group.groupName}'을(를) ${actionText}하시겠습니까?${warningText}`)
 
   if (!confirmed) return
 
@@ -239,7 +237,7 @@ td img {
 }
 
 .service-link {
-  @apply flex items-center hover:underline cursor-pointer;
+  @apply flex justify-center hover:underline cursor-pointer;
 }
 
 /* 액션 버튼 */

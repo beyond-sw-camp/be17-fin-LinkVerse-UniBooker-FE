@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import adminApi from '@/services/admin/admin_api'
+import companyApi from '@/services/admin/company_api'
 import Input from '@/components/Input.vue'
 import Button from '@/components/Button.vue'
 
@@ -28,11 +29,33 @@ const handleLogin = async () => {
   errorMessage.value = ''
 
   try {
-    // API 호출
+    console.log('🔐 로그인 시도:', loginForm.email)
+
+    // 1. 로그인 API 호출
     const response = await adminApi.login(loginForm)
     const data = response.data.data
 
-    // Pinia store에 저장 (토큰은 쿠키로 자동 관리)
+    console.log('✅ 로그인 API 응답:', data)
+
+    // 2. companySlug가 있으면 company 정보 조회
+    let companyInfo = null
+    if (data.companySlug) {
+      console.log('🏢 Company 정보 조회:', data.companySlug)
+
+      try {
+        const companyResponse = await companyApi.getCompanyBySlug(data.companySlug)
+
+        if (companyResponse.data.isSuccess) {
+          companyInfo = companyResponse.data.data
+          console.log('✅ Company 정보 조회 성공:', companyInfo)
+        }
+      } catch (companyError) {
+        console.warn('⚠️ Company 정보 조회 실패:', companyError)
+        // Company 정보 조회 실패해도 로그인은 진행
+      }
+    }
+
+    // 3. Pinia store에 저장 (company 정보 포함)
     authStore.login(
       {
         userId: data.userId,
@@ -41,25 +64,64 @@ const handleLogin = async () => {
       },
       data.role,
       data.companyId,
-      null, // companySlug (필요시 추가)
+      data.companySlug, // ⭐ companySlug 전달
+      companyInfo, // ⭐ company 전체 정보 전달
     )
 
-    // 첫 로그인이면 비밀번호 변경 페이지로
+    console.log('💾 Store 저장 완료')
+
+    // 4. 첫 로그인이면 비밀번호 변경 페이지로
     if (data.passwordChangeRequired) {
       alert('첫 로그인입니다. 비밀번호를 변경해주세요.')
-      router.push('/admin/firstPassword') // ✅ 수정: 올바른 URL로 변경
+      router.push('/admin/firstPassword')
       return
     }
 
-    // 관리자 대시보드로 이동
+    // 5. 관리자 대시보드로 이동
     alert('로그인 성공!')
     router.push('/admin/dashboard')
   } catch (error) {
-    console.error('로그인 실패:', error)
+    console.error('❌ 로그인 실패:', error)
 
-    if (error.response?.data?.message) {
-      errorMessage.value = error.response.data.message
+    const errorMsg = error.response?.data?.message
+
+    if (errorMsg) {
+      // 1. 계정 정지 처리
+      if (errorMsg.includes('정지')) {
+        alert(
+          '계정이 정지되었습니다.\n소속 기업이 서비스 정지 상태이거나, 관리자에 의해 정지되었습니다.\n관리자에게 문의하세요.',
+        )
+        errorMessage.value = '정지된 계정입니다.'
+      }
+      // 2. 기업 승인 문제 처리
+      else if (errorMsg.includes('승인되지 않은') || errorMsg.includes('승인')) {
+        alert(
+          '소속 기업이 아직 승인되지 않았거나, 서비스가 정지되었습니다.\n관리자에게 문의하세요.',
+        )
+        errorMessage.value = '기업 승인 대기 중이거나 서비스 정지 상태입니다.'
+      }
+      // 3. 비활성 계정 처리
+      else if (errorMsg.includes('비활성')) {
+        alert('비활성 상태의 계정입니다.\n관리자에게 문의하세요.')
+        errorMessage.value = '비활성 계정입니다.'
+      }
+      // 4. 탈퇴 계정 처리
+      else if (errorMsg.includes('탈퇴')) {
+        alert('탈퇴한 계정입니다.')
+        errorMessage.value = '탈퇴한 계정입니다.'
+      }
+      // 5. 비밀번호 오류 처리
+      else if (errorMsg.includes('비밀번호') || errorMsg.includes('이메일')) {
+        alert('이메일 또는 비밀번호가 일치하지 않습니다.')
+        errorMessage.value = '이메일 또는 비밀번호를 확인해주세요.'
+      }
+      // 6. 기타 에러
+      else {
+        alert(errorMsg)
+        errorMessage.value = errorMsg
+      }
     } else {
+      alert('로그인에 실패했습니다. 다시 시도해주세요.')
       errorMessage.value = '로그인에 실패했습니다. 다시 시도해주세요.'
     }
   } finally {

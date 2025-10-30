@@ -6,6 +6,7 @@ import dashboardApi from '@/services/dashboard/dashboard_api'
 const fontFamily = 'Montserrat, Noto Sans KR, sans-serif'
 
 const isLoading = ref(true)
+const hasError = ref(false)
 
 // 대시보드 데이터
 const dashboardData = ref({
@@ -41,7 +42,7 @@ const serviceSeries = ref([])
 const serviceOptions = ref({
   chart: { id: 'service-donut', toolbar: { show: false }, fontFamily },
   labels: [],
-  colors: ['#1E3A8A', '#2563EB', '#60A5FA', '#93C5FD', '#BFDBFE'], // 필요 시 추가
+  colors: ['#1E3A8A', '#2563EB', '#60A5FA', '#93C5FD', '#BFDBFE'],
   legend: { position: 'bottom', fontFamily },
   dataLabels: { style: { fontFamily } },
 })
@@ -53,10 +54,10 @@ const errorLogs = ref([
     message: '데이터베이스 연결 실패 (timeout 5000ms).',
     time: '2025-10-13 09:45:30',
   },
-  { code: 'API_404', message: '요청한 리소스를 찾을 수 없습니다.', time: '2025-10-13 10:02:17' },
+  { code: 'API_404', message: '요청한 리소스를 찾을 수 없습니다.', time: '2025-10-13 09:02:17' },
   {
     code: 'VALID_001',
-    message: '필수 입력값 ‘email’이 누락되었습니다.',
+    message: "필수 입력값 'email'이 누락되었습니다.",
     time: '2025-10-13 10:15:09',
   },
   { code: 'AUTH_403', message: '접근 권한이 없습니다.', time: '2025-10-13 10:20:42' },
@@ -75,27 +76,36 @@ const errorLogs = ref([
 const getDashboardData = async () => {
   try {
     const data = await dashboardApi.getSuperDashboardData()
+
+    // ✅ undefined 체크 추가
+    if (!data || !data.companyStats || !data.customerStats || !data.serviceStats) {
+      console.error('대시보드 데이터가 올바르지 않습니다:', data)
+      hasError.value = true
+      return
+    }
+
     dashboardData.value = data
 
     // 회사 차트 업데이트
-    companySeries.value[0].data = data.companyStats.monthlyNewRegistrations
+    companySeries.value[0].data = data.companyStats.monthlyNewRegistrations || []
     companyOptions.value.xaxis.categories = Array.from(
-      { length: data.companyStats.monthlyNewRegistrations.length },
+      { length: (data.companyStats.monthlyNewRegistrations || []).length },
       (_, i) => i + 1,
     )
 
     // 고객 차트 업데이트
-    customerSeries.value[0].data = data.customerStats.cumulativeRegistrations
+    customerSeries.value[0].data = data.customerStats.cumulativeRegistrations || []
     customerOptions.value.xaxis.categories = Array.from(
-      { length: data.customerStats.cumulativeRegistrations.length },
+      { length: (data.customerStats.cumulativeRegistrations || []).length },
       (_, i) => i + 1,
     )
 
     // 서비스 차트 업데이트
-    serviceSeries.value = data.serviceStats.categoryCounts
-    serviceOptions.value.labels = data.serviceStats.categoryLabels
+    serviceSeries.value = data.serviceStats.categoryCounts || []
+    serviceOptions.value.labels = data.serviceStats.categoryLabels || []
   } catch (err) {
     console.error('Dashboard API error:', err)
+    hasError.value = true
   } finally {
     isLoading.value = false
   }
@@ -107,7 +117,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="!isLoading">
+  <!-- 로딩 중 -->
+  <div v-if="isLoading" class="loading-screen">
+    <p>대시보드 데이터를 불러오는 중...</p>
+  </div>
+
+  <!-- 에러 발생 -->
+  <div v-else-if="hasError" class="error-screen">
+    <p>대시보드 데이터를 불러오는 데 실패했습니다.</p>
+    <button @click="getDashboardData" class="retry-button">다시 시도</button>
+  </div>
+
+  <!-- 정상 데이터 표시 -->
+  <div v-else>
     <!-- 통계 차트 -->
     <div class="statistics">
       <div class="statistics-item-container">
@@ -188,7 +210,6 @@ onMounted(() => {
       </div>
     </div>
   </div>
-  <div v-else class="loading-screen">loading...</div>
 </template>
 
 <style scoped>
@@ -237,7 +258,13 @@ onMounted(() => {
   @apply flex-1 overflow-y-auto;
 }
 
-.loading-screen {
-  @apply flex justify-center items-center h-screen;
+/* 로딩 & 에러 화면 */
+.loading-screen,
+.error-screen {
+  @apply flex flex-col justify-center items-center h-screen gap-4;
+}
+
+.retry-button {
+  @apply px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover transition-colors;
 }
 </style>

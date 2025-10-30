@@ -4,6 +4,8 @@ import adminApi from '@/services/admin/admin_api'
 import serviceApi from '@/services/admin/service_api'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
+import { getCompanyLogoUrl } from '@/utils/imageUrl'
+import { computed } from 'vue'
 
 const props = defineProps({
   open: Boolean,
@@ -23,6 +25,78 @@ const editInfo = ref({
   phone: '',
   logoFile: null,
   logoUrl: '', // 기존 로고 URL
+})
+
+// ===== 파일 업로드 관련 =====
+
+/** 선택된 로고 파일 */
+const logoFile = ref(null)
+
+/** 로고 파일명 */
+const logoFileName = ref('')
+
+/** 로고 미리보기 URL */
+const logoPreviewUrl = ref('')
+
+/** 로고 파일 input ref */
+const logoFileInput = ref(null)
+
+/**
+ * 로고 파일 선택 처리
+ */
+const handleLogoFileChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // 파일 크기 검증 (10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    alert('파일 크기는 10MB를 초과할 수 없습니다.')
+    logoFileInput.value.value = ''
+    return
+  }
+
+  // 파일 형식 검증
+  if (!file.type.startsWith('image/')) {
+    alert('이미지 파일만 업로드 가능합니다.')
+    logoFileInput.value.value = ''
+    return
+  }
+
+  logoFile.value = file
+  logoFileName.value = file.name
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    logoPreviewUrl.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+/**
+ * 로고 파일 삭제
+ */
+const removeLogoFile = () => {
+  logoFile.value = null
+  logoFileName.value = ''
+  logoPreviewUrl.value = ''
+  if (logoFileInput.value) {
+    logoFileInput.value.value = ''
+  }
+}
+
+/**
+ * 현재 표시할 로고 URL
+ */
+const displayLogoUrl = computed(() => {
+  if (logoPreviewUrl.value) {
+    return logoPreviewUrl.value
+  }
+
+  if (!props.userData?.logoUrl) {
+    return '/assets/images/admin_logo.png'
+  }
+
+  return getCompanyLogoUrl(props.userData.logoUrl)
 })
 
 // 비밀번호 변경용 임시 데이터
@@ -98,6 +172,9 @@ watch(
 
 // 수정 모드 진입
 const enterEditMode = () => {
+  logoFile.value = null
+  logoFileName.value = ''
+  logoPreviewUrl.value = ''
   mode.value = 'edit'
 }
 
@@ -125,7 +202,9 @@ const onFileChange = async (event) => {
   }
 }
 
-// 수정 완료 처리
+/**
+ * 수정 완료 처리
+ */
 const handleEditSubmit = async () => {
   try {
     const logoUrlToSend =
@@ -139,20 +218,23 @@ const handleEditSubmit = async () => {
       logoUrl: logoUrlToSend,
     }
 
-    // 서버에 수정 요청
-    const updatedData = await adminApi.managerInfoEdit(payload)
-    authStore.updateUser(updatedData)
+    await adminApi.managerInfoEdit(payload)
+    authStore.updateUser(payload)
 
-    // 서버에서 최신 데이터 가져오기
-    const response = await adminApi.getMyProfile() // ← getManagerInfo → getMyProfile
-    Object.assign(props.userData, response.data) // props.userData 직접 업데이트
+    // 3. 최신 데이터 가져오기
+    const response = await adminApi.getMyProfile()
+    Object.assign(props.userData, response.data)
 
-    // 모드 전환
+    // 4. 모드 전환
     mode.value = 'view'
+    logoFile.value = null
+    logoFileName.value = ''
+    logoPreviewUrl.value = ''
+
     alert('수정이 완료되었습니다.')
   } catch (err) {
+    console.error('수정 실패:', err)
     alert('수정에 실패했습니다.')
-    console.error(err)
   }
 }
 
@@ -267,7 +349,8 @@ const formatPhoneNumber = (e) => {
             @input="formatPhoneNumber"
           />
         </div>
-        <div class="modal-input-section">
+        <!-- 기업로고 업로드 필드 -->
+        <div class="modal-input-section-logo">
           <label>기업로고</label>
           <input @change="onFileChange" type="file" class="modal-input-file" />
         </div>
