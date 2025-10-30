@@ -56,6 +56,28 @@ const getServiceGroup = async () => {
 
 // 서비스 생성
 const createService = async () => {
+  for (let i = 0; i < customFieldDefinitions.value.length; i++) {
+    const def = customFieldDefinitions.value[i]
+    const val = customFieldValues.value[i]?.values?.[0]
+
+    if (!def.required) continue
+
+    // BOOLEAN 필드
+    if (def.dataType === 'BOOLEAN') {
+      if (val === null || val === undefined) {
+        alert(`필수 항목입니다: ${def.fieldName}`)
+        return
+      }
+      continue
+    }
+
+    // 일반 필드 (TEXT, NUMBER, DATE, TIME)
+    if (val === null || val === undefined || String(val).trim() === '') {
+      alert(`필수 항목입니다: ${def.fieldName}`)
+      return
+    }
+  }
+
   try {
     const timeSlots = timeSlotRef.value?.getTimeSlots?.() || []
     const exceptionSlots = exceptionRef.value?.getExceptionSlots?.() || []
@@ -340,7 +362,7 @@ onMounted(() => {
         </div>
 
         <!-- 커스텀 필드 -->
-        <div v-if="customFieldDefinitions.length" class="service-info-section mt-[40px]">
+        <div v-if="customFieldDefinitions.length" class="service-info-section">
           <div v-for="(field, index) in customFieldDefinitions" :key="field.id" class="mb-[20px]">
             <div class="service-info-form-item-label-container">
               <span>{{ field.fieldName }}</span>
