@@ -89,7 +89,7 @@ const getMenuLink = (menu, sg) => {
       if (sg.serviceCategory === 'RESERVATION') {
         return { path: `/admin/reservation-management/${sg.id}`, query: nameQuery }
       } else if (sg.serviceCategory === 'SEAT') {
-        return { path: `/admin/seat-reservation-management/${sg.id}`, query: nameQuery }
+        return { path: `/admin/seat-reservation-status/${sg.id}`, query: nameQuery }
       } else {
         return { path: `/admin/event-reservation-status/${sg.id}`, query: nameQuery }
       }
