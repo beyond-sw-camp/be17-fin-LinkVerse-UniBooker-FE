@@ -15,7 +15,7 @@ const serviceGroupName = decodeURIComponent(route.query.serviceGroupName || '')
 const services = reactive([])
 
 const breadcrumbItems = computed(() => [
-  { label: '서비스 그룹', path: '/admin/service-group-managation' },
+  { label: '서비스 그룹', path: '/admin/service-group-management' },
   { label: decodeURIComponent(route.query.serviceGroupName || ''), path: '' },
 ])
 
