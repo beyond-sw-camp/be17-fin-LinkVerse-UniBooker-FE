@@ -51,7 +51,7 @@
 
   /* 플랫폼 관리자 페이지 테이블 스타일 */
   .components-super-table-container {
-    @apply w-full h-full  overflow-y-auto border border-gray-200 rounded-lg;
+    @apply w-full  overflow-y-auto border border-gray-200 rounded-lg;
   }
 
   .components-super-table {

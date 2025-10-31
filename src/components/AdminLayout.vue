@@ -60,8 +60,8 @@ const handleLogout = async () => {
 }
 
 // 관리자 권한 체크
-const isValidAdmin = computed(() =>
-  authStore.isLoggedIn && ['ADMIN', 'MANAGER'].includes(authStore.role)
+const isValidAdmin = computed(
+  () => authStore.isLoggedIn && ['ADMIN', 'MANAGER'].includes(authStore.role),
 )
 const validateAdminAccess = () => {
   if (!isValidAdmin.value) {
@@ -89,7 +89,7 @@ const getMenuLink = (menu, sg) => {
       if (sg.serviceCategory === 'RESERVATION') {
         return { path: `/admin/reservation-management/${sg.id}`, query: nameQuery }
       } else if (sg.serviceCategory === 'SEAT') {
-        return { path: `/admin/seat-reservation-management/${sg.id}`, query: nameQuery }
+        return { path: `/admin/seat-reservation-status/${sg.id}`, query: nameQuery }
       } else {
         return { path: `/admin/event-reservation-status/${sg.id}`, query: nameQuery }
       }
@@ -129,7 +129,8 @@ const initMenuState = () => {
   const path = route.path
   if (path.includes('/admin/dashboard')) selectedMainMenu.value = 'dashboard'
   else if (path.includes('/admin/manager-management')) selectedMainMenu.value = 'manager'
-  else if (path.includes('/admin/service-group-management')) selectedMainMenu.value = 'serviceGroupManage'
+  else if (path.includes('/admin/service-group-management'))
+    selectedMainMenu.value = 'serviceGroupManage'
   else selectedMainMenu.value = null
 
   serviceGroups.forEach((sg, i) => {
@@ -148,9 +149,14 @@ onMounted(() => {
   validateAdminAccess()
 })
 
-watch(() => authStore.role, () => validateAdminAccess())
-watch(() => route.path, () => initMenuState())
-
+watch(
+  () => authStore.role,
+  () => validateAdminAccess(),
+)
+watch(
+  () => route.path,
+  () => initMenuState(),
+)
 </script>
 
 <template>
@@ -174,7 +180,8 @@ watch(() => route.path, () => initMenuState())
             :class="{ 'selected-menu-item': selectedMainMenu === 'dashboard' }"
             to="/admin/dashboard"
             @click="selectTopMenu('dashboard')"
-          >전체 현황</router-link>
+            >전체 현황</router-link
+          >
 
           <router-link
             v-if="authStore.role === 'ADMIN'"
@@ -182,14 +189,16 @@ watch(() => route.path, () => initMenuState())
             :class="{ 'selected-menu-item': selectedMainMenu === 'manager' }"
             to="/admin/manager-management"
             @click="selectTopMenu('manager')"
-          >관리자 관리</router-link>
+            >관리자 관리</router-link
+          >
 
           <router-link
             class="sub-menu-item"
             :class="{ 'selected-menu-item': selectedMainMenu === 'serviceGroupManage' }"
             to="/admin/service-group-management"
             @click="selectTopMenu('serviceGroupManage')"
-          >서비스 그룹 관리</router-link>
+            >서비스 그룹 관리</router-link
+          >
         </div>
       </div>
 
@@ -242,9 +251,11 @@ watch(() => route.path, () => initMenuState())
           <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img
-              :src="notificationStore.hasNotification
-                ? '/assets/icons/ic-new-notify.png'
-                : '/assets/icons/ic-no-notify.png'"
+              :src="
+                notificationStore.hasNotification
+                  ? '/assets/icons/ic-new-notify.png'
+                  : '/assets/icons/ic-no-notify.png'
+              "
               alt="알림 아이콘"
               class="notify-icon"
             />
@@ -266,7 +277,6 @@ watch(() => route.path, () => initMenuState())
 
   <AccountManageModal :open="isModalOpen" :userData="userData" @close="isModalOpen = false" />
 </template>
-
 
 <style scoped>
 .sub-bar-contaienr {

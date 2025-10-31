@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
 import Dropdown from '@/components/Dropdown.vue'
 import Input from '@/components/Input.vue'
-import ReservationApi from '@/services/user/reservation_api'
+import ReservationApi from '@/services/reservation/reservation_api'
 
 const route = useRoute()
 const router = useRouter()
