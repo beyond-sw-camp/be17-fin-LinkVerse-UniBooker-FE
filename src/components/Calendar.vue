@@ -8,7 +8,7 @@ const props = defineProps({
     default: () => []
   },
   selectedDate: { // 부모에서 현재 선택된 날짜
-    type: Date,
+    type: String,
     default: null
   }
 })
