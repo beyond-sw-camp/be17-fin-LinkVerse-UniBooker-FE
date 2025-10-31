@@ -31,7 +31,7 @@ const router = createRouter({
       path: '/c/:companySlug/reservation/completed/:reservationId',
       name: 'userReservationCompleted',
       component: () => import('@/views/user/ReservationCompletedView.vue'),
-      meta: { layout: 'user',  requiresAuth: true, role: 'USER' },
+      meta: { layout: 'user', requiresAuth: true, role: 'USER' },
     },
     {
       path: '/c/:companySlug/services',
@@ -171,7 +171,13 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
-      path: '/admin/seat-reservation-management/:serviceGroupId',
+      path: '/admin/seat-reservation-status/:serviceGroupId',
+      name: 'SeatReservationStatus',
+      component: () => import('@/views/admin/SeatReservationStatus.vue'),
+      meta: { requiresAuth: true, role: 'ADMIN' },
+    },
+    {
+      path: '/admin/seat-reservation-management/:serviceId',
       name: 'SeatReservationManagement',
       component: () => import('@/views/admin/SeatReservationManagement.vue'),
       meta: { requiresAuth: true, role: 'ADMIN' },
@@ -220,71 +226,71 @@ const router = createRouter({
       name: 'super',
       component: () => import('@/components/SuperLayout.vue'),
       meta: { requiresAuth: true, role: 'SUPER' },
-        children: [
-          {
-            path: 'dashboard',
-            name: 'superDashboard',
-            component: () => import('@/views/super/DashboardView.vue'),
-          },
-          {
-            path: 'companies',
-            name: 'superCompanyList',
-            component: () => import('@/views/super/CompanyListView.vue'),
-          },
-          {
-            path: 'companies/:companyId', 
-            name: 'superCompanyDetail',
-            component: () => import('@/views/super/CompanyDetailView.vue'),
-            props: true,
-          },
-          {
-            path: 'companies/:companyId/managers', 
-            name: 'superManagerList',
-            component: () => import('@/views/super/ManagerListView.vue'),
-            props: true,
-          },
-          {
-            path: 'companies/:companyId/services',
-            name: 'superServiceGroupList',
-            component: () => import('@/views/super/ServiceGroupListView.vue'),
-            props: true,
-          },
-          {
-            path: 'companies/:companyId/services/:serviceGroupId',
-            name: 'superServiceGroupDetail',
-            component: () => import('@/views/super/ServiceGroupDetailView.vue'),
-            props: true,
-          },
-          {
-            path: 'companies/:companyId/services/:serviceGroupId/:serviceId',
-            name: 'superServiceDetail',
-            component: () => import('@/views/super/ServiceDetailView.vue'),
-            props: true,
-          },
-          {
-            path: 'applications',
-            name: 'superApplicationList',
-            component: () => import('@/views/super/ApplicationListView.vue'),
-            props: true,
-          },
-          {
-            path: 'applications/:companyId',
-            name: 'superApplicationDetails',
-            component: () => import('@/views/super/ApplicationDetailView.vue'),
-            props: true,
-          },
-          {
-            path: 'system-management',
-            name: 'superSystemManagement',
-            component: () => import('@/views/super/SystemManagementView.vue'),
-            props: true,
-          },
-          {
-            path: 'notification',
-            name: 'superNotification',
-            component: () => import('@/views/super/SuperNotificationView.vue'),
-          },
-        ],
+      children: [
+        {
+          path: 'dashboard',
+          name: 'superDashboard',
+          component: () => import('@/views/super/DashboardView.vue'),
+        },
+        {
+          path: 'companies',
+          name: 'superCompanyList',
+          component: () => import('@/views/super/CompanyListView.vue'),
+        },
+        {
+          path: 'companies/:companyId',
+          name: 'superCompanyDetail',
+          component: () => import('@/views/super/CompanyDetailView.vue'),
+          props: true,
+        },
+        {
+          path: 'companies/:companyId/managers',
+          name: 'superManagerList',
+          component: () => import('@/views/super/ManagerListView.vue'),
+          props: true,
+        },
+        {
+          path: 'companies/:companyId/services',
+          name: 'superServiceGroupList',
+          component: () => import('@/views/super/ServiceGroupListView.vue'),
+          props: true,
+        },
+        {
+          path: 'companies/:companyId/services/:serviceGroupId',
+          name: 'superServiceGroupDetail',
+          component: () => import('@/views/super/ServiceGroupDetailView.vue'),
+          props: true,
+        },
+        {
+          path: 'companies/:companyId/services/:serviceGroupId/:serviceId',
+          name: 'superServiceDetail',
+          component: () => import('@/views/super/ServiceDetailView.vue'),
+          props: true,
+        },
+        {
+          path: 'applications',
+          name: 'superApplicationList',
+          component: () => import('@/views/super/ApplicationListView.vue'),
+          props: true,
+        },
+        {
+          path: 'applications/:companyId',
+          name: 'superApplicationDetails',
+          component: () => import('@/views/super/ApplicationDetailView.vue'),
+          props: true,
+        },
+        {
+          path: 'system-management',
+          name: 'superSystemManagement',
+          component: () => import('@/views/super/SystemManagementView.vue'),
+          props: true,
+        },
+        {
+          path: 'notification',
+          name: 'superNotification',
+          component: () => import('@/views/super/SuperNotificationView.vue'),
+        },
+      ],
     },
   ],
 
@@ -316,7 +322,7 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  
+
   // ===== 0. Company 정지 상태 체크 (일반 사용자 경로만) =====
   if (to.path.startsWith('/c/') && to.name !== 'ServiceSuspended') {
     const companySlug = to.params.companySlug
@@ -332,7 +338,7 @@ router.beforeEach(async (to, from, next) => {
           console.log('🔴 Company SUSPENDED 감지:', companySlug)
           return next({
             name: 'ServiceSuspended',
-            params: { companySlug }
+            params: { companySlug },
           })
         }
       } catch (error) {
@@ -342,17 +348,17 @@ router.beforeEach(async (to, from, next) => {
         // ✅ COMPANY_SUSPENDED 에러 코드 체크 (40013)
         if (errorCode === 40013) {
           console.log('🔴 Company SUSPENDED 에러 감지:', companySlug)
-    
+
           // ✅ 로그인 상태면 로그아웃 처리
           if (authStore.isLoggedIn) {
             authStore.logout()
             localStorage.clear()
             alert('서비스가 일시 정지되어 로그아웃됩니다.')
           }
-    
+
           return next({
             name: 'ServiceSuspended',
-            params: { companySlug }
+            params: { companySlug },
           })
         }
 
@@ -361,7 +367,7 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   }
-  
+
   // ===== 역할 검증 헬퍼 함수 =====
 
   /**

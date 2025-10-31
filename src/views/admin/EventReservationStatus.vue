@@ -14,62 +14,6 @@ const getServices = async () => {
   services.value = response
 }
 
-/* 예시 데이터 */
-// const services = ref([
-//   {
-//     id: 1,
-//     title: '보드게임 동아리 모집',
-//     startDate: '2025-10-20',
-//     endDate: '2025-10-26',
-//     isFull: false,
-//   },
-//   {
-//     id: 2,
-//     title: '밴드 동아리 모집',
-//     startDate: '2025-10-18',
-//     endDate: '2025-10-23',
-//     isFull: true,
-//   },
-//   {
-//     id: 3,
-//     title: '캠퍼스 플리마켓 부스 신청',
-//     startDate: '2025-10-21',
-//     endDate: '2025-10-27',
-//     isFull: false,
-//   },
-//   {
-//     id: 4,
-//     title: '공예 클래스 참가 모집',
-//     startDate: '2025-10-16',
-//     endDate: '2025-10-22',
-//     isFull: false,
-//   },
-//   {
-//     id: 5,
-//     title: '스포츠 체험단 신청',
-//     startDate: '2025-10-19',
-//     endDate: '2025-10-25',
-//     isFull: false,
-//   },
-//   { id: 6, title: '악기 대여 신청', startDate: '2025-10-22', endDate: '2025-10-29', isFull: true },
-//   {
-//     id: 7,
-//     title: '사진 동아리 신규 회원 모집',
-//     startDate: '2025-10-23',
-//     endDate: '2025-10-30',
-//     isFull: true,
-//   },
-//   { id: 8, title: '독서 모임 신청', startDate: '2025-10-17', endDate: '2025-10-21', isFull: false },
-//   {
-//     id: 9,
-//     title: '헬스클럽 회원 모집',
-//     startDate: '2025-10-25',
-//     endDate: '2025-10-31',
-//     isFull: false,
-//   },
-//   { id: 10, title: '봉사활동 신청', startDate: '2025-10-20', endDate: '2025-10-24', isFull: false },
-// ])
-
 const router = useRouter()
 
 /* --- 날짜 및 네비게이션 로직 --- */
@@ -239,7 +183,7 @@ const goToReservationPage = (serviceId, serviceName) => {
 
 /* 색상 통일 함수 */
 const getBarColor = (svc) => {
-  return svc.isFull
+  return svc.isFull || svc.status !== 'IN_PROGRESS'
     ? 'bg-gray-200 border-gray-300 text-gray-500'
     : 'bg-blue-100 border-blue-300 text-blue-800'
 }
