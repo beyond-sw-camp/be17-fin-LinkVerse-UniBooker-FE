@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import ReservationApi from '@/services/user/reservation_api'
+import ReservationApi from '@/services/reservation/reservation_api'
 
 const route = useRoute()
 const router = useRouter()
@@ -38,8 +38,8 @@ const getDate = (item) => {
 
 // 예약 상세 조회
 const getReservation = async () => {
-  const response = await ReservationApi.getUserReservation(route.params.reservationId)
-  Object.assign(reservationData, response.data)
+  const response = await ReservationApi.getServiceReservationDetail(route.params.reservationId)
+  Object.assign(reservationData, response)
 }
 
 onMounted(() => {
