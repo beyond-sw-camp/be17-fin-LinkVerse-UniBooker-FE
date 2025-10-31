@@ -273,10 +273,8 @@ const handleSubmit = async () => {
     logoUrl: formData.logoUrl, // CloudFront URL
   }
 
-<<<<<<<<< Temporary merge branch 1
-=========
   // 11. API 호출
->>>>>>>>> Temporary merge branch 2
+
   try {
     isLoading.value = true
     const response = await adminApi.signUpAdmin(requestData)
