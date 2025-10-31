@@ -11,13 +11,16 @@ import Modal from '@/components/Modal.vue'
 import SeatBoard from '@/components/SeatBoard.vue'
 
 import ServiceApi from '@/services/user/service_api'
-import ReservationApi from '@/services/user/reservation_api'
+import ReservationApi from '@/services/reservation/reservation_api'
 
 
 // =============== definition ================
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+
+const today = new Date()
+const todayStr = today.toISOString().slice(0, 10) // yyyy-mm-dd
 
 const dayMap = { SUN: '일', MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금', SAT: '토', }
 
@@ -290,12 +293,44 @@ const selectSeat = ({ row, col }) => {
   selectedCol.value = col
 }
 
+// --- 선택 불가능한 날짜 계산
+const disabledDates = computed(() => {
+  if (!service || !service.startDate) return []
+
+  const disabled = []
+  const start = new Date(service.startDate)
+  const end = new Date(service.endDate)
+
+  // 어제까지 비활성화
+  let past = new Date('2020-01-01')
+  while (past < new Date(todayStr)) {
+    disabled.push(past.toISOString().slice(0, 10))
+    past.setDate(past.getDate() + 1)
+  }
+
+  // 서비스 이전 날짜 비활성화
+  let before = new Date('2020-01-01')
+  while (before < start) {
+    if (!disabled.includes(before.toISOString().slice(0, 10))) {
+      disabled.push(before.toISOString().slice(0, 10))
+    }
+    before.setDate(before.getDate() + 1)
+  }
+
+  // 서비스 이후 날짜 비활성화
+  let after = new Date(end)
+  after.setDate(after.getDate() + 1)
+  while (after < new Date('2030-12-31')) {
+    disabled.push(after.toISOString().slice(0, 10))
+    after.setDate(after.getDate() + 1)
+  }
+
+  return disabled
+})
+
 
 // =============== 화면 로드시 데이터 조회 ===============
 onMounted(() => {
-  const today = new Date()
-  const todayStr = today.toISOString().slice(0, 10) // yyyy-mm-dd
-
   getService()
   getResourceCustomFieldValues()
   getUserCustomFields()
@@ -370,7 +405,7 @@ onMounted(() => {
            <div class="relative" @click="toggleCalendar">
             <Input type="text" class="cursor-pointer" v-model="selectedDate" readonly />
             <div v-if="showCalendar" class="date-picker" @click.stop>
-              <Calendar @select="selectDate"/>
+              <Calendar @select="selectDate" :disabledDates="disabledDates" :selectedDate="selectedDate"/>
             </div>
           </div>
         </div>
@@ -389,7 +424,7 @@ onMounted(() => {
           <div v-else class="text-gray-400 text-sm">해당 날짜는 운영 시간이 없습니다.</div>
         </div>
         
-        <div class="form-group">
+        <div v-if="service.category !== 'SEAT'" class="form-group">
           <label>인원수</label>
           <div class="people-control">
             <button class="count-btn" @click="decrease">−</button>

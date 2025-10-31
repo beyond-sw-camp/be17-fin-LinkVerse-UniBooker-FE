@@ -1,7 +1,17 @@
 <script setup>
-import { ref, computed, defineEmits } from 'vue'
+import { ref, computed, watch, defineProps, defineEmits } from 'vue'
 
 const emits = defineEmits(['select'])
+const props = defineProps({
+  disabledDates: { // 부모에서 비활성화 시킬 날짜
+    type: Array,
+    default: () => []
+  },
+  selectedDate: { // 부모에서 현재 선택된 날짜
+    type: Date,
+    default: null
+  }
+})
 
 /* 상수 */
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -26,6 +36,7 @@ const daysInMonth = computed(() =>
 /* 메서드 */
 // 날짜 선택
 function selectDate(day) {
+  if (isDisabled(day)) return // 비활성 날짜 선택 불가
   selectedDate.value = day
   const date = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   emits('select', date)
@@ -53,6 +64,75 @@ function isToday(day) {
     currentYear.value === today.getFullYear()
   )
 }
+
+// 비활성 날짜 확인
+function isDisabled(day) {
+  const date = `${currentYear.value}-${String(currentMonth.value + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  return props.disabledDates.includes(date)
+}
+
+/*
+// 달력에 이전, 다음달 날짜 표시
+const calendarDays = computed(() => {
+  const year = currentYear.value
+  const month = currentMonth.value
+
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const prevMonthLastDay = new Date(year, month, 0).getDate()
+
+  const days = []
+
+  // 이전 달 날짜 채우기
+  for (let i = firstDay.getDay() - 1; i >= 0; i--) {
+    const day = prevMonthLastDay - i
+    const date = new Date(year, month - 1, day)
+    days.push({
+      day,
+      dateStr: date.toISOString().slice(0, 10),
+      currentMonth: false
+    })
+  }
+
+  // 이번 달 날짜
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const date = new Date(year, month, d)
+    days.push({
+      day: d,
+      dateStr: date.toISOString().slice(0, 10),
+      currentMonth: true
+    })
+  }
+
+  // 다음 달 날짜 채우기
+  const total = days.length
+  const nextDaysCount = 42 - total
+  for (let n = 1; n <= nextDaysCount; n++) {
+    const date = new Date(year, month + 1, n)
+    days.push({
+      day: n,
+      dateStr: date.toISOString().slice(0, 10),
+      currentMonth: false
+    })
+  }
+
+  return days
+})
+*/
+
+watch(() => props.selectedDate, (newDate) => {
+    if (!newDate) return
+
+    const dateObj = new Date(newDate)
+    if (isNaN(dateObj)) return // 유효하지 않으면 무시
+
+    // 부모에서 받은 날짜로 현재 달력 이동 및 선택 표시
+    currentYear.value = dateObj.getFullYear()
+    currentMonth.value = dateObj.getMonth()
+    selectedDate.value = dateObj.getDate()
+  },
+  { immediate: true } // 모달이 처음 열릴 때도 바로 반영되게
+)
 </script>
 
 <template>
@@ -87,7 +167,8 @@ function isToday(day) {
         class="date-cell"
         :class="{
           'is-selected': day === selectedDate,
-          'is-today': isToday(day)
+          'is-today': isToday(day),
+          'is-disabled': isDisabled(day)          
         }"
       >
         {{ day }}
@@ -150,5 +231,12 @@ function isToday(day) {
 
 .is-selected.is-today::after {
   background-color: theme('colors.white');
+}
+
+.is-disabled {
+  @apply text-gray-400 cursor-not-allowed opacity-50;
+}
+.is-disabled:hover {
+  @apply bg-transparent;
 }
 </style>
