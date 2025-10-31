@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/UseStore'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import NotificationDropdown from '@/components/NotificationDropdown.vue'
 import AccountManageModal from './AccountManageModal.vue'
 import serviceApi from '@/services/service/service_api'
@@ -12,60 +12,57 @@ import { useNotificationStore } from '@/stores/notificationStore'
 
 const isModalOpen = ref(false)
 const userData = ref(null)
+const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
-
-// 기업 로고 computed
-const companyLogo = computed(() => {
-  if (authStore.company?.logoUrl) {
-    return getCompanyLogoUrl(authStore.company.logoUrl)
-  }
-  return '/assets/images/admin_logo.png'
-})
 const notificationStore = useNotificationStore()
 
+// 상단 메뉴 상태
+const selectedMainMenu = ref(null) // 'dashboard', 'manager', 'serviceGroupManage', null
+
+// 서비스 그룹 상태
+const serviceGroups = reactive([])
+const dropdownItems = ['전체 분석', '예약 현황', '서비스 관리']
+const openDropdown = ref(null)
+const selectedMenuItems = ref({})
+
+// 기업 로고
+const companyLogo = computed(() => {
+  if (authStore.company?.logoUrl) return getCompanyLogoUrl(authStore.company.logoUrl)
+  return '/assets/images/admin_logo.png'
+})
+
+// 상단 메뉴 선택
+const selectTopMenu = (menu) => {
+  selectedMainMenu.value = menu
+  openDropdown.value = null
+}
+
+// 모달 열기
 async function openModal() {
   try {
     const response = await adminApi.getMyProfile()
-
-    if (response.data && response.data.data) {
-      userData.value = response.data.data
-    } else {
-      userData.value = response.data
-    }
-
+    userData.value = response.data?.data || response.data
     isModalOpen.value = true
-  } catch (err) {
+  } catch {
     alert('프로필 조회에 실패했습니다.')
   }
 }
 
-// 로그아웃 처리
-const router = useRouter()
-
-// 로그아웃 처리
+// 로그아웃
 const handleLogout = async () => {
   try {
-    // 로그아웃 API 호출 (쿠키는 자동으로 전송됨)
     await adminApi.logout()
-
-    // 스토어 로그아웃 처리
-    authStore.logout()
-
-    // 로그인 페이지로 리다이렉트
-    router.push('/admin/login')
-  } catch (error) {
-    // 실패해도 프론트엔드 상태는 초기화
+  } finally {
     authStore.logout()
     router.push('/admin/login')
   }
 }
 
-// ===== 관리자 권한 체크 =====
-const isValidAdmin = computed(() => {
-  return authStore.isLoggedIn && (authStore.role === 'ADMIN' || authStore.role === 'MANAGER')
-})
-
-// ===== 권한 검증 (마운트 시 + role 변경 감지) =====
+// 관리자 권한 체크
+const isValidAdmin = computed(() =>
+  authStore.isLoggedIn && ['ADMIN', 'MANAGER'].includes(authStore.role)
+)
 const validateAdminAccess = () => {
   if (!isValidAdmin.value) {
     authStore.logout()
@@ -74,33 +71,27 @@ const validateAdminAccess = () => {
   }
 }
 
-// 서비스 그룹 목록 조회
-const serviceGroups = reactive([])
+// 서비스 그룹 목록
 const getServiceGroups = async () => {
   try {
-    const response = await serviceApi.getServiceGroups()
-    const data = response.data.data
-
-    Object.assign(serviceGroups, data.resourceGroups)
-    console.log(serviceGroups)
-  } catch (error) {
-    // 서비스 그룹 목록 조회 실패
-  }
+    const res = await serviceApi.getServiceGroups()
+    Object.assign(serviceGroups, res.data.data.resourceGroups)
+  } catch (error) {}
 }
 
-// 서비스 그룹의 드롭다운 메뉴 항목
-const dropdownItems = ['전체 분석', '예약 현황', '서비스 관리']
-const getMenuLink = (menu, serviceGroupId, serviceGroupName, serviceCategory) => {
+// 서비스 그룹 메뉴 링크
+const getMenuLink = (menu, sg) => {
+  const nameQuery = { serviceGroupName: sg.name }
   switch (menu) {
     case '서비스 관리':
-      return `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      return { path: `/admin/service-management/${sg.id}`, query: nameQuery }
     case '예약 현황':
-      if (serviceCategory === 'RESERVATION') {
-        return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
-      } else if (serviceCategory === 'SEAT') {
-        return `/admin/seat-reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+      if (sg.serviceCategory === 'RESERVATION') {
+        return { path: `/admin/reservation-management/${sg.id}`, query: nameQuery }
+      } else if (sg.serviceCategory === 'SEAT') {
+        return { path: `/admin/seat-reservation-management/${sg.id}`, query: nameQuery }
       } else {
-        return `/admin/event-reservation-status/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+        return { path: `/admin/event-reservation-status/${sg.id}`, query: nameQuery }
       }
     case '전체 분석':
       return '#'
@@ -108,108 +99,119 @@ const getMenuLink = (menu, serviceGroupId, serviceGroupName, serviceCategory) =>
       return '#'
   }
 }
-const openDropdown = ref(null) // 열려있는 서비스 그룹
-const selectedMenuItems = ref(
-  // 드롭다운 메뉴 항목의 초기값은 첫 번째 메뉴인 '전체 분석'
-  // 이후에는 마지막으로 머물렀던 메뉴 항목을 유지
-  Object.fromEntries(serviceGroups.map((_, i) => [i, dropdownItems[0]])),
-)
 
 // 드롭다운 토글
 const toggleDropdown = (index) => {
-  if (openDropdown.value === index) {
-    openDropdown.value = null
-  } else {
-    openDropdown.value = index
-  }
+  selectedMainMenu.value = null
+  openDropdown.value = openDropdown.value === index ? null : index
 }
 
-// 드롭다운 메뉴 선택
+// 하위 메뉴 선택
 const selectMenuItem = (serviceIndex, menu) => {
+  selectedMainMenu.value = null
   selectedMenuItems.value[serviceIndex] = menu
 }
 
-// 알림 관련 상태, 예시
+// 알림
 const isDropdownOpen = ref(false)
 const notifications = ref([])
-
-// 알림 아이콘 클릭 토글
 const notiToggleDropdown = async () => {
   notificationStore.reset()
-
   if (!isDropdownOpen.value) {
     const data = await notifyApi.getNotifyList(0, 3)
     notifications.value = data || []
   }
-
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
+// 초기 메뉴 상태
+const initMenuState = () => {
+  const path = route.path
+  if (path.includes('/admin/dashboard')) selectedMainMenu.value = 'dashboard'
+  else if (path.includes('/admin/manager-management')) selectedMainMenu.value = 'manager'
+  else if (path.includes('/admin/service-group-management')) selectedMainMenu.value = 'serviceGroupManage'
+  else selectedMainMenu.value = null
+
+  serviceGroups.forEach((sg, i) => {
+    dropdownItems.forEach((menu) => {
+      const link = getMenuLink(menu, sg)
+      if (link.path && path.includes(link.path)) {
+        openDropdown.value = i
+        selectedMenuItems.value[i] = menu
+      }
+    })
+  })
+}
+
 onMounted(() => {
-  getServiceGroups()
+  getServiceGroups().then(() => initMenuState())
   validateAdminAccess()
 })
 
-// role이 변경되면 즉시 검증
-watch(
-  () => authStore.role,
-  () => {
-    validateAdminAccess()
-  },
-)
+watch(() => authStore.role, () => validateAdminAccess())
+watch(() => route.path, () => initMenuState())
+
 </script>
 
 <template>
   <div class="admin-layout">
-    <!-- 서브메뉴바 -->
+    <!-- 서브바 -->
     <div class="sub-bar-contaienr">
-      <!-- UniBooker 로고 -->
       <div class="logo-section">
-        <img src="/assets/images/unibooker_white_logo.png" alt="UniBooker 로고 이미지" />
+        <img src="/assets/images/unibooker_white_logo.png" alt="UniBooker 로고" />
       </div>
 
-      <!-- 리소스 그룹 생성 버튼 -->
-      <router-link to="/admin/service-group-create" class="service-group-create-button-container"
-        >서비스 그룹 생성</router-link
-      >
+      <router-link to="/admin/service-group-create" class="service-group-create-button-container">
+        서비스 그룹 생성
+      </router-link>
 
-      <!-- Control 섹션 -->
+      <!-- 상단 Control 메뉴 -->
       <div class="sub-menu-section">
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
-          <router-link class="sub-menu-item" to="/admin/dashboard">전체 현황</router-link>
-          <!-- ADMIN만 관리자 관리 메뉴 표시 -->
+          <router-link
+            class="sub-menu-item"
+            :class="{ 'selected-menu-item': selectedMainMenu === 'dashboard' }"
+            to="/admin/dashboard"
+            @click="selectTopMenu('dashboard')"
+          >전체 현황</router-link>
+
           <router-link
             v-if="authStore.role === 'ADMIN'"
             class="sub-menu-item"
+            :class="{ 'selected-menu-item': selectedMainMenu === 'manager' }"
             to="/admin/manager-management"
-          >
-            관리자 관리
-          </router-link>
-          <router-link class="sub-menu-item" to="/admin/service-group-management"
-            >서비스 그룹 관리</router-link
-          >
+            @click="selectTopMenu('manager')"
+          >관리자 관리</router-link>
+
+          <router-link
+            class="sub-menu-item"
+            :class="{ 'selected-menu-item': selectedMainMenu === 'serviceGroupManage' }"
+            to="/admin/service-group-management"
+            @click="selectTopMenu('serviceGroupManage')"
+          >서비스 그룹 관리</router-link>
         </div>
       </div>
 
-      <!-- Service Groups 섹션 -->
+      <!-- 서비스 그룹 메뉴 -->
       <div class="sub-menu-section flex-1">
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
-          <div v-for="(item, index) in serviceGroups" :key="index">
-            <router-link
-              to="#!"
+          <div v-for="(item, index) in serviceGroups" :key="item.id">
+            <!-- 상위 메뉴: 이동 없음, 드롭다운만 토글 -->
+            <div
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
               @click="toggleDropdown(index)"
             >
               {{ item.name }}
-            </router-link>
+            </div>
+
             <div v-if="openDropdown === index">
               <router-link
                 v-for="child in dropdownItems"
                 :key="child"
-                :to="getMenuLink(child, item.id, item.name, item.serviceCategory)"
+                :to="getMenuLink(child, item)"
                 class="service-group-menu-item"
                 :class="{ 'selected-service-group-item': selectedMenuItems[index] === child }"
                 @click.stop="selectMenuItem(index, child)"
@@ -221,31 +223,28 @@ watch(
         </div>
       </div>
 
-      <!-- 로그아웃 버튼 -->
+      <!-- 로그아웃 -->
       <div class="sub-menu-logout-button-container" @click="handleLogout">
-        <img src="/assets/icons/ic-logout.png" alt="로그아웃" />
-        Logout
+        <img src="/assets/icons/ic-logout.png" alt="로그아웃" /> Logout
       </div>
     </div>
 
-    <!-- 서브메뉴 별 내용이 표시되는 곳 -->
+    <!-- 본문 -->
     <div class="content-body">
       <div class="content-top">
         <div class="admin-badge">
           <img
             @click="openModal"
             :src="companyLogo"
-            alt="기업 로고 이미지"
+            alt="기업 로고"
             @error="$event.target.src = '/assets/images/admin_logo.png'"
           />
           <span @click="openModal">{{ authStore.user?.name }} 관리자님</span>
           <button @click.stop="notiToggleDropdown" class="super-notify-btn">
             <img
-              :src="
-                notificationStore.hasNotification
-                  ? '/assets/icons/ic-new-notify.png'
-                  : '/assets/icons/ic-no-notify.png'
-              "
+              :src="notificationStore.hasNotification
+                ? '/assets/icons/ic-new-notify.png'
+                : '/assets/icons/ic-no-notify.png'"
               alt="알림 아이콘"
               class="notify-icon"
             />
@@ -258,14 +257,16 @@ watch(
           />
         </div>
       </div>
+
       <div class="content-slot">
-        <!-- 여기에 내용이 들어갑니다! -->
         <slot />
       </div>
     </div>
   </div>
+
   <AccountManageModal :open="isModalOpen" :userData="userData" @close="isModalOpen = false" />
 </template>
+
 
 <style scoped>
 .sub-bar-contaienr {
@@ -338,7 +339,7 @@ watch(
 }
 
 .admin-badge img:first-child {
-  @apply w-[75px] mx-3;
+  @apply h-[25px] mx-3;
 }
 
 .admin-badge span {
@@ -392,9 +393,5 @@ label {
 
 .add-modal-button-container button {
   @apply py-[10px];
-}
-
-.button-px {
-  @apply px-0;
 }
 </style>

@@ -32,6 +32,13 @@ const deleteServiceGroup = async (serviceGroupId) => {
   }
 }
 
+const goServiceManagement = (serviceGroupId, serviceGroupName) => {
+  router.push({
+    path: `/admin/service-management/${serviceGroupId}`,
+    query: { serviceGroupName }
+  })
+}
+
 const goCreate = () => {
   router.push({ name: 'ServiceGroupCreate' })
 }
@@ -59,7 +66,13 @@ onMounted(() => {
       <div v-for="s in serviceGroups" class="service-group-container">
         <div class="service-group-container-top">
           <div class="create-by-info">
-            <span>{{ s.name }}</span>
+            <span
+              @click="goServiceManagement(s.id, s.name)"
+              class="service-group-name"
+              style="cursor: pointer"
+            >
+              {{ s.name }}
+            </span>
             <p>{{ s.administrator }} 관리자 | {{ new Date(s.createdAt).toLocaleDateString() }}</p>
           </div>
           <img
@@ -154,4 +167,9 @@ onMounted(() => {
 .service-group-list {
   @apply flex flex-wrap gap-3 mt-[15px];
 }
+
+.service-group-name {
+  @apply cursor-pointer text-black hover:text-[#2563EB] hover:underline;
+}
+
 </style>
