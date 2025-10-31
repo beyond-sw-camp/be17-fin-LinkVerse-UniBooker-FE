@@ -2,7 +2,7 @@
 import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/UseStore'
-import ReservationApi from '@/services/user/reservation_api'
+import ReservationApi from '@/services/reservation/reservation_api'
 
 const route = useRoute()
 const router = useRouter()
@@ -29,11 +29,8 @@ const cancelReservation = async () => {
 // 예약 상세 데이터
 const reservation = reactive({})
 const getUserReservation = async () => {
-  const response = await ReservationApi.getUserReservation(route.params.reservationId)
-
-  if (response && response.isSuccess) {
-    Object.assign(reservation, response.data)
-  }
+  const response = await ReservationApi.getServiceReservationDetail(route.params.reservationId)
+  Object.assign(reservation, response)
 }
 
 // 날짜 카테고리 타입에 따른 변환
