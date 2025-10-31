@@ -212,7 +212,7 @@ const formatDate = (dateString) => {
 }
 
 .admin-status-card {
-  @apply bg-white shadow-md rounded-xl w-full max-w-7xl py-20 mt-10;
+  @apply bg-white shadow-md rounded-xl w-full max-w-7xl py-20 mt-10 mb-[50px];
 }
 
 /* 헤더 */

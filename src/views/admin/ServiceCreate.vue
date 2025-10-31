@@ -50,29 +50,98 @@ const getServiceGroup = async () => {
   customFieldDefinitions.value = await serviceApi.getServiceCustomFields(serviceGroupId)
   customFieldValues.value = customFieldDefinitions.value.map((field) => ({
     customFieldId: field.id,
-    values: [''],
+    values: field.dataType === 'RADIO' ? [field.options[0] || ''] : [''],
   }))
 }
 
 // 서비스 생성
 const createService = async () => {
+  console.log(customFieldDefinitions.value)
+
+  // 필수 값 검증
+  if (!name.value || !name.value.trim()) {
+    alert('이름은 필수 입력입니다.')
+    return
+  }
+
+  if (!description.value || !description.value.trim()) {
+    alert('설명은 필수 입력입니다.')
+    return
+  }
+
+  if (!capacity.value) {
+    alert('인원수는 필수 입력입니다.')
+    return
+  }
+
+  // 상시모집일 경우 기간 필수
+  if (!serviceGroup.value.isAlwaysAvailable) {
+    if (!startDate.value) {
+      alert('시작 기간은 필수 입력입니다.')
+      return
+    }
+    if (!endDate.value) {
+      alert('종료 기간은 필수 입력입니다.')
+      return
+    }
+  }
+
+  // 예약형 / 좌석형 필수값
+  if (serviceGroup.value.category === 'RESERVATION' || selectedCategory.value === 'SEAT') {
+    if (!timeInterval.value) {
+      alert('시간 간격은 필수 입력입니다.')
+      return
+    }
+
+    const timeSlots = timeSlotRef.value?.getTimeSlots?.() || []
+    const exceptionSlots = exceptionRef.value?.getExceptionSlots?.() || []
+    if (!timeSlots.length && !exceptionSlots.length) {
+      alert('운영 시간 또는 예외 시간은 최소 1개 이상 필요합니다.')
+      return
+    }
+  }
+
+  // 좌석형 필수값 (행/열)
+  if (serviceGroup.value.category === 'SEAT') {
+    if (!row.value) {
+      alert('행은 필수 입력입니다.')
+      return
+    }
+    if (!col.value) {
+      alert('열은 필수 입력입니다.')
+      return
+    }
+  }
+
+  // 커스텀 필드 필수 체크
   for (let i = 0; i < customFieldDefinitions.value.length; i++) {
     const def = customFieldDefinitions.value[i]
-    const val = customFieldValues.value[i]?.values?.[0]
+    const values = customFieldValues.value[i]?.values
 
     if (!def.required) continue
 
-    // BOOLEAN 필드
-    if (def.dataType === 'BOOLEAN') {
-      if (val === null || val === undefined) {
+    // CHECKBOX → 최소 1개 선택 필수
+    if (def.dataType === 'CHECKBOX') {
+      if (!values || values.length === 0) {
         alert(`필수 항목입니다: ${def.fieldName}`)
         return
       }
       continue
     }
 
-    // 일반 필드 (TEXT, NUMBER, DATE, TIME)
-    if (val === null || val === undefined || String(val).trim() === '') {
+    // BOOLEAN → null 체크
+    if (def.dataType === 'BOOLEAN') {
+      if (values[0] === null || values[0] === undefined) {
+        alert(`필수 항목입니다: ${def.fieldName}`)
+        return
+      }
+      continue
+    }
+
+    // RADIO는 기본값 있으므로 통과 (체크 안해도 됨)
+
+    // TEXT / NUMBER / DATE / TIME → 빈 문자열 체크
+    if (!values[0] || String(values[0]).trim() === '') {
       alert(`필수 항목입니다: ${def.fieldName}`)
       return
     }
@@ -84,8 +153,10 @@ const createService = async () => {
 
     const formatDate = (dateStr) => {
       if (!dateStr) return null
-      const date = new Date(dateStr)
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+      const d = new Date(dateStr)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+        d.getDate(),
+      ).padStart(2, '0')}`
     }
 
     const formattedCustomFields = customFieldValues.value.map((field) => ({
@@ -110,6 +181,7 @@ const createService = async () => {
     }
 
     const response = await serviceApi.createService(formData)
+
     alert('서비스가 성공적으로 생성되었습니다!')
     router.push(
       `/admin/service-management/${serviceGroupId}?serviceGroupName=${serviceGroup.value?.name}`,
@@ -188,6 +260,16 @@ watch([serviceGroup], () => {
 
 onMounted(() => {
   getServiceGroup()
+
+  customFieldValues.value = customFieldDefinitions.value.map((field) => ({
+    customFieldId: field.id,
+    values:
+      field.dataType === 'RADIO'
+        ? [field.options[0] || ''] // 라디오: 첫 번째 옵션 선택
+        : field.dataType === 'CHECKBOX'
+          ? [] // 체크박스: 빈 배열로 초기화
+          : [''], // 나머지: 빈 문자열
+  }))
 })
 </script>
 
@@ -415,6 +497,44 @@ onMounted(() => {
                   false-value="false"
                 />
               </label>
+
+              <!-- 체크박스 (다중 선택) -->
+              <div v-else-if="field.dataType === 'CHECKBOX'" class="flex flex-col space-y-1">
+                <Input
+                  v-for="(option, i) in field.options"
+                  :key="i"
+                  type="checkbox"
+                  :label="option.label || option"
+                  :value="option.value || option"
+                  :model-value="customFieldValues[index].values.includes(option.value || option)"
+                  @update:modelValue="
+                    (checked) => {
+                      const val = option.value || option
+                      if (checked) {
+                        if (!customFieldValues[index].values.includes(val)) {
+                          customFieldValues[index].values.push(val)
+                        }
+                      } else {
+                        const idx = customFieldValues[index].values.indexOf(val)
+                        if (idx > -1) customFieldValues[index].values.splice(idx, 1)
+                      }
+                    }
+                  "
+                />
+              </div>
+
+              <!-- RADIO (단일 선택) -->
+              <div v-else-if="field.dataType === 'RADIO'" class="flex flex-col space-y-1">
+                <Input
+                  v-for="(option, i) in field.options"
+                  :key="i"
+                  type="radio"
+                  :label="option"
+                  :value="option"
+                  :name="'radio-' + index"
+                  v-model="customFieldValues[index].values[0]"
+                />
+              </div>
             </div>
           </div>
         </div>
