@@ -8,57 +8,152 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const serviceId = route.params.serviceId
+
+// ---- 상태
+const loading = ref(true)
+const service = ref(null) // 서비스 정보
+const capacity = computed(() => Number(service.value?.capacity ?? 0))
 const rows = ref(10)
 const cols = ref(12)
-const serviceGroupId = route.params.serviceGroupId
 
-// 서비스 목록
-const services = reactive([])
-// 서비스별 예약 목록 저장
-const serviceReservationsMap = reactive({})
-// 선택된 서비스
-const selectedService = ref(null)
-// 좌석판 저장
-const seatsMap = reactive({})
-// 선택/호버 좌석
+const allReservations = ref([]) // 이 서비스의 모든 예약
+const selectedDate = ref(null) // 'YYYY-MM-DD'
+const selectedHour = ref(null) // 0~23 정수
+const selectedMinute = ref(0)
+
+const isModalOpen = ref(false)
 const selectedSeat = ref(null)
 const hoverSeat = ref(null)
-// 모달 상태
-const isModalOpen = ref(false)
-// 예약 리스트 참조
-const seatRefs = reactive({})
+const seatRefs = reactive({}) // 예약 리스트 스크롤 동기화용
 
-// 서비스 불러오기
-const getServices = async () => {
-  const response = await serviceApi.getServices(serviceGroupId)
-  services.splice(0, services.length, ...response)
-  if (services.length) selectedService.value = services[0]
+// ---- 유틸
+const pad2 = (n) => String(n).padStart(2, '0')
+const dateToStr = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+const hhmmToMin = (hhmm) => {
+  const [h, m] = hhmm.split(':').map(Number)
+  return h * 60 + m
+}
+const overlaps = (slotStartMin, slotEndMin, resStartMin, resEndMin) =>
+  slotStartMin < resEndMin && slotEndMin > resStartMin
+
+// ---- 데이터 적재
+const loadService = async () => {
+  const detail = await serviceApi.getServiceInfo(serviceId)
+  service.value = detail
+  rows.value = detail.row
+  cols.value = detail.col
 }
 
-// 서비스별 예약 불러오기
-const getReservations = async (serviceId) => {
-  // 이미 예약이 있으면 업데이트만
-  if (!serviceReservationsMap[serviceId]) {
-    const response = await reservationApi.getServiceReservations(serviceId)
-    serviceReservationsMap[serviceId] = response.map((r) => ({
+const loadReservations = async () => {
+  console.log('serviceId:', serviceId)
+  const res = await reservationApi.getServiceReservations(serviceId)
+  // 표준화: 날짜/시간/좌표 필드 매핑
+  allReservations.value = res.map((r) => {
+    const start = new Date(r.startDate)
+    const end = new Date(r.endDate)
+    return {
       id: r.id,
-      name: r.userName,
-      date: r.startDate,
-      time: new Date(r.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      row: r.row || 0,
-      col: r.col || 0,
-    }))
+      userName: r.userName,
+      reservationDate: r.startDate.split('T')[0], // 'YYYY-MM-DD'
+      startTime: `${pad2(start.getHours())}:${pad2(start.getMinutes())}`, // 'HH:MM'
+      endTime: `${pad2(end.getHours())}:${pad2(end.getMinutes())}`,
+      row: Number(r.row ?? 0),
+      col: Number(r.col ?? 0),
+      status: r.status ?? 'CONFIRMED',
+    }
+  })
+
+  // 초기 선택: 첫 예약의 날짜/시간
+  if (allReservations.value.length) {
+    selectedDate.value = selectedDate.value || allReservations.value[0].reservationDate
+    selectedHour.value =
+      selectedHour.value ?? Number(allReservations.value[0].startTime.split(':')[0])
+  } else {
+    const today = new Date()
+    selectedDate.value = selectedDate.value || dateToStr(today)
+    selectedHour.value = selectedHour.value ?? new Date().getHours()
   }
-  // 좌석판 갱신
-  seatsMap[serviceId] = generateSeats(serviceId)
+
+  // 좌석판 크기가 서비스에 없으면, 예약 데이터에서 추정
+  if (!service.value?.row || !service.value?.col) {
+    const maxRow = Math.max(0, ...allReservations.value.map((x) => x.row || 0))
+    const maxCol = Math.max(0, ...allReservations.value.map((x) => x.col || 0))
+    if (maxRow > 0) rows.value = maxRow
+    if (maxCol > 0) cols.value = maxCol
+  }
 }
 
-// 좌석 데이터 생성
-const generateSeats = (serviceId) =>
-  Array.from({ length: rows.value }, (_, r) =>
+// ---- “선택된 시간대(=selectedDate + selectedHour~+60분)”의 예약만 필터링
+const reservationsAtSelectedSlot = computed(() => {
+  const slotStartMin = selectedHour.value * 60 + (selectedMinute.value || 0)
+  const slotEndMin = slotStartMin + 60
+  return allReservations.value.filter((r) => {
+    if (r.reservationDate !== selectedDate.value) return false
+    if (r.status && r.status !== 'CONFIRMED') return false
+    const resStartMin = hhmmToMin(r.startTime)
+    const resEndMin = hhmmToMin(r.endTime)
+    return overlaps(slotStartMin, slotEndMin, resStartMin, resEndMin)
+  })
+})
+
+// ---- 같은 리소스(=동일 serviceId)의 “다른 시간대 요약 카드들” (같은 날짜 기준)
+const slotSummariesForSidebar = computed(() => {
+  // 같은 날짜 내의 슬롯 요약: 시간(HH)을 키로 그룹핑
+  const summaries = new Map()
+  const sameDateReservations = allReservations.value.filter(
+    (r) => r.reservationDate === selectedDate.value && (!r.status || r.status === 'CONFIRMED'),
+  )
+  for (const r of sameDateReservations) {
+    const hour = Number(r.startTime.split(':')[0])
+    if (!summaries.has(hour)) {
+      summaries.set(hour, { hour, count: 0 })
+    }
+    summaries.get(hour).count++
+  }
+
+  // 시간순 정렬, 현재 선택된 시간은 맨 위로
+  const arr = Array.from(summaries.values()).sort((a, b) => a.hour - b.hour)
+  arr.sort((a, b) => (a.hour === selectedHour.value ? -1 : b.hour === selectedHour.value ? 1 : 0))
+  return arr.map((x) => ({
+    ...x,
+    capacity: capacity.value,
+    label: `${pad2(x.hour)}:00 ~ ${pad2((x.hour + 1) % 24)}:00`,
+    isActive: x.hour === selectedHour.value,
+  }))
+})
+
+// ---- 날짜 선택 (간단 input[type="date"])
+const tempDate = ref('')
+const openDate = () => {
+  tempDate.value = selectedDate.value || dateToStr(new Date())
+}
+const applyDate = () => {
+  if (!tempDate.value) return
+  selectedDate.value = tempDate.value
+}
+
+// ---- 슬롯 전환
+const selectHour = (hour) => {
+  selectedHour.value = hour
+  // 스크롤 동기화 UX: 첫 행으로 스크롤
+  const first = reservationsAtSelectedSlot.value[0]
+  if (first) {
+    // 예약 리스트의 첫 DOM에 스크롤 하려면 ref 바인딩 해놨던 걸 이용
+    const seatKey = `${first.id}-row`
+    if (seatRefs[seatKey]) {
+      seatRefs[seatKey].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+}
+
+// ---- 좌석판(선택 슬롯 기준)
+const seats = computed(() => {
+  // 선택 슬롯의 예약만 반영해서 좌석 상태 생성
+  const grid = Array.from({ length: rows.value }, (_, r) =>
     Array.from({ length: cols.value }, (_, c) => {
-      const reservedSeat = serviceReservationsMap[serviceId]?.find(
-        (res) => res.row === r + 1 && res.col === c + 1,
+      const reservedSeat = reservationsAtSelectedSlot.value.find(
+        (x) => x.row === r + 1 && x.col === c + 1,
       )
       return {
         id: serviceId * 10000 + r * cols.value + c,
@@ -69,187 +164,197 @@ const generateSeats = (serviceId) =>
       }
     }),
   )
+  return grid
+})
 
-// 좌석판 계산
-const seats = computed(() => seatsMap[selectedService.value?.id] || [])
-
-// 좌석 클릭
+// ---- 좌석 상호작용
+const onSeatHoverBoard = (seat) => {
+  hoverSeat.value = seat
+  if (seat.reservationInfo) {
+    const seatKey = `${seat.reservationInfo.id}-row`
+    if (seatRefs[seatKey]) {
+      seatRefs[seatKey].scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+}
+const onSeatHoverList = (seat) => {
+  hoverSeat.value = seat
+}
 const openSeatDetail = (seat) => {
   if (!seat.reservationInfo) return
   selectedSeat.value = seat
   isModalOpen.value = true
 }
-
-// 예약 취소
+const closeModal = () => (isModalOpen.value = false)
 const cancelReservation = () => {
-  isModalOpen.value = false
+  // 실제 취소 API 연동은 여기서
 }
 
-// 모달 닫기
-const closeModal = () => {
-  isModalOpen.value = false
-}
-
-// 좌석판 호버
-const onSeatHoverBoard = (seat) => {
-  hoverSeat.value = seat
-  if (seat.reservationInfo && seatRefs[seat.id]) {
-    seatRefs[seat.id].scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-}
-
-// 예약 리스트 호버
-const onSeatHoverList = (seat) => {
-  hoverSeat.value = seat
-}
-
-// 선택 서비스 변경 시 예약과 좌석판 갱신
-watch(selectedService, async (newService) => {
-  if (!newService) return
-
-  rows.value = newService.row || 10
-  cols.value = newService.col || 12
-
-  await getReservations(newService.id)
-  seatsMap[newService.id] = generateSeats(newService.id)
+// ---- 라이프사이클
+onMounted(async () => {
+  await loadService()
+  await loadReservations()
+  loading.value = false
 })
 
-// 초기 마운트
-onMounted(async () => {
-  await getServices()
-  if (selectedService.value) {
-    rows.value = selectedService.value.row || 10
-    cols.value = selectedService.value.col || 12
-    await getReservations(selectedService.value.id)
+// 날짜가 바뀌면 시간대 리스트도 함께 갱신되므로, 선택된 시간이 비어있을 경우 보정
+watch(selectedDate, () => {
+  if (selectedHour.value == null && slotSummariesForSidebar.value.length) {
+    selectedHour.value = slotSummariesForSidebar.value[0].hour
   }
 })
 </script>
 
 <template>
   <AdminLayout>
-    <div class="container">
-      <!-- 좌석판 + 예약 리스트 -->
-      <div class="components-white-container flex-1 flex flex-col gap-4">
-        <!-- 좌석판 -->
-        <div class="seat-board">
-          <h2 class="title">좌석</h2>
-          <!-- 좌석 범례 -->
-          <div class="legend">
-            <div class="legend-seat empty"></div>
-            <span class="legend-text">예약 가능한 좌석</span>
-            <div class="legend-seat reserved"></div>
-            <span class="legend-text">예약 완료</span>
-          </div>
-          <div class="seat-grid">
-            <div v-for="row in seats" :key="row[0].row" class="seat-row">
-              <div
-                v-for="seat in row"
-                :key="seat.id"
-                :class="[
-                  'seat',
-                  seat.reserved ? 'reserved' : 'empty',
-                  hoverSeat?.id === seat.id ? 'hovered' : '',
-                ]"
-                @mouseenter="onSeatHoverBoard(seat)"
-                @mouseleave="hoverSeat = null"
-                @click="openSeatDetail(seat)"
-              ></div>
+    <div v-if="!loading">
+      <!-- 헤더 영역 -->
+      <div>
+        <h1 class="text-xl font-semibold">
+          {{ service.name }}
+        </h1>
+      </div>
+
+      <!-- 본문: 좌측(좌석판+예약리스트) / 우측(다른 시간대 요약) -->
+      <div class="flex gap-4">
+        <!-- 좌측 -->
+        <div class="components-white-container flex-1 flex flex-col gap-4">
+          <!-- 좌석판 -->
+          <div class="seat-board">
+            <h2 class="title">좌석</h2>
+
+            <!-- 좌석 범례 -->
+            <div class="legend">
+              <div class="legend-seat empty"></div>
+              <span class="legend-text">예약 가능</span>
+              <div class="legend-seat reserved"></div>
+              <span class="legend-text">예약 완료</span>
+            </div>
+
+            <div class="seat-grid">
+              <div v-for="row in seats" :key="row[0].row" class="seat-row">
+                <div
+                  v-for="seat in row"
+                  :key="seat.id"
+                  :class="[
+                    'seat',
+                    seat.reserved ? 'reserved' : 'empty',
+                    hoverSeat?.id === seat.id ? 'hovered' : '',
+                  ]"
+                  :data-tip="`좌석 ${seat.row}-${seat.col}${
+                    seat.reservationInfo
+                      ? ' · 예약자 ' + seat.reservationInfo.userName
+                      : ' · 예약 없음'
+                  }`"
+                  @mouseenter="onSeatHoverBoard(seat)"
+                  @mouseleave="hoverSeat = null"
+                  @click="openSeatDetail(seat)"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- 툴팁 -->
-          <div
-            v-if="hoverSeat"
-            class="seat-tooltip"
-            :style="{
-              top: `calc(${(hoverSeat.row - 1) * 1.5}rem - 8px)`,
-              left: `${(hoverSeat.col - 1) * 1.5}rem`,
-            }"
-          >
-            <p>좌석: {{ hoverSeat.row }}-{{ hoverSeat.col }}</p>
-            <p v-if="hoverSeat.reservationInfo">예약 번호: {{ hoverSeat.reservationInfo.id }}</p>
-            <p v-else class="no-reservation">예약 없음</p>
+          <!-- 예약 리스트 (선택 시간대) -->
+          <div class="reservation-list">
+            <h2 class="title text-lg font-semibold mb-2">예약 리스트</h2>
+            <div class="components-super-table-container max-h-64 overflow-y-auto border rounded">
+              <table class="components-super-table w-full text-sm">
+                <thead class="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th class="text-left px-3 py-2">예약 번호</th>
+                    <th class="text-left px-3 py-2">예약자</th>
+                    <th class="text-left px-3 py-2">좌석</th>
+                    <th class="text-left px-3 py-2">예약 시간</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="seat in seats.flat().filter((s) => s?.reservationInfo)"
+                    :key="seat.id"
+                    :ref="(el) => (seatRefs[`${seat.reservationInfo.id}-row`] = el)"
+                    @mouseenter="onSeatHoverList(seat)"
+                    @mouseleave="hoverSeat = null"
+                    @click="openSeatDetail(seat)"
+                    :class="[hoverSeat?.id === seat.id ? 'bg-blue-50' : '', 'border-t']"
+                  >
+                    <td class="px-3 py-2">{{ seat.reservationInfo.id }}</td>
+                    <td class="px-3 py-2">{{ seat.reservationInfo.userName }}</td>
+                    <td class="px-3 py-2">좌석 {{ seat.row }}-{{ seat.col }}</td>
+                    <td class="px-3 py-2">
+                      {{ selectedDate }}
+                      {{ seat.reservationInfo.startTime }} ~ {{ seat.reservationInfo.endTime }}
+                    </td>
+                  </tr>
+
+                  <tr v-if="seats.flat().every((s) => !s.reservationInfo)">
+                    <td colspan="4" class="px-3 py-6 text-center text-gray-500">
+                      선택된 시간대에 예약이 없습니다.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- 예약 리스트 -->
-        <div class="reservation-list">
-          <h2 class="title">예약 리스트</h2>
-          <div class="components-super-table-container max-h-64 overflow-y-auto">
-            <table class="components-super-table">
-              <thead>
-                <tr>
-                  <th>예약 번호</th>
-                  <th>예약자</th>
-                  <th>좌석</th>
-                  <th>예약 일자</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="seat in seats.flat().filter((s) => s?.reservationInfo)"
-                  :key="seat.id"
-                  :ref="(el) => (seatRefs[seat.id] = el)"
-                  @mouseenter="onSeatHoverList(seat)"
-                  @mouseleave="hoverSeat = null"
-                  @click="openSeatDetail(seat)"
-                  :class="hoverSeat?.id === seat.id ? 'row-hover' : ''"
-                >
-                  <td>{{ seat.reservationInfo.id }}</td>
-                  <td>{{ seat.reservationInfo.name }}</td>
-                  <td>좌석 {{ seat.row }}-{{ seat.col }}</td>
-                  <td>{{ seat.reservationInfo.date }} {{ seat.reservationInfo.time }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+        <!-- 우측: 같은 리소스의 다른 시간대 요약 -->
+        <div class="w-80">
+          <div class="components-white-container">
+            <div class="flex items-center mb-3">
+              <input
+                type="date"
+                :value="selectedDate"
+                @focus="openDate"
+                @input="(e) => (tempDate = e.target.value)"
+                @change="applyDate"
+                class="border rounded px-2 py-1"
+              />
+            </div>
 
-      <!-- 공연/서비스 선택 카드 -->
-      <div class="service-cards">
-        <div
-          v-for="service in services"
-          :key="service.id"
-          @click="selectedService = service"
-          :class="['service-card', selectedService?.id === service.id ? 'selected' : '']"
-        >
-          <h3 class="service-title">{{ service.name }}</h3>
-          <p v-if="service.startDate" class="service-date">
-            {{ service.startDate }} - {{ service.endDate }}
-          </p>
-          <p class="service-time">{{ service.time }}</p>
-          <p class="service-seat-info">
-            <span class="material-icons seat-icon">event_seat</span>
-            {{ serviceReservationsMap[service.id]?.length || 0 }} / {{ service.capacity }}
-          </p>
+            <div
+              v-for="slot in slotSummariesForSidebar"
+              :key="slot.hour"
+              :class="[
+                'p-3 mb-2 rounded border cursor-pointer transition',
+                slot.isActive ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50',
+              ]"
+              @click="selectHour(slot.hour)"
+            >
+              <div class="font-medium">{{ slot.label }}</div>
+              <div class="text-sm text-gray-600">{{ slot.count }} / {{ slot.capacity }} 예약됨</div>
+            </div>
+
+            <div v-if="!slotSummariesForSidebar.length" class="text-sm text-gray-500">
+              선택된 날짜에 예약이 없습니다.
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
+    <div v-else class="p-8 text-center text-gray-500">loading...</div>
+
     <!-- 예약 상세 모달 -->
     <Modal :open="isModalOpen" @click.self="closeModal">
-      <h2 class="modal-title">예약 상세 정보</h2>
-      <div v-if="selectedSeat?.reservationInfo" class="modal-content">
+      <h2 class="modal-title text-lg font-semibold mb-3">예약 상세 정보</h2>
+      <div v-if="selectedSeat?.reservationInfo" class="modal-content space-y-1 text-sm">
         <p><strong>예약 번호:</strong> {{ selectedSeat.reservationInfo.id }}</p>
-        <p><strong>예약자:</strong> {{ selectedSeat.reservationInfo.name }}</p>
+        <p><strong>예약자:</strong> {{ selectedSeat.reservationInfo.userName }}</p>
         <p><strong>좌석:</strong> {{ selectedSeat.row }} - {{ selectedSeat.col }}</p>
-        <p><strong>공연:</strong> {{ selectedService.name }}</p>
-        <p><strong>일시:</strong> {{ selectedService.date }} {{ selectedService.time }}</p>
+        <p>
+          <strong>일시:</strong> {{ selectedDate }} {{ selectedSeat.reservationInfo.startTime }} ~
+          {{ selectedSeat.reservationInfo.endTime }}
+        </p>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer mt-4 flex justify-end gap-2">
         <Button :theme="'gray'" @click="cancelReservation">예약 취소</Button>
-        <Button @click="closeModal"> 닫기 </Button>
+        <Button @click="closeModal">닫기</Button>
       </div>
     </Modal>
   </AdminLayout>
 </template>
 
 <style scoped>
-.container {
-  @apply flex gap-6;
-}
-
 .seat-board {
   @apply relative p-4 overflow-visible;
 }
@@ -301,6 +406,32 @@ onMounted(async () => {
 
 .seat.hovered {
   @apply ring-2 ring-yellow-400;
+}
+
+/* 말풍선 */
+.seat::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%; /* 좌석 위쪽에 붙이기 */
+  left: 50%;
+  transform: translate(-50%, -8px);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #374151;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 10;
+}
+
+.seat:hover::after,
+.seat:hover::before {
+  opacity: 1;
 }
 
 .seat-tooltip {

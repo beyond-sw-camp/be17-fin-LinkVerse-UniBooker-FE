@@ -17,7 +17,7 @@ const reservations = ref([])
 
 const getService = async () => {
   const serviceInfo = await serviceApi.getServiceInfo(serviceId)
-  service.value = serviceInfo.data.data
+  service.value = serviceInfo
   const customFields = await serviceApi.getResourceCustomFieldAndValue(serviceId)
   service.value.customFields = customFields.data.data
   serviceGroupId.value = service.value.resourceGroupdId

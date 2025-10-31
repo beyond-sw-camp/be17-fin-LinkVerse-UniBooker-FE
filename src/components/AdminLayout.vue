@@ -77,15 +77,10 @@ const validateAdminAccess = () => {
 // 서비스 그룹 목록 조회
 const serviceGroups = reactive([])
 const getServiceGroups = async () => {
-  try {
-    const response = await serviceApi.getServiceGroups()
-    const data = response.data.data
+  const response = await serviceApi.getServiceGroups()
+  const data = response.data.data
 
-    Object.assign(serviceGroups, data.resourceGroups)
-    console.log(serviceGroups)
-  } catch (error) {
-    // 서비스 그룹 목록 조회 실패
-  }
+  Object.assign(serviceGroups, data.resourceGroups)
 }
 
 // 서비스 그룹의 드롭다운 메뉴 항목
@@ -98,7 +93,7 @@ const getMenuLink = (menu, serviceGroupId, serviceGroupName, serviceCategory) =>
       if (serviceCategory === 'RESERVATION') {
         return `/admin/reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
       } else if (serviceCategory === 'SEAT') {
-        return `/admin/seat-reservation-management/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
+        return `/admin/seat-reservation-status/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
       } else {
         return `/admin/event-reservation-status/${serviceGroupId}?serviceGroupName=${serviceGroupName}`
       }
