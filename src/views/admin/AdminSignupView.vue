@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/Button.vue'
 import Input from '@/components/Input.vue'
@@ -16,12 +16,12 @@ const formData = reactive({
   name: '',
   email: '',
   phone: '',
-  logo: null,
-  logoUrl: '',
+  logoUrl: '', // ← logo 제거, logoUrl만 사용
 })
 
 const fileName = ref('')
 const thumbnail = ref('')
+const isLoading = ref(false)
 
 // ===== 중복확인 상태 =====
 const duplicateCheckState = reactive({
@@ -30,38 +30,23 @@ const duplicateCheckState = reactive({
   email: false,
 })
 
-// ===== 로딩 상태 =====
-const isLoading = ref(false)
-
-// ===== 자동 형식 입력 함수 =====
-
-/**
- * 사업자등록번호 자동 하이픈 삽입 (XXX-XX-XXXXX)
- */
+// ===== 자동 형식 입력 함수 (기존 유지) =====
 const formatBusinessNumber = (value) => {
   const numbers = value.replace(/[^0-9]/g, '')
   const limited = numbers.slice(0, 10)
-
   if (limited.length <= 3) return limited
   if (limited.length <= 5) return `${limited.slice(0, 3)}-${limited.slice(3)}`
   return `${limited.slice(0, 3)}-${limited.slice(3, 5)}-${limited.slice(5)}`
 }
 
-/**
- * 연락처 자동 하이픈 삽입 (010-XXXX-XXXX)
- */
 const formatPhoneNumber = (value) => {
   const numbers = value.replace(/[^0-9]/g, '')
   const limited = numbers.slice(0, 11)
-
   if (limited.length <= 3) return limited
   if (limited.length <= 7) return `${limited.slice(0, 3)}-${limited.slice(3)}`
   return `${limited.slice(0, 3)}-${limited.slice(3, 7)}-${limited.slice(7)}`
 }
 
-/**
- * Slug 형식 입력 제한 (소문자+숫자+하이픈, 3-30자)
- */
 const formatSlug = (value) => {
   const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
   const limited = cleaned.slice(0, 30)
@@ -69,19 +54,12 @@ const formatSlug = (value) => {
   return withoutDoubleHyphen.replace(/^-+|-+$/g, '')
 }
 
-// ===== 형식 검증 computed =====
-
-/**
- * 사업자등록번호 형식 검증 (10자리 숫자)
- */
+// ===== 형식 검증 computed (기존 유지) =====
 const isBusinessNumberValid = computed(() => {
   const cleaned = formData.businessNumber.replace(/[^0-9]/g, '')
   return cleaned.length === 10
 })
 
-/**
- * Slug 형식 검증 (3~30자, 소문자+숫자+하이픈)
- */
 const isSlugValid = computed(() => {
   const slug = formData.companySlug
   return (
@@ -93,25 +71,16 @@ const isSlugValid = computed(() => {
   )
 })
 
-/**
- * 이메일 형식 검증
- */
 const isEmailValid = computed(() => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(formData.email)
 })
 
-// ===== 중복확인 함수 =====
-
-/**
- * 사업자등록번호 중복 확인
- */
+// ===== 중복확인 함수 (기존 유지) =====
 const checkBusinessNumber = async () => {
   try {
     isLoading.value = true
     const response = await adminApi.checkBusinessNumber(formData.businessNumber)
-
-    // response.data.result → response.data.data로 수정
     if (response.data.data === false) {
       duplicateCheckState.businessNumber = true
       alert('사용 가능한 사업자등록번호입니다.')
@@ -126,17 +95,11 @@ const checkBusinessNumber = async () => {
   }
 }
 
-/**
- * Slug 중복 확인
- */
 const checkSlug = async () => {
   try {
     isLoading.value = true
     const response = await adminApi.checkSlug(formData.companySlug)
-
-    // response.data.result → response.data.data로 수정
     const result = response.data.data
-
     if (result.available) {
       duplicateCheckState.slug = true
       alert(result.message || '사용 가능한 Slug입니다.')
@@ -151,15 +114,10 @@ const checkSlug = async () => {
   }
 }
 
-/**
- * 이메일 중복 확인
- */
 const checkEmail = async () => {
   try {
     isLoading.value = true
     const response = await adminApi.checkEmail(formData.email)
-
-    // response.data.result → response.data.data로 수정
     if (response.data.data === false) {
       duplicateCheckState.email = true
       alert('사용 가능한 이메일입니다.')
@@ -175,109 +133,136 @@ const checkEmail = async () => {
 }
 
 // ===== 파일 업로드 =====
+/**
+ * 기업 로고 파일 업로드
+ * - adminApi 사용으로 통일
+ * - CloudFront URL 자동 생성
+ */
 const handleFileUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
+  // 파일 크기 검증 (10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    alert('파일 크기는 10MB를 초과할 수 없습니다.')
+    event.target.value = ''
+    return
+  }
+
+  // 파일 형식 검증
+  if (!file.type.startsWith('image/')) {
+    alert('이미지 파일만 업로드 가능합니다.')
+    event.target.value = ''
+    return
+  }
+
   fileName.value = file.name
-  formData.logo = file  // 프리뷰용
   thumbnail.value = URL.createObjectURL(file) // 임시 미리보기
 
   try {
+    // 1. Presigned URL 요청
     const uploadForm = new FormData()
     uploadForm.append('file', file)
     uploadForm.append('imageType', 'serviceGroup')
 
-    const presignedUrl = await serviceApi.getServiceGroupPresignedURL(uploadForm)
-    if (!presignedUrl) throw new Error('Presigned URL을 가져오지 못했습니다.')
+    const presignedUrl = await adminApi.getPresignedURL(uploadForm)
+    if (!presignedUrl) {
+      throw new Error('Presigned URL을 가져오지 못했습니다.')
+    }
 
-    // 실제 업로드
-    await serviceApi.uploadImage(presignedUrl, file)
+    // 2. S3에 직접 업로드
+    await adminApi.uploadImage(presignedUrl, file)
 
-    // CloudFront URL 생성
-    const cloudFrontDomain = 'https://d2h9e9y86awp4t.cloudfront.net'
+    // 3. CloudFront URL 생성
+    const cloudFrontDomain =
+      import.meta.env.VITE_CLOUDFRONT_URL || 'https://d2h9e9y86awp4t.cloudfront.net'
     const s3Path = presignedUrl.split('.com')[1].split('?')[0]
     const fullUrl = cloudFrontDomain + s3Path
 
-    // 프리뷰와 폼 데이터에 적용
-    thumbnail.value = fullUrl
+    // 4. formData에 URL 저장
     formData.logoUrl = fullUrl
-
-    // 서버에 파일은 보내지 않음 (logoFile 제거)
+    thumbnail.value = fullUrl
   } catch (err) {
     console.error('이미지 업로드 오류:', err)
     alert('이미지 업로드 중 오류가 발생했습니다.')
+
+    // 실패 시 초기화
+    fileName.value = ''
+    thumbnail.value = ''
+    formData.logoUrl = ''
+    event.target.value = ''
   }
 }
 
 // ===== 폼 제출 =====
+/**
+ * 관리자 회원가입 제출
+ */
 const handleSubmit = async () => {
-  console.log('📤 회원가입 제출 시작')
-  console.log('📋 현재 formData:', JSON.stringify(formData, null, 2))
-  // 1. 사업자등록번호 형식 검증
+  // 1. 사업자등록번호 검증
   const cleanedBusinessNumber = formData.businessNumber.replace(/[^0-9]/g, '')
   if (cleanedBusinessNumber.length !== 10) {
     alert('사업자등록번호 10자리를 모두 입력해주세요.')
     return
   }
 
-  // 2. 사업자등록번호 중복확인 여부
+  // 2. 중복확인 검증
   if (!duplicateCheckState.businessNumber) {
     alert('사업자등록번호 중복확인을 해주세요.')
     return
   }
 
-  // 3. 기업명 입력 검증
+  // 3. 기업명 검증
   if (!formData.companyName || formData.companyName.length < 2) {
     alert('기업명을 2자 이상 입력해주세요.')
     return
   }
 
-  // 4. Slug 형식 검증
+  // 4. Slug 검증
   if (formData.companySlug.length < 3 || formData.companySlug.length > 30) {
     alert('Company Slug는 3~30자여야 합니다.')
     return
   }
 
-  // 5. Slug 중복확인 여부
+  // 5. Slug 중복확인 검증
   if (!duplicateCheckState.slug) {
     alert('Company Slug 중복확인을 해주세요.')
     return
   }
 
-  // 6. 이름 입력 검증
+  // 6. 이름 검증
   if (!formData.name || formData.name.length < 2) {
     alert('이름을 2자 이상 입력해주세요.')
     return
   }
 
-  // 7. 이메일 형식 검증
+  // 7. 이메일 검증
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(formData.email)) {
     alert('올바른 이메일 형식이 아닙니다.')
     return
   }
 
-  // 8. 이메일 중복확인 여부
+  // 8. 이메일 중복확인 검증
   if (!duplicateCheckState.email) {
     alert('이메일 중복확인을 해주세요.')
     return
   }
 
-  // 9. 연락처 형식 검증
+  // 9. 연락처 검증
   const cleanedPhone = formData.phone.replace(/[^0-9]/g, '')
   if (cleanedPhone.length !== 11) {
     alert('연락처 11자리를 모두 입력해주세요.')
     return
   }
 
-  // 10. 로고 업로드 필수 검증 (새로 추가)
+  // 10. 로고 업로드 검증 (선택사항이면 제거 가능)
   if (!formData.logoUrl) {
     alert('기업 로고를 업로드해주세요.')
     return
   }
 
-  // 11. JSON 데이터 생성
+  // 11. JSON 데이터 생성 및 전송
   const requestData = {
     businessNumber: formData.businessNumber,
     companyName: formData.companyName,
@@ -285,24 +270,25 @@ const handleSubmit = async () => {
     name: formData.name,
     email: formData.email,
     phone: formData.phone,
-    logoUrl: formData.logoUrl,
+    logoUrl: formData.logoUrl, // CloudFront URL
   }
 
+<<<<<<<<< Temporary merge branch 1
+=========
   // 11. API 호출
+>>>>>>>>> Temporary merge branch 2
   try {
     isLoading.value = true
     const response = await adminApi.signUpAdmin(requestData)
 
     alert(response.data.data.message || '회원가입 신청이 완료되었습니다.')
 
-    // 승인 상태 페이지로 이동
     router.push({
-      name: 'adminStatus', // ✅ name 사용
+      name: 'adminStatus',
       query: { email: formData.email },
     })
   } catch (error) {
     console.error('❌ 회원가입 실패:', error)
-    console.error('❌ 에러 응답:', error.response?.data)
     alert(error.response?.data?.message || '회원가입 중 오류가 발생했습니다.')
   } finally {
     isLoading.value = false
@@ -311,19 +297,6 @@ const handleSubmit = async () => {
 
 // ===== 제출 버튼 활성화 여부 =====
 const isSubmitEnabled = computed(() => {
-  const result = {
-    businessNumber: duplicateCheckState.businessNumber,
-    slug: duplicateCheckState.slug,
-    email: duplicateCheckState.email,
-    companyName: !!formData.companyName,
-    name: !!formData.name,
-    phone: !!formData.phone,
-    logoUrl: !!formData.logoUrl,
-  }
-
-  console.log('🔍 제출 버튼 활성화 조건:', result)
-  console.log('📋 현재 formData.logoUrl:', formData.logoUrl)
-
   return (
     duplicateCheckState.businessNumber &&
     duplicateCheckState.slug &&
