@@ -33,7 +33,7 @@ const loadCompanyInfo = async () => {
 
   if (!companySlug) {
     alert('잘못된 접근입니다. 기업 링크를 통해 접속해주세요.')
-    router.push('/')
+    router.push('/admin/home/')
     return
   }
 
@@ -45,7 +45,7 @@ const loadCompanyInfo = async () => {
       companyInfo.value = response.data
     } else {
       alert('기업 정보를 찾을 수 없습니다.')
-      router.push('/')
+      router.push('/admin/home/')
     }
   } catch (error) {
     console.error('기업 정보 로드 실패:', error)
@@ -66,20 +66,20 @@ const loadCompanyInfo = async () => {
     // 2. 기업을 찾을 수 없음 (40000)
     if (errorCode === 40000) {
       alert('존재하지 않는 서비스입니다.')
-      router.push('/')
+      router.push('/admin/home/')
       return
     }
 
     // 3. 승인되지 않은 기업 (40004)
     if (errorCode === 40004) {
       alert('아직 승인되지 않은 서비스입니다.')
-      router.push('/')
+      router.push('/admin/home/')
       return
     }
 
     // 4. 기타 에러
     alert(errorMessage || '기업 정보를 불러오는데 실패했습니다.')
-    router.push('/')
+    router.push('/admin/home/')
   } finally {
     isLoadingCompany.value = false
   }
