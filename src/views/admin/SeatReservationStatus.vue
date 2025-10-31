@@ -2,169 +2,82 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
 import Breadcrumb from '@/components/Breadcrumb.vue'
-import Modal from '@/components/Modal.vue'
 import serviceApi from '@/services/service/service_api'
 import reservationApi from '@/services/reservation/reservation_api'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 
 const serviceGroupId = route.params.serviceGroupId
 const serviceGroupName = route.query.serviceGroupName
 
 // ========== 상태 관리 ==========
-
-/** 예약 상세 모달 열림 상태 */
-const detailModalOpen = ref(false)
-
-/** 선택된 예약 정보 */
 const selectedReservation = ref(null)
-
-/** 현재 뷰 모드 (day/week/month) */
 const viewMode = ref('week')
-
-/** 현재 선택된 날짜 */
 const currentDate = ref(new Date())
-
-/** 우측 사이드바 열림 상태 */
 const sidebarOpen = ref(false)
-
-/** 선택된 날짜 */
 const selectedDate = ref(null)
-
-/** 선택된 시간 (시) */
 const selectedHour = ref(null)
-
-/** 선택된 시간 (분) */
 const selectedMinute = ref(null)
-
-/** 리소스 필터 (전체/특정 리소스) */
 const selectedResourceFilter = ref('all')
-
-/** 날짜 픽커 열림 상태 */
 const showDatePicker = ref(false)
-
-/** 임시 날짜 값 (YYYY-MM-DD) */
 const tempDateValue = ref('')
+const loading = ref(true)
+const services = ref([])
+const reservations = ref([])
+const selectedResourceInSlot = ref(null) // 배지 클릭 시 리소스 정보 저장
 
-/** 색상 팔레트 (10개) */
+// 색상 팔레트
 const colorPalette = [
-  '#FF69B4', // 핑크
-  '#FFD700', // 골드
-  '#32CD32', // 라임그린
-  '#1E90FF', // 블루
-  '#FF8C00', // 오렌지
-  '#BA55D3', // 퍼플
-  '#00CED1', // 터콰이즈
-  '#DC143C', // 레드
-  '#8A2BE2', // 블루바이올렛
-  '#20B2AA', // 라이트시그린
+  '#FF69B4',
+  '#FFD700',
+  '#32CD32',
+  '#1E90FF',
+  '#FF8C00',
+  '#BA55D3',
+  '#00CED1',
+  '#DC143C',
+  '#8A2BE2',
+  '#20B2AA',
 ]
 
+// ========== 브레드크럼 ==========
 const breadcrumbItems = [
   { label: '서비스 그룹', path: `/admin/service-group-management` },
   { label: serviceGroupName, path: `` },
 ]
 
-/** 상태 */
-const loading = ref(true)
-const services = ref([])
-const reservations = ref([])
-
-// ✅ 서비스 목록 불러오기
-const getServices = async () => {
-  try {
-    const response = await serviceApi.getServices(serviceGroupId)
-    services.value = response.map((service, index) => ({
-      ...service,
-      color: colorPalette[index % colorPalette.length], // 색상 자동 배정
-    }))
-
-    console.log('services:', services.value)
-
-    // 서비스별 예약 데이터 불러오기
-    for (const service of services.value) {
-      const serviceReservations = await getReservations(service.id, service.color)
-      reservations.value.push(...serviceReservations)
-    }
-
-    console.log('reservations:', reservations.value)
-    loading.value = false
-  } catch (error) {
-    console.error('getServices error:', error)
-  }
-}
-
-// ✅ 예약 데이터 불러오기
-const getReservations = async (serviceId, color) => {
-  try {
-    const response = await reservationApi.getServiceReservations(serviceId)
-    // 예약 데이터에 색상과 리소스명 추가
-    return response.map((r) => {
-      const start = new Date(r.startDate)
-      const end = new Date(r.endDate)
-      return {
-        ...r,
-        reservationDate: r.startDate.split('T')[0], // YYYY-MM-DD
-        startTime: `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`,
-        endTime: `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`,
-        resourceColor: color,
-        resourceName: services.value.find((s) => s.id === serviceId)?.name || 'Unknown',
-      }
-    })
-  } catch (error) {
-    console.error(`getReservations(${serviceId}) error:`, error)
-    return []
-  }
-}
-
-/** 시간 슬롯 (00:00 ~ 23:00, 1시간 단위) */
-const timeSlots = ref([
-  { time: '00:00', hour: 0, minute: 0 },
-  { time: '01:00', hour: 1, minute: 0 },
-  { time: '02:00', hour: 2, minute: 0 },
-  { time: '03:00', hour: 3, minute: 0 },
-  { time: '04:00', hour: 4, minute: 0 },
-  { time: '05:00', hour: 5, minute: 0 },
-  { time: '06:00', hour: 6, minute: 0 },
-  { time: '07:00', hour: 7, minute: 0 },
-  { time: '08:00', hour: 8, minute: 0 },
-  { time: '09:00', hour: 9, minute: 0 },
-  { time: '10:00', hour: 10, minute: 0 },
-  { time: '11:00', hour: 11, minute: 0 },
-  { time: '12:00', hour: 12, minute: 0 },
-  { time: '13:00', hour: 13, minute: 0 },
-  { time: '14:00', hour: 14, minute: 0 },
-  { time: '15:00', hour: 15, minute: 0 },
-  { time: '16:00', hour: 16, minute: 0 },
-  { time: '17:00', hour: 17, minute: 0 },
-  { time: '18:00', hour: 18, minute: 0 },
-  { time: '19:00', hour: 19, minute: 0 },
-  { time: '20:00', hour: 20, minute: 0 },
-  { time: '21:00', hour: 21, minute: 0 },
-  { time: '22:00', hour: 22, minute: 0 },
-  { time: '23:00', hour: 23, minute: 0 },
-])
-
-// ========== 유틸리티 함수 ==========
-
-/** 날짜를 YYYY.MM.DD 형식으로 변환 */
+// ========== 유틸 함수 ==========
 const dateToStr = (date) => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
 }
+const hhmmToMin = (hhmm) => {
+  const [h, m] = hhmm.split(':').map(Number)
+  return h * 60 + m
+}
+const overlaps = (slotStartMin, slotEndMin, resStartMin, resEndMin) =>
+  slotStartMin < resEndMin && slotEndMin > resStartMin
 
-/** 현재 날짜 문자열 */
+// ========== 시간 슬롯 ==========
+const timeSlots = ref(
+  Array.from({ length: 24 }, (_, i) => ({
+    time: `${String(i).padStart(2, '0')}:00`,
+    hour: i,
+    minute: 0,
+  })),
+)
+
+// ========== 현재 기간 정보 ==========
 const currentDateStr = computed(() => dateToStr(currentDate.value))
 
-/** 주간 날짜 배열 (일~토) */
 const weekDays = computed(() => {
   const start = new Date(currentDate.value)
   const dayOfWeek = start.getDay()
   start.setDate(start.getDate() - dayOfWeek)
-
   const arr = []
   for (let i = 0; i < 7; i++) {
     const d = new Date(start)
@@ -178,31 +91,153 @@ const weekDays = computed(() => {
   return arr
 })
 
-/** 월간 날짜 배열 */
+// ========== 월별 뷰 계산 ==========
 const daysInMonth = computed(() => {
   const y = currentDate.value.getFullYear()
   const m = currentDate.value.getMonth()
   const lastDay = new Date(y, m + 1, 0).getDate()
-
   const arr = []
   for (let i = 1; i <= lastDay; i++) {
     const d = new Date(y, m, i)
     arr.push({
       dateStr: dateToStr(d),
       dayNum: i,
-      dayOfWeek: d.getDay(), // 0(일) ~ 6(토)
+      dayOfWeek: d.getDay(), // 0(일)~6(토)
     })
   }
   return arr
 })
 
-/** 월 시작 전 빈 칸 개수 */
 const blanksBefore = computed(() => {
-  const firstDay = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
-  return firstDay.getDay()
+  const first = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
+  return first.getDay()
 })
 
-/** 현재 기간 표시 문자열 */
+const getReservationsAtDate = (date) =>
+  filteredReservations.value.filter((r) => r.reservationDate === date)
+
+const selectDate = (dateStr) => {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  currentDate.value = new Date(y, m - 1, d)
+  selectedDate.value = dateStr
+  selectedHour.value = null
+  selectedMinute.value = null
+  selectedResourceInSlot.value = null
+  // UX: 날짜 클릭 시 Day 뷰로 전환 (원하면 유지해도 됨)
+  viewMode.value = 'day'
+  sidebarOpen.value = false
+}
+
+// ========== API 호출 ==========
+const getServices = async () => {
+  try {
+    const response = await serviceApi.getServices(serviceGroupId)
+    services.value = response.map((service, index) => ({
+      ...service,
+      color: colorPalette[index % colorPalette.length],
+    }))
+
+    for (const service of services.value) {
+      const serviceReservations = await getReservations(service.id, service.color)
+      reservations.value.push(...serviceReservations)
+    }
+
+    loading.value = false
+  } catch (error) {
+    console.error('getServices error:', error)
+  }
+}
+
+const getReservations = async (serviceId, color) => {
+  try {
+    const svc = services.value.find((s) => Number(s.id) === Number(serviceId))
+    const capacity = Number(svc?.capacity ?? 0)
+    const serviceName = svc?.name || 'Unknown'
+
+    const response = await reservationApi.getServiceReservations(serviceId)
+
+    return response.map((r) => {
+      const start = new Date(r.startDate)
+      const end = new Date(r.endDate)
+      return {
+        ...r,
+        resourceId: Number(r.resourceId ?? serviceId),
+        resourceCapacity: capacity,
+        resourceName: serviceName,
+        resourceColor: color,
+        reservationDate: r.startDate.split('T')[0],
+        startTime: `${String(start.getHours()).padStart(2, '0')}:${String(
+          start.getMinutes(),
+        ).padStart(2, '0')}`,
+        endTime: `${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(
+          2,
+          '0',
+        )}`,
+      }
+    })
+  } catch (error) {
+    console.error(`getReservations(${serviceId}) error:`, error)
+    return []
+  }
+}
+
+// ========== 슬롯별 예약 조회 ==========
+const filteredReservations = computed(() => {
+  if (selectedResourceFilter.value === 'all') return reservations.value
+  return reservations.value.filter((r) => r.resourceId === selectedResourceFilter.value)
+})
+
+const getReservationsAt = (date, hour, minute = 0) => {
+  const slotStartMin = hour * 60 + minute
+  const slotEndMin = slotStartMin + 60
+  return filteredReservations.value.filter((r) => {
+    if (r.reservationDate !== date) return false
+    if (r.status && r.status !== 'CONFIRMED') return false
+    const resStartMin = hhmmToMin(r.startTime)
+    const resEndMin = hhmmToMin(r.endTime)
+    return overlaps(slotStartMin, slotEndMin, resStartMin, resEndMin)
+  })
+}
+
+// 리소스별 예약 요약
+const getSlotSummaries = (date, hour, minute = 0) => {
+  const slotStartMin = hour * 60 + minute
+  const slotEndMin = slotStartMin + 60
+  const inSlot = filteredReservations.value.filter((r) => {
+    if (r.reservationDate !== date) return false
+    if (r.status && r.status !== 'CONFIRMED') return false
+    const resStartMin = hhmmToMin(r.startTime)
+    const resEndMin = hhmmToMin(r.endTime)
+    return overlaps(slotStartMin, slotEndMin, resStartMin, resEndMin)
+  })
+
+  const map = new Map()
+  for (const r of inSlot) {
+    const key = r.resourceId
+    if (!map.has(key)) {
+      const service = services.value.find((s) => s.id === r.resourceId)
+      map.set(key, {
+        resourceId: r.resourceId,
+        resourceName: r.resourceName,
+        resourceColor: r.resourceColor,
+        capacity: service?.capacity || 0,
+        count: 0,
+        reservations: [],
+      })
+    }
+    const g = map.get(key)
+    g.count += 1
+    g.reservations.push(r)
+  }
+  return Array.from(map.values())
+}
+
+const slotSummariesForSidebar = computed(() => {
+  if (!selectedDate.value || selectedHour.value == null) return []
+  return getSlotSummaries(selectedDate.value, selectedHour.value, selectedMinute.value || 0)
+})
+
+// 현재 기간 표시 문자열
 const currentPeriodLabel = computed(() => {
   const months = [
     'January',
@@ -218,193 +253,100 @@ const currentPeriodLabel = computed(() => {
     'November',
     'December',
   ]
-
-  const year = currentDate.value.getFullYear()
-  const month = months[currentDate.value.getMonth()]
+  const y = currentDate.value.getFullYear()
+  const m = currentDate.value.getMonth()
+  const d = currentDate.value.getDate()
 
   if (viewMode.value === 'day') {
-    // Day 뷰: "2025년 10월 22일" 형식
-    return `${year}. ${currentDate.value.getMonth() + 1}. ${currentDate.value.getDate()}.`
+    return `${y}. ${m + 1}. ${d}.`
   } else if (viewMode.value === 'week') {
-    // Week 뷰: "February 2025" 형식
-    return `${month} ${year}`
+    return `${months[m]} ${y}`
   } else {
-    // Month 뷰: "February 2025" 형식
-    return `${month} ${year}`
+    return `${months[m]} ${y}`
   }
 })
 
-// ========== 예약 필터링 ==========
-
-/** 필터링된 예약 목록 */
-const filteredReservations = computed(() => {
-  if (selectedResourceFilter.value === 'all') {
-    return reservations.value
-  }
-  return reservations.value.filter((r) => r.resourceId === selectedResourceFilter.value)
-})
-
-/** 특정 날짜 + 시간에 해당하는 예약 조회 */
-const getReservationsAt = (date, hour, minute = 0) => {
-  return filteredReservations.value.filter((r) => {
-    if (r.reservationDate !== date) return false
-
-    const [startH, startM] = r.startTime.split(':').map(Number)
-    const [endH, endM] = r.endTime.split(':').map(Number)
-
-    const slotStart = hour * 60 + minute
-    const resStart = startH * 60 + startM
-    const resEnd = endH * 60 + endM
-
-    return slotStart >= resStart && slotStart < resEnd
-  })
-}
-
-/** 특정 날짜의 모든 예약 조회 (Month 뷰용) */
-const getReservationsAtDate = (date) => {
-  return filteredReservations.value.filter((r) => r.reservationDate === date)
-}
-
-/** 선택된 시간대의 예약 목록 (사이드바용) */
-const selectedReservations = computed(() => {
-  if (!selectedDate.value) return []
-
-  if (selectedHour.value !== null) {
-    return getReservationsAt(selectedDate.value, selectedHour.value, selectedMinute.value)
-  }
-
-  return getReservationsAtDate(selectedDate.value)
-})
-
-// ========== 이벤트 핸들러 ==========
-
-/** 예약 카드 클릭 - 상세 모달 열기 */
-const openDetailModal = async (reservation) => {
-  const reservationDetail = await reservationApi.getServiceReservationDetail(reservation.id)
-  selectedReservation.value = {
-    id: reservationDetail.id,
-    userName: reservationDetail.userName,
-    reservationDate: reservationDetail.startDate.split('T')[0], // YYYY-MM-DD
-    startTime: reservationDetail.startDate.split('T')[1].slice(0, 5), // HH:MM
-    endTime: reservationDetail.endDate.split('T')[1].slice(0, 5), // HH:MM
-    attendeeCount: reservationDetail.headCount,
-    customFieldValues: reservationDetail.customFieldValues || [],
-    resourceName: reservationDetail.resourceName,
-    resourceGroupName: reservationDetail.resourceGroupName,
-    thumbnail: reservationDetail.thumbnail,
-    createdAt: reservationDetail.createdAt,
-    updatedAt: reservationDetail.updatedAt,
-    status: reservationDetail.status,
-  }
-  console.log(selectedReservation.value)
-  detailModalOpen.value = true
-}
-
-/** 예약 상세 모달 닫기 */
-const closeDetailModal = () => {
-  detailModalOpen.value = false
-  selectedReservation.value = null
-}
-
-/** 시간대 셀 클릭 */
+// ========== 셀/사이드바 ==========
 const selectTimeSlot = (date, hour, minute = 0) => {
   selectedDate.value = date
   selectedHour.value = hour
   selectedMinute.value = minute
+  selectedResourceInSlot.value = null
   sidebarOpen.value = true
 }
 
-/** 날짜 셀 클릭 (Month 뷰) */
-const selectDate = (date) => {
+const selectTimeSlotForResource = (date, hour, minute, summary) => {
   selectedDate.value = date
-  selectedHour.value = null
-  selectedMinute.value = null
+  selectedHour.value = hour
+  selectedMinute.value = minute
+  selectedResourceInSlot.value = summary
   sidebarOpen.value = true
 }
 
-/** 사이드바 닫기 */
-const closeSidebar = () => {
-  sidebarOpen.value = false
-  selectedDate.value = null
-  selectedHour.value = null
-  selectedMinute.value = null
+const selectedReservations = computed(() => {
+  if (!selectedDate.value) return []
+  if (selectedResourceInSlot.value) return selectedResourceInSlot.value.reservations
+  if (selectedHour.value !== null)
+    return getReservationsAt(selectedDate.value, selectedHour.value, selectedMinute.value)
+  return filteredReservations.value.filter((r) => r.reservationDate === selectedDate.value)
+})
+
+const showCountsOnly = computed(() => !!selectedResourceInSlot.value)
+const selectedCount = computed(() => selectedResourceInSlot.value?.count ?? 0)
+
+const getCellHeightBySummaries = (summaries) => {
+  const baseHeight = 80
+  const badgeHeight = 24
+  const padding = 4
+  const count = summaries.length
+  if (count === 0) return `${baseHeight}px`
+  return `${baseHeight + (count - 1) * (badgeHeight + padding)}px`
 }
 
-/** 이전 기간 이동 */
+const closeSidebar = () => (sidebarOpen.value = false)
+
+// ========== 날짜 이동/선택 ==========
 const prevPeriod = () => {
   const d = new Date(currentDate.value)
-  if (viewMode.value === 'day') {
-    d.setDate(d.getDate() - 1)
-  } else if (viewMode.value === 'week') {
-    d.setDate(d.getDate() - 7)
-  } else if (viewMode.value === 'month') {
-    d.setMonth(d.getMonth() - 1)
-  }
+  if (viewMode.value === 'day') d.setDate(d.getDate() - 1)
+  else if (viewMode.value === 'week') d.setDate(d.getDate() - 7)
+  else if (viewMode.value === 'month') d.setMonth(d.getMonth() - 1)
   currentDate.value = d
   closeSidebar()
 }
-
-/** 다음 기간 이동 */
 const nextPeriod = () => {
   const d = new Date(currentDate.value)
-  if (viewMode.value === 'day') {
-    d.setDate(d.getDate() + 1)
-  } else if (viewMode.value === 'week') {
-    d.setDate(d.getDate() + 7)
-  } else if (viewMode.value === 'month') {
-    d.setMonth(d.getMonth() + 1)
-  }
+  if (viewMode.value === 'day') d.setDate(d.getDate() + 1)
+  else if (viewMode.value === 'week') d.setDate(d.getDate() + 7)
+  else if (viewMode.value === 'month') d.setMonth(d.getMonth() + 1)
   currentDate.value = d
   closeSidebar()
 }
 
-/** 날짜 픽커 열기 */
+// ========== 날짜 선택 ==========
 const openDatePicker = () => {
-  // 현재 날짜를 YYYY-MM-DD 형식으로 변환
   const y = currentDate.value.getFullYear()
   const m = String(currentDate.value.getMonth() + 1).padStart(2, '0')
   const d = String(currentDate.value.getDate()).padStart(2, '0')
   tempDateValue.value = `${y}-${m}-${d}`
   showDatePicker.value = true
 }
-
-/** 날짜 픽커 닫기 */
-const closeDatePicker = () => {
-  showDatePicker.value = false
-}
-
-/** 날짜 선택 적용 */
+const closeDatePicker = () => (showDatePicker.value = false)
 const applyDatePicker = () => {
   if (!tempDateValue.value) return
-
   const [year, month, day] = tempDateValue.value.split('-').map(Number)
   currentDate.value = new Date(year, month - 1, day)
   showDatePicker.value = false
   closeSidebar()
 }
 
-/** 예약 생성 모달 열기 */
-const openCreateModal = () => {
-  createModalOpen.value = true
+// ========== 네비게이션 (사이드바 카드 클릭) ==========
+const goToSeatReservation = (serviceId) => {
+  if (!serviceId) return
+  router.push(`/admin/seat-reservation-management/${serviceId}`)
 }
 
-/** 예약 생성 모달 닫기 */
-const closeCreateModal = () => {
-  createModalOpen.value = false
-}
-
-/** 동적 셀 높이 계산 */
-const getCellHeight = (cellReservations) => {
-  const baseHeight = 80
-  const badgeHeight = 24
-  const padding = 4
-
-  const count = cellReservations.length
-  if (count === 0) return `${baseHeight}px`
-
-  return `${baseHeight + (count - 1) * (badgeHeight + padding)}px`
-}
-
+// ========== 실행 ==========
 onMounted(() => {
   getServices()
 })
@@ -422,7 +364,6 @@ onMounted(() => {
 
         <!-- 상단 컨트롤 바 -->
         <div class="control-bar">
-          <!-- 좌측: 월 이동 -->
           <div class="period-controls">
             <button @click="prevPeriod" class="period-nav-btn">&lt;</button>
             <button @click="openDatePicker" class="period-label-btn">
@@ -431,9 +372,7 @@ onMounted(() => {
             <button @click="nextPeriod" class="period-nav-btn">&gt;</button>
           </div>
 
-          <!-- 우측: 뷰 전환 + 필터 -->
           <div class="right-controls">
-            <!-- 뷰 전환 탭 -->
             <div class="view-tabs">
               <button
                 @click="viewMode = 'day'"
@@ -455,7 +394,6 @@ onMounted(() => {
               </button>
             </div>
 
-            <!-- 리소스 필터 드롭다운 -->
             <div class="filter-dropdown">
               <select v-model="selectedResourceFilter" class="filter-select">
                 <option value="all">전체</option>
@@ -472,7 +410,6 @@ onMounted(() => {
           <div class="calendar-container">
             <!-- Week 뷰 -->
             <div v-if="viewMode === 'week'" class="week-view">
-              <!-- 헤더 -->
               <div class="week-header">
                 <div class="time-column-header"></div>
                 <div v-for="day in weekDays" :key="day.date" class="day-header">
@@ -480,31 +417,32 @@ onMounted(() => {
                 </div>
               </div>
 
-              <!-- 시간 슬롯 그리드 -->
               <div class="week-grid">
                 <div v-for="slot in timeSlots" :key="slot.time" class="time-row">
-                  <!-- 시간 라벨 -->
                   <div class="time-label">{{ slot.time }}</div>
 
-                  <!-- 요일별 셀 -->
                   <div
                     v-for="day in weekDays"
                     :key="day.date + '-' + slot.time"
                     class="time-cell"
                     :style="{
-                      minHeight: getCellHeight(getReservationsAt(day.date, slot.hour, slot.minute)),
+                      minHeight: getCellHeightBySummaries(
+                        getSlotSummaries(day.date, slot.hour, slot.minute),
+                      ),
                     }"
                     @click="selectTimeSlot(day.date, slot.hour, slot.minute)"
                   >
-                    <!-- 예약 뱃지 -->
                     <div
-                      v-for="reservation in getReservationsAt(day.date, slot.hour, slot.minute)"
-                      :key="reservation.id"
+                      v-for="summary in getSlotSummaries(day.date, slot.hour, slot.minute)"
+                      :key="summary.resourceId"
                       class="reservation-badge"
-                      :style="{ backgroundColor: reservation.resourceColor }"
+                      :style="{ backgroundColor: summary.resourceColor }"
+                      @click.stop="
+                        selectTimeSlotForResource(day.date, slot.hour, slot.minute, summary)
+                      "
                     >
                       <span class="badge-dot"></span>
-                      <span class="badge-text">{{ reservation.resourceName }}</span>
+                      <span class="badge-text">{{ summary.resourceName }}</span>
                     </div>
                   </div>
                 </div>
@@ -518,20 +456,23 @@ onMounted(() => {
                 <div
                   class="day-time-cell"
                   :style="{
-                    minHeight: getCellHeight(
-                      getReservationsAt(currentDateStr, slot.hour, slot.minute),
+                    minHeight: getCellHeightBySummaries(
+                      getSlotSummaries(currentDateStr, slot.hour, slot.minute),
                     ),
                   }"
                   @click="selectTimeSlot(currentDateStr, slot.hour, slot.minute)"
                 >
                   <div
-                    v-for="reservation in getReservationsAt(currentDateStr, slot.hour, slot.minute)"
-                    :key="reservation.id"
+                    v-for="summary in getSlotSummaries(currentDateStr, slot.hour, slot.minute)"
+                    :key="summary.resourceId"
                     class="reservation-badge"
-                    :style="{ backgroundColor: reservation.resourceColor }"
+                    :style="{ backgroundColor: summary.resourceColor }"
+                    @click.stop="
+                      selectTimeSlotForResource(currentDateStr, slot.hour, slot.minute, summary)
+                    "
                   >
                     <span class="badge-dot"></span>
-                    <span class="badge-text">{{ reservation.resourceName }}</span>
+                    <span class="badge-text">{{ summary.resourceName }}</span>
                   </div>
                 </div>
               </div>
@@ -539,7 +480,6 @@ onMounted(() => {
 
             <!-- Month 뷰 -->
             <div v-if="viewMode === 'month'" class="month-view">
-              <!-- 요일 헤더 -->
               <div class="month-weekday-header">
                 <div class="month-weekday-label text-red-600">Sun</div>
                 <div class="month-weekday-label">Mon</div>
@@ -550,12 +490,9 @@ onMounted(() => {
                 <div class="month-weekday-label text-primary">Sat</div>
               </div>
 
-              <!-- 날짜 그리드 -->
               <div class="month-grid">
-                <!-- 빈 칸 -->
                 <div v-for="n in blanksBefore" :key="'blank-' + n" class="month-cell-blank"></div>
 
-                <!-- 날짜 셀 -->
                 <div
                   v-for="day in daysInMonth"
                   :key="day.dateStr"
@@ -589,43 +526,45 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- 우측 사이드바 (슬라이드) -->
+          <!-- 우측 사이드바 -->
           <transition name="slide">
             <div v-if="sidebarOpen" class="sidebar">
-              <!-- 닫기 버튼 -->
               <button @click="closeSidebar" class="sidebar-close-btn">&times;</button>
 
-              <!-- 예약 카드 목록 -->
               <div class="sidebar-content">
+                <div class="slot-brief">
+                  <strong>선택된 시간</strong> :
+                  <span>
+                    {{ selectedDate }}
+                    {{ String(selectedHour).padStart(2, '0') }}:{{
+                      String(selectedMinute || 0).padStart(2, '0')
+                    }}
+                  </span>
+                </div>
+
+                <!-- 카드 클릭 시 예약 관리 페이지로 이동 -->
                 <div
-                  v-for="reservation in selectedReservations"
-                  :key="reservation.id"
+                  v-for="summary in slotSummariesForSidebar"
+                  :key="summary.resourceId"
                   class="reservation-card"
-                  :style="{ borderLeftColor: reservation.resourceColor }"
-                  @click="openDetailModal(reservation)"
+                  :style="{ borderLeftColor: summary.resourceColor, cursor: 'pointer' }"
+                  @click="goToSeatReservation(summary.resourceId)"
+                  title="예약 관리로 이동"
                 >
-                  <h3 class="card-title">{{ reservation.resourceName }}</h3>
-                  <p class="card-info">
-                    <span class="card-icon">📅</span>
-                    {{ reservation.createdAt }}
-                  </p>
+                  <h3 class="card-title">{{ summary.resourceName }}</h3>
                   <p class="card-info">
                     <span class="card-icon">👤</span>
-                    {{ reservation.userName }}
+                    총 {{ summary.count }} / {{ summary.capacity }} 예약됨
                   </p>
                 </div>
 
-                <!-- 예약 없음 -->
-                <div v-if="selectedReservations.length === 0" class="no-reservations">
-                  선택된 시간대에 예약이 없습니다.
+                <div v-if="slotSummariesForSidebar.length === 0" class="no-reservations">
+                  선택된 시간대에 예약된 리소스가 없습니다.
                 </div>
               </div>
             </div>
           </transition>
         </div>
-
-        <!-- 날짜 픽커 모달 (TODO: 추후 구현) -->
-        <!-- <CreateReservationModal :open="createModalOpen" @close="closeCreateModal" /> -->
 
         <!-- 날짜 픽커 모달 -->
         <div v-if="showDatePicker" class="date-picker-overlay" @click="closeDatePicker">
@@ -647,84 +586,8 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
-      <!-- 예약 상세 모달 -->
-      <Modal :open="detailModalOpen" @close="closeDetailModal">
-        <div class="detail-modal">
-          <!-- 모달 헤더 -->
-          <div class="detail-modal-header">
-            <h2 class="detail-modal-title">예약 상세</h2>
-            <button @click="closeDetailModal" class="detail-modal-close-btn">✕</button>
-          </div>
-
-          <!-- 모달 본문 -->
-          <div v-if="selectedReservation" class="detail-modal-body">
-            <!-- 예약자 -->
-            <div class="detail-field">
-              <label class="detail-label">예약자 *</label>
-              <input
-                type="text"
-                :value="selectedReservation.userName"
-                class="detail-input"
-                disabled
-              />
-            </div>
-
-            <!-- 예약 일시 -->
-            <div class="detail-field">
-              <label class="detail-label">예약 일시</label>
-              <input
-                type="text"
-                :value="selectedReservation.reservationDate"
-                class="detail-input"
-                disabled
-              />
-            </div>
-
-            <!-- 예약 날짜 -->
-            <div class="detail-field">
-              <label class="detail-label">예약 날짜 *</label>
-              <input
-                type="text"
-                :value="selectedReservation.reservationDate"
-                class="detail-input"
-                disabled
-              />
-            </div>
-
-            <!-- 예약 시간 -->
-            <div class="detail-field">
-              <label class="detail-label">예약 시간 *</label>
-              <input
-                type="text"
-                :value="`${selectedReservation.startTime} ~ ${selectedReservation.endTime}`"
-                class="detail-input"
-                disabled
-              />
-            </div>
-
-            <!-- 인원수 -->
-            <!-- 고객 입력 항목(customFieldValues) -->
-            <div v-if="selectedReservation.customFieldValues?.length">
-              <div
-                v-for="field in selectedReservation.customFieldValues"
-                :key="field.fieldId"
-                class="detail-field"
-              >
-                <label class="detail-label">{{ field.fieldName }}</label>
-                <input type="text" :value="field.fieldValue" class="detail-input" disabled />
-              </div>
-            </div>
-          </div>
-
-          <!-- 모달 푸터 -->
-          <div class="detail-modal-footer">
-            <button @click="closeDetailModal" class="detail-cancel-btn">삭제</button>
-            <button @click="closeDetailModal" class="detail-submit-btn">수정</button>
-          </div>
-        </div>
-      </Modal>
     </div>
+
     <div v-else class="loading-screen">loading...</div>
   </AdminLayout>
 </template>
