@@ -1,10 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
 import AdminLayout from '@/components/AdminLayout.vue'
 import Dropdown from '@/components/Dropdown.vue'
-import CustomFieldAdd from '@/components/CustomFieldAdd.vue';
+import CustomFieldAdd from '@/components/CustomFieldAdd.vue'
 import serviceApi from '@/services/service/service_api'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -51,30 +51,52 @@ const onFileChange = async (event) => {
     thumbnail.value = cloudFrontDomain + s3Path
 
     console.log('CloudFront URL:', thumbnail.value)
-
   } catch (error) {
     console.error('이미지 업로드 과정에서 오류 발생:', error)
     alert('이미지 업로드 중 오류가 발생했습니다.')
   }
 }
 
-
 // --- 문자열 → Enum 변환 함수 ---
 const mapToEnum = (type) => {
-  switch(type) {
-    case 'TEXT': return 'TEXT'
-    case 'NUMBER': return 'NUMBER'
-    case 'DATE': return 'DATE'
-    case 'TIME': return 'TIME'
-    case 'RADIO': return 'RADIO'
-    case 'CHECKBOX': return 'CHECKBOX'
-    case 'BOOLEAN': return 'BOOLEAN'
-    default: return 'TEXT'
+  switch (type) {
+    case 'TEXT':
+      return 'TEXT'
+    case 'NUMBER':
+      return 'NUMBER'
+    case 'DATE':
+      return 'DATE'
+    case 'TIME':
+      return 'TIME'
+    case 'RADIO':
+      return 'RADIO'
+    case 'CHECKBOX':
+      return 'CHECKBOX'
+    case 'BOOLEAN':
+      return 'BOOLEAN'
+    default:
+      return 'TEXT'
   }
 }
 
 // --- 생성 API 호출 ---
 const createServiceGroup = async () => {
+  // 필수값 체크
+  if (!name.value || !name.value.trim()) {
+    alert('서비스 이름은 필수 입력입니다.')
+    return
+  }
+
+  if (!description.value || !description.value.trim()) {
+    alert('서비스 설명은 필수 입력입니다.')
+    return
+  }
+
+  if (!selectedCategory.value || !selectedCategory.value.trim()) {
+    alert('카테고리는 필수 선택입니다.')
+    return
+  }
+
   try {
     const formData = {
       name: name.value,
@@ -83,23 +105,23 @@ const createServiceGroup = async () => {
       category: selectedCategory.value,
       isAlwaysAvailable: isAlwaysAvailable.value,
       customFields: [
-        ...serviceCustomFields.value.map(f => ({
-          fieldName: f.fieldName,                // name → fieldName
+        ...serviceCustomFields.value.map((f) => ({
+          fieldName: f.fieldName, // name → fieldName
           description: f.description || '', // description 그대로
-          dataType: mapToEnum(f.dataType),      // 문자열 → Enum
+          dataType: mapToEnum(f.dataType), // 문자열 → Enum
           targetType: 'RESOURCE',
           required: f.isRequired || false,
-          options: f.options
+          options: f.options,
         })),
-        ...userCustomFields.value.map(f => ({
+        ...userCustomFields.value.map((f) => ({
           fieldName: f.fieldName,
           description: f.description || '',
           dataType: mapToEnum(f.dataType),
           targetType: 'USER',
           required: f.isRequired || false,
-          options: f.options
-        }))
-      ]
+          options: f.options,
+        })),
+      ],
     }
 
     console.log('보내는 데이터:', formData)
@@ -133,11 +155,9 @@ const createServiceGroup = async () => {
           <template v-if="thumbnail">
             <img :src="thumbnail" class="service-group-thumbnail" alt="미리보기" />
           </template>
-          <template v-else>
-            이미지 업로드
-          </template>
+          <template v-else> 이미지 업로드 </template>
         </label>
-        <input id="file-upload" type="file" class="file-upload-input"  @change="onFileChange"/>
+        <input id="file-upload" type="file" class="file-upload-input" @change="onFileChange" />
       </div>
     </section>
 
@@ -147,7 +167,12 @@ const createServiceGroup = async () => {
         <div>서비스 그룹 이름 <span>*</span></div>
         <p>어떤 종류의 서비스인가요? ( ex. 회의실 예약, 사내 동아리 모집 등등 )</p>
       </div>
-      <Input v-model="name" class="text-input" type="text" placeholder="서비스 이름을 작성해주세요." />
+      <Input
+        v-model="name"
+        class="text-input"
+        type="text"
+        placeholder="서비스 이름을 작성해주세요."
+      />
     </section>
 
     <!-- 서비스 그룹 설명 -->
@@ -168,8 +193,20 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="radio-button-container">
-        <Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="예" :value="true" />
-<Input v-model="isAlwaysAvailable" class="radio-style" type="radio" label="아니오" :value="false" />
+        <Input
+          v-model="isAlwaysAvailable"
+          class="radio-style"
+          type="radio"
+          label="예"
+          :value="true"
+        />
+        <Input
+          v-model="isAlwaysAvailable"
+          class="radio-style"
+          type="radio"
+          label="아니오"
+          :value="false"
+        />
       </div>
     </section>
 
@@ -177,22 +214,27 @@ const createServiceGroup = async () => {
     <section>
       <div class="form-label-container">
         <div>카테고리 <span>*</span></div>
-        <p>
-          서비스 그룹의 예약/신청 유형에 맞는 카테고리를 선택해 주세요.
-          <div class="resource-create-question-container">
+        <div class="flex">
+          <p>서비스 그룹의 예약/신청 유형에 맞는 카테고리를 선택해 주세요.</p>
+          <div class="resource-create-question-container mt-[1px] ml-[2px]">
             <img class="question-icon" src="/assets/icons/ic-question.png" alt="추가안내" />
             <div class="category-description-box">
-              각 카테고리 별로 아래의 필수 입력 항목이 자동으로 생성됩니다. <br/><br/>
+              각 카테고리 별로 아래의 필수 입력 항목이 자동으로 생성됩니다. <br /><br />
 
-              - RESERVATION(예약형) - 서비스 이용 기간, 이용 시간, 인원수 <br/>
-              - SEAT(좌석형) - 서비스 이용 기간, 이용 시간, 인원수, 좌석 구조(행, 열) <br/>
-              - EVENT(신청형) - 서비스 이용 기간, 인원수 <br/>
+              - RESERVATION(예약형) - 서비스 이용 기간, 이용 시간, 인원수 <br />
+              - SEAT(좌석형) - 서비스 이용 기간, 이용 시간, 인원수, 좌석 구조(행, 열) <br />
+              - EVENT(신청형) - 서비스 이용 기간, 인원수 <br />
             </div>
           </div>
-        </p>
+        </div>
       </div>
-      <Dropdown         v-model="selectedCategory"
- class="dropdown-style" :options="category" placeholder="카테고리를 선택해주세요." width="w-48" />
+      <Dropdown
+        v-model="selectedCategory"
+        class="dropdown-style"
+        :options="category"
+        placeholder="카테고리를 선택해주세요."
+        width="w-48"
+      />
     </section>
 
     <!-- 서비스 입력 항목 -->
@@ -205,7 +247,11 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd :customFields="serviceCustomFields" @add-field="serviceCustomFields.push($event)" @delete-field="serviceCustomFields.splice($event, 1)"/>
+        <CustomFieldAdd
+          :customFields="serviceCustomFields"
+          @add-field="serviceCustomFields.push($event)"
+          @delete-field="serviceCustomFields.splice($event, 1)"
+        />
       </div>
     </section>
 
@@ -219,13 +265,17 @@ const createServiceGroup = async () => {
         </p>
       </div>
       <div class="service-custom-field-container">
-        <CustomFieldAdd :customFields="userCustomFields" @add-field="userCustomFields.push($event)" @delete-field="userCustomFields.splice($event, 1)"/>
+        <CustomFieldAdd
+          :customFields="userCustomFields"
+          @add-field="userCustomFields.push($event)"
+          @delete-field="userCustomFields.splice($event, 1)"
+        />
       </div>
     </section>
 
     <!-- 버튼 컨테이너 -->
     <div class="button-container">
-      <Button theme="gray">초기화</button>
+      <Button theme="gray">초기화</Button>
       <Button @click="createServiceGroup">생성하기</Button>
     </div>
   </AdminLayout>
@@ -289,7 +339,7 @@ textarea {
 }
 
 .dropdown-style {
-  @apply text-[14px] 
+  @apply text-[14px];
 }
 
 .button-container {
@@ -297,7 +347,7 @@ textarea {
 }
 
 .button-container button {
-  @apply text-[14px] px-[22px]
+  @apply text-[14px] px-[22px];
 }
 
 .resource-create-question-container {
