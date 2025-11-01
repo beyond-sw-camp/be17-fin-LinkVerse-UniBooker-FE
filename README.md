@@ -54,7 +54,7 @@
 <br><br>
 
 ## 🌐 접속 주소
-> 추후 서비스 배포 후 추가 예정
+> [UniBooker 접속하기](https://www.unibooker.kro..kr/admin/home)
 
 <br><br>
 
