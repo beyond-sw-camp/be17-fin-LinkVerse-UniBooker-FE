@@ -1,0 +1,336 @@
+pipeline {
+  agent {
+    kubernetes {
+      label "node-kaniko-${UUID.randomUUID().toString()}"
+      defaultContainer 'node'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jenkins-ci
+spec:
+  serviceAccountName: jenkins
+  restartPolicy: Never
+  containers:
+    - name: node
+      image: node:20
+      command: ['cat']
+      tty: true
+      stdin: true
+      volumeMounts:
+        - name: npm-cache
+          mountPath: /root/.npm
+
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command: ['/busybox/sh', '-c', 'sleep infinity']
+      tty: true
+      stdin: true
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
+        - name: workspace
+          mountPath: /workspace
+
+    - name: deploy
+      image: ubuntu:22.04
+      command: ['cat']
+      tty: true
+      stdin: true
+      volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+
+  volumes:
+    - name: npm-cache
+      emptyDir: {}
+    - name: workspace
+      emptyDir: {}
+    - name: docker-config
+      secret:
+        secretName: dockerhub-cred
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+"""
+    }
+  }
+
+  environment {
+    IMAGE_NAME = 'linkverseunibooker/frontend'
+    IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    DEPLOY_NAMESPACE = 'unibooker'
+    TARGET_NODE = 'k8s-worker1'
+    DISCORD_WEBHOOK = 'https://discordapp.com/api/webhooks/1433718084971266099/G8NjsL55ZvhLyvUtnZS_BrglCgK_vhGfjxyOzHIYNtUfsuhsrVToYB-n-IqDlidZcSK7'
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        container('node') {
+          checkout([$class: 'GitSCM',
+            branches: [[name: '*/develop']],
+            userRemoteConfigs: [[url: 'https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE']]
+          ])
+        }
+      }
+    }
+
+    stage('NPM Build') {
+      steps {
+        container('node') {
+          sh '''
+            echo "🧩 Cleaning and building frontend..."
+            rm -rf node_modules dist
+            npm i
+            npm run build
+            ls -lah dist || echo "⚠️ Build directory not found!"
+          '''
+        }
+      }
+    }
+
+    stage('Kaniko Build & Push') {
+      steps {
+        container('kaniko') {
+          sh """
+            echo "🚀 Building image with Kaniko..."
+            /kaniko/executor \
+              --context=${WORKSPACE} \
+              --dockerfile=${WORKSPACE}/Dockerfile \
+              --destination=${IMAGE_NAME}:${IMAGE_TAG} \
+              --destination=${IMAGE_NAME}:latest \
+              --cache=true \
+              --cache-repo=${IMAGE_NAME}-cache \
+              --snapshotMode=redo \
+              --single-snapshot \
+              --use-new-run
+          """
+        }
+      }
+    }
+
+    stage('Deploy Canary') {
+      steps {
+        container('deploy') {
+          sh '''
+            set -e
+            echo "📦 Installing kubectl..."
+            echo "precedence ::ffff:0:0/96 100" >> /etc/gai.conf
+            sed -i 's|http://archive.ubuntu.com/ubuntu/|http://mirror.kakao.com/ubuntu/|g' /etc/apt/sources.list
+            apt update -y >/dev/null
+            apt install -y curl ca-certificates apt-transport-https gpg -qq >/dev/null
+            mkdir -p -m 755 /etc/apt/keyrings
+            curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+            echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+            apt update -y >/dev/null && apt install -y kubectl -qq >/dev/null
+
+            echo "🚀 Deploying Canary version..."
+
+            kubectl delete deploy frontend-deployment-canary -n ${DEPLOY_NAMESPACE} --ignore-not-found
+
+            cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment-canary
+  namespace: ${DEPLOY_NAMESPACE}
+  labels:
+    app: frontend
+    version: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: canary
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ${TARGET_NODE}
+      containers:
+      - name: frontend
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        ports:
+        - containerPort: 80
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          failureThreshold: 3
+EOF
+
+            kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service-canary
+  namespace: ${DEPLOY_NAMESPACE}
+spec:
+  selector:
+    app: frontend
+    version: canary
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+EOF
+
+            echo "⏳ Waiting for Canary rollout..."
+            kubectl rollout status deployment/frontend-deployment-canary -n ${DEPLOY_NAMESPACE} --timeout=300s
+          '''
+        }
+      }
+    }
+
+    stage('Promote to Stable') {
+      steps {
+        container('deploy') {
+          script {
+            timeout(time: 5, unit: 'MINUTES') {
+              input message: "🟢 Canary 정상 확인됨. Stable로 전환할까요?"
+            }
+
+            sh '''
+              echo "🔁 Promoting Canary → Stable..."
+
+              kubectl delete deployment frontend-deployment-stable -n ${DEPLOY_NAMESPACE} --ignore-not-found
+
+              cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment-stable
+  namespace: ${DEPLOY_NAMESPACE}
+  labels:
+    app: frontend
+    version: stable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: stable
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: ${TARGET_NODE}
+      containers:
+      - name: frontend
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        ports:
+        - containerPort: 80
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          failureThreshold: 3
+EOF
+
+              kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service-stable
+  namespace: ${DEPLOY_NAMESPACE}
+spec:
+  selector:
+    app: frontend
+    version: stable
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+EOF
+
+              kubectl patch ingress unibooker-ingress -n ${DEPLOY_NAMESPACE} \
+                --type='json' \
+                -p='[{"op":"replace","path":"/spec/rules/0/http/paths/0/backend/service/name","value":"frontend-service-stable"}]'
+
+              echo "✅ Stable version deployed successfully."
+            '''
+          }
+        }
+      }
+    }
+
+    stage('Cleanup Canary') {
+      steps {
+        container('deploy') {
+          sh '''
+            echo "🧹 Cleaning up Canary..."
+            kubectl delete deployment frontend-deployment-canary -n ${DEPLOY_NAMESPACE} --ignore-not-found
+            kubectl delete service frontend-service-canary -n ${DEPLOY_NAMESPACE} --ignore-not-found
+          '''
+        }
+      }
+    }
+
+    stage('Result') {
+      steps {
+        container('deploy') {
+          sh '''
+            echo "📢 Sending Discord notification..."
+            curl -H "Content-Type: application/json" \
+                 -X POST \
+                 -d '{
+                      "embeds": [{
+                        "title": "🚀 UniBooker Frontend 배포 완료!",
+                        "color": 5814783,
+                        "fields": [
+                          {"name": "Environment", "value": "'${DEPLOY_NAMESPACE}'", "inline": true},
+                          {"name": "Version", "value": "'${IMAGE_TAG}'", "inline": true},
+                          {"name": "Status", "value": "✅ Canary → Stable Promotion", "inline": true}
+                        ],
+                        "footer": {"text": "LinkVerse UniBooker | Jenkins CI/CD"},
+                        "timestamp": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+                      }]
+                    }' \
+                 ${DISCORD_WEBHOOK}
+          '''
+        }
+      }
+    }
+  }
+}

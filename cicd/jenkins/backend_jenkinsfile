@@ -1,0 +1,261 @@
+pipeline {
+  agent {
+    kubernetes {
+      label "gradle-kaniko-${UUID.randomUUID().toString()}"
+      defaultContainer 'gradle'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: jenkins-ci
+spec:
+  serviceAccountName: jenkins
+  restartPolicy: Never
+  containers:
+    - name: gradle
+      image: gradle:8.9-jdk17
+      command: ['cat']
+      tty: true
+      volumeMounts:
+        - name: gradle-cache
+          mountPath: /home/gradle/.gradle
+
+    - name: kaniko
+      image: gcr.io/kaniko-project/executor:debug
+      command: ['/busybox/sh', '-c', 'sleep infinity']
+      tty: true
+      volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
+        - name: workspace
+          mountPath: /workspace
+
+    - name: deploy
+      image: ubuntu:22.04
+      command: ['cat']
+      tty: true
+      volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+
+  volumes:
+    - name: gradle-cache
+      emptyDir: {}
+    - name: workspace
+      emptyDir: {}
+    - name: docker-config
+      secret:
+        secretName: dockerhub-cred
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+"""
+    }
+  }
+
+  environment {
+    IMAGE_NAME = 'linkverseunibooker/backend'
+    IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    DEPLOY_NAMESPACE = 'unibooker'
+    DISCORD_WEBHOOK_URL = 'https://discordapp.com/api/webhooks/1433718084971266099/G8NjsL55ZvhLyvUtnZS_BrglCgK_vhGfjxyOzHIYNtUfsuhsrVToYB-n-IqDlidZcSK7'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        container('gradle') {
+          checkout([$class: 'GitSCM',
+            branches: [[name: '*/develop']],
+            userRemoteConfigs: [[url: 'https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-BE']]
+          ])
+        }
+      }
+    }
+
+    stage('Gradle Build') {
+      steps {
+        container('gradle') {
+          sh '''
+            chmod +x ./gradlew || true
+            ./gradlew --no-daemon clean bootJar
+          '''
+        }
+      }
+    }
+
+    stage('Kaniko Build & Push') {
+      steps {
+        container('kaniko') {
+          sh """
+            /kaniko/executor \
+              --context=${WORKSPACE} \
+              --dockerfile=${WORKSPACE}/Dockerfile \
+              --destination=${IMAGE_NAME}:${IMAGE_TAG} \
+              --destination=${IMAGE_NAME}:latest \
+              --single-snapshot \
+              --use-new-run \
+              --cache=true \
+              --snapshotMode=redo
+          """
+        }
+      }
+    }
+
+    stage('Blue-Green Deploy') {
+      steps {
+        container('deploy') {
+          sh '''
+            set -e
+            echo "📦 Installing kubectl..."
+            apt update -y >/dev/null
+            apt install -y curl apt-transport-https ca-certificates gpg -qq >/dev/null
+            mkdir -p -m 755 /etc/apt/keyrings
+            curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+            echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' > /etc/apt/sources.list.d/kubernetes.list
+            apt update -y >/dev/null
+            apt install -y kubectl -qq >/dev/null
+
+            DEPLOY_NAMESPACE=${DEPLOY_NAMESPACE}
+
+            echo "🔍 Checking active color..."
+            ACTIVE_COLOR=$(kubectl get deploy -n ${DEPLOY_NAMESPACE} -l app=backend -o jsonpath='{.items[?(@.spec.replicas==1)].metadata.labels.version}' || true)
+
+            if [ "$ACTIVE_COLOR" = "green" ]; then
+              NEW_COLOR="blue"
+            else
+              NEW_COLOR="green"
+            fi
+
+            echo "🌀 Deploying new color: $NEW_COLOR"
+
+            kubectl delete deploy backend-deployment-${NEW_COLOR} -n ${DEPLOY_NAMESPACE} --ignore-not-found
+
+            kubectl apply -f - <<EOF
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment-${NEW_COLOR}
+  namespace: ${DEPLOY_NAMESPACE}
+  labels:
+    app: backend
+    version: ${NEW_COLOR}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      version: ${NEW_COLOR}
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: ${NEW_COLOR}
+    spec:
+      containers:
+      - name: backend
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: backend-config
+        - secretRef:
+            name: backend-secret
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 60
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+EOF
+
+            echo "⏳ Waiting for rollout..."
+            kubectl rollout status deployment/backend-deployment-${NEW_COLOR} -n ${DEPLOY_NAMESPACE} --timeout=600s
+
+            echo "🔁 Updating Service selector to ${NEW_COLOR}"
+            kubectl patch svc backend-service -n ${DEPLOY_NAMESPACE} \
+              -p "{\\"spec\\":{\\"selector\\":{\\"app\\":\\"backend\\",\\"version\\":\\"${NEW_COLOR}\\"}}}"
+
+            echo "📉 Scaling down old deployment..."
+            if [ "$NEW_COLOR" = "blue" ]; then
+              kubectl scale deployment/backend-deployment-green -n ${DEPLOY_NAMESPACE} --replicas=0 || true
+            else
+              kubectl scale deployment/backend-deployment-blue -n ${DEPLOY_NAMESPACE} --replicas=0 || true
+            fi
+
+            echo "✅ Successfully switched to ${NEW_COLOR}"
+          '''
+        }
+      }
+    }
+
+    stage('Result') {
+      steps {
+        echo "✅ Successfully deployed ${IMAGE_NAME}:${IMAGE_TAG} with probes and Blue/Green switching"
+      }
+    }
+  }
+
+  post {
+    success {
+      script {
+        sh """
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                     "username": "Jenkins CI",
+                     "embeds": [{
+                       "title": "✅ Backend 배포 완료!",
+                       "color": 3066993,
+                       "fields": [
+                         {"name": "Image", "value": "${IMAGE_NAME}:${IMAGE_TAG}", "inline": true},
+                         {"name": "Namespace", "value": "${DEPLOY_NAMESPACE}", "inline": true}
+                       ],
+                       "footer": {"text": "Blue-Green Deployment • Jenkins"}
+                     }]
+                   }' \
+               ${DISCORD_WEBHOOK_URL}
+        """
+      }
+    }
+    failure {
+      script {
+        sh """
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                     "username": "Jenkins CI",
+                     "embeds": [{
+                       "title": "❌ Backend 배포 실패 ㅠㅠ",
+                       "color": 15158332,
+                       "fields": [
+                         {"name": "Image", "value": "${IMAGE_NAME}:${IMAGE_TAG}", "inline": true},
+                         {"name": "Stage", "value": "${env.STAGE_NAME}", "inline": true}
+                       ],
+                       "footer": {"text": "Check Jenkins logs for details."}
+                     }]
+                   }' \
+               ${DISCORD_WEBHOOK_URL}
+        """
+      }
+    }
+  }
+}
