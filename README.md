@@ -80,7 +80,7 @@
 <br><br>
 
 ## 🛢️ ERD [🔗](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/5.-ERD)
-![5. ERD](https://github.com/user-attachments/assets/0b21618e-43e3-4f0f-97cf-3f959b31c888)
+![5. ERD](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/blob/develop/docs/5.%20ERD.png)
 
 <br><br>
 ## 🖥 화면 설계서
@@ -88,8 +88,8 @@
 
 <br><br>
 
-## 📺 프로젝트 시연
-> 추후 추가 예정
+## 📺 UI/UX 기능 테스트
+> [UI/UX 기능 테스트 보러가기](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/8.-%ED%94%84%EB%A1%A0%ED%8A%B8-UI-UX-%EA%B8%B0%EB%8A%A5-%ED%85%8C%EC%8A%A4%ED%8A%B8)
 
 <br><br>
 
@@ -100,3 +100,7 @@
 > [요구사항 정의서 보러가기](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/2.-%EC%9A%94%EA%B5%AC%EC%82%AC%ED%95%AD-%EC%A0%95%EC%9D%98%EC%84%9C)
 #### 📌 WBS
 > [WBS 보러가기](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/4.-WBS)
+#### 📌 CI/CD 계획서
+> [CI/CD 계획서](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/9.-CI-CD-%EA%B3%84%ED%9A%8D%EC%84%9C)
+#### 📌 통합 테스트 결과서
+>[통합 테스트 결과서](https://github.com/beyond-sw-camp/be17-fin-LinkVerse-UniBooker-FE/wiki/%ED%86%B5%ED%95%A9-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EA%B2%B0%EA%B3%BC%EC%84%9C)
