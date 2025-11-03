@@ -1,0 +1,29 @@
+architecture: "replication"
+
+image:
+  registry: docker.io
+  repository: bitnami/mariadb
+  tag: latest
+
+auth:
+  username: "user"
+  password: [비밀번호]
+  rootPassword: [비밀번호]
+  replicationUser: "slave_user"
+  replicationPassword: [비밀번호]
+
+passwordUpdateJob:
+  enabled: true
+
+primary:
+  nodeSelector:
+    kubernetes.io/hostname: k8s-worker2
+  persistence:
+    size: 1Gi
+  extraFlags: "--bind-address=1.0.0.0"
+
+secondary:
+  nodeSelector:
+    kubernetes.io/hostname: k8s-worker5
+  persistence:
+    size: 1Gi
