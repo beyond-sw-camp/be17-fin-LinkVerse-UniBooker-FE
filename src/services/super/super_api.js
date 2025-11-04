@@ -1,9 +1,9 @@
 /**
  * 슈퍼 관리자(Super) 관련 API 서비스
  * - 슈퍼 관리자 로그인
- * - 승인 대기 기업 목록 조회
- * - 기업 상세 조회
- * - 기업 승인/거절 처리
+ * - 신청 관리 (applications)
+ * - 기업 관리 (companies)
+ * - 관리자 관리 (managers)
  */
 
 import axiosInstance from '@/plugin/axiosInterceptor'
@@ -24,61 +24,43 @@ const logout = async () => {
   return await axiosInstance.post('/api/super/logout')
 }
 
-// ========== 기업 관리 ==========
+// ========== 신청 관리 ==========
 
 /**
  * 승인 대기 기업 목록 조회
  */
-const getPendingCompanies = async () => {
-  const response = await axiosInstance.get('/api/companies/pending')
+const getPendingApplications = async () => {
+  const response = await axiosInstance.get('/api/super/applications')
   return response.data
 }
 
 /**
- * 기업 상세 조회
+ * 신청 상세 조회
  */
-const getCompanyDetail = async (companyId) => {
-  const response = await axiosInstance.get(`/api/companies/${companyId}`)
+const getApplicationDetail = async (companyId) => {
+  const response = await axiosInstance.get(`/api/super/applications/${companyId}`)
   return response.data
 }
 
 /**
  * 기업 승인
  */
-const approveCompany = async (companyId) => {
-  const response = await axiosInstance.post(`/api/companies/${companyId}/approve`)
+const approveApplication = async (companyId) => {
+  const response = await axiosInstance.post(`/api/super/applications/${companyId}/approve`)
   return response.data
 }
 
 /**
  * 기업 거절
  */
-const rejectCompany = async (companyId, rejectionReason) => {
-  const response = await axiosInstance.post(`/api/companies/${companyId}/reject`, {
+const rejectApplication = async (companyId, rejectionReason) => {
+  const response = await axiosInstance.post(`/api/super/applications/${companyId}/reject`, {
     rejectionReason: rejectionReason,
   })
   return response.data
 }
 
-/**
- * 전체 관리자/매니저 조회
- */
-const getAllAdmins = async (page = 0, size = 10, role = null, status = null) => {
-  const params = { page, size }
-  if (role) params.role = role
-  if (status) params.status = status
-  
-  const response = await axiosInstance.get('/api/admins', { params })
-  return response.data
-}
-
-/**
- * 계정 상태 변경
- */
-const updateAdminStatus = async (userId, status) => {
-  const response = await axiosInstance.patch(`/api/admins/${userId}/status`, { status })
-  return response.data
-}
+// ========== 기업 관리 ==========
 
 /**
  * 전체 기업 목록 조회 (페이징 + 필터)
@@ -88,7 +70,15 @@ const getAllCompanies = async (page = 0, size = 10, status = null, keyword = nul
   if (status) params.status = status
   if (keyword) params.keyword = keyword
   
-  const response = await axiosInstance.get('/api/companies', { params })
+  const response = await axiosInstance.get('/api/super/companies', { params })
+  return response.data
+}
+
+/**
+ * 기업 상세 조회 (관리용)
+ */
+const getCompanyDetail = async (companyId) => {
+  const response = await axiosInstance.get(`/api/super/companies/${companyId}`)
   return response.data
 }
 
@@ -96,7 +86,7 @@ const getAllCompanies = async (page = 0, size = 10, status = null, keyword = nul
  * 기업 상태 변경
  */
 const updateCompanyStatus = async (companyId, status) => {
-  const response = await axiosInstance.patch(`/api/companies/${companyId}/status`, { status })
+  const response = await axiosInstance.patch(`/api/super/companies/${companyId}/status`, { status })
   return response.data
 }
 
@@ -104,17 +94,33 @@ const updateCompanyStatus = async (companyId, status) => {
  * 특정 기업의 관리자 목록 조회
  */
 const getCompanyManagers = async (companyId) => {
-  const response = await axiosInstance.get(`/api/companies/${companyId}/managers`)
+  const response = await axiosInstance.get(`/api/super/companies/${companyId}/managers`)
+  return response.data
+}
+
+// ========== 관리자 관리 ==========
+
+/**
+ * 전체 관리자/매니저 조회
+ */
+const getAllManagers = async (page = 0, size = 10, role = null, status = null) => {
+  const params = { page, size }
+  if (role) params.role = role
+  if (status) params.status = status
+  
+  const response = await axiosInstance.get('/api/super/managers', { params })
   return response.data
 }
 
 /**
- * 관리자 상태 변경
+ * 관리자/매니저 상태 변경
  */
 const updateManagerStatus = async (userId, status) => {
   const response = await axiosInstance.patch(`/api/super/managers/${userId}/status`, { status })
   return response.data
 }
+
+// ========== 서비스 그룹 관리 ==========
 
 /**
  * 특정 기업의 서비스 그룹 목록 조회
@@ -140,29 +146,78 @@ const deactivateResourceGroup = async (resourceGroupId) => {
   return response.data
 }
 
+// ========== Deprecated (하위 호환용) ==========
+
+/**
+ * @deprecated getPendingApplications를 사용하세요
+ */
+const getPendingCompanies = async () => {
+  console.warn('⚠️ Deprecated: getPendingCompanies() - Use getPendingApplications() instead')
+  return await getPendingApplications()
+}
+
+/**
+ * @deprecated approveApplication을 사용하세요
+ */
+const approveCompany = async (companyId) => {
+  console.warn('⚠️ Deprecated: approveCompany() - Use approveApplication() instead')
+  return await approveApplication(companyId)
+}
+
+/**
+ * @deprecated rejectApplication을 사용하세요
+ */
+const rejectCompany = async (companyId, rejectionReason) => {
+  console.warn('⚠️ Deprecated: rejectCompany() - Use rejectApplication() instead')
+  return await rejectApplication(companyId, rejectionReason)
+}
+
+/**
+ * @deprecated getAllManagers를 사용하세요
+ */
+const getAllAdmins = async (page = 0, size = 10, role = null, status = null) => {
+  console.warn('⚠️ Deprecated: getAllAdmins() - Use getAllManagers() instead')
+  return await getAllManagers(page, size, role, status)
+}
+
+/**
+ * @deprecated updateManagerStatus를 사용하세요
+ */
+const updateAdminStatus = async (userId, status) => {
+  console.warn('⚠️ Deprecated: updateAdminStatus() - Use updateManagerStatus() instead')
+  return await updateManagerStatus(userId, status)
+}
+
 export default {
   // 인증
   login,
   logout,
   
-  // 기업 관리
-  getPendingCompanies,
+  // 신청 관리 (새로운 API)
+  getPendingApplications,
+  getApplicationDetail,
+  approveApplication,
+  rejectApplication,
+  
+  // 기업 관리 (새로운 API)
+  getAllCompanies,
   getCompanyDetail,
-  approveCompany,
-  rejectCompany,
-  getAllCompanies,        
-  updateCompanyStatus, 
-  getCompanyManagers,      
+  updateCompanyStatus,
+  getCompanyManagers,
+  
+  // 관리자 관리 (새로운 API)
+  getAllManagers,
   updateManagerStatus,
-
-  // 전체 관리자/매니저 조회
-  getAllAdmins,
-
-  // 계정 상태 변경
-  updateAdminStatus,
-
+  
   // 서비스 그룹 관리
   getCompanyResourceGroups,
   activateResourceGroup,
   deactivateResourceGroup,
+  
+  // Deprecated (하위 호환용)
+  getPendingCompanies,
+  approveCompany,
+  rejectCompany,
+  getAllAdmins,
+  updateAdminStatus,
 }

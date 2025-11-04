@@ -10,6 +10,8 @@ import { getCompanyLogoUrl } from '@/utils/imageUrl'
 import notifyApi from '@/services/notification/notification_api'
 import { useNotificationStore } from '@/stores/notificationStore'
 
+// ===== 기본 상태 =====
+
 const isModalOpen = ref(false)
 const userData = ref(null)
 const router = useRouter()
@@ -17,71 +19,124 @@ const route = useRoute()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
 
-// 상단 메뉴 상태
-const selectedMainMenu = ref(null) // 'dashboard', 'manager', 'serviceGroupManage', null
+/** 로그아웃 중 플래그 (중복 검증 방지) */
+const isLoggingOut = ref(false)
 
-// 서비스 그룹 상태
+// ===== 메뉴 상태 =====
+
+const selectedMainMenu = ref(null)
 const serviceGroups = reactive([])
 const dropdownItems = ['전체 분석', '예약 현황', '서비스 관리']
 const openDropdown = ref(null)
 const selectedMenuItems = ref({})
 
-// 기업 로고
+// ===== 알림 상태 =====
+
+const isDropdownOpen = ref(false)
+const notifications = ref([])
+
+// ===== Computed =====
+
+/**
+ * 기업 로고 URL 계산
+ */
 const companyLogo = computed(() => {
   if (authStore.company?.logoUrl) return getCompanyLogoUrl(authStore.company.logoUrl)
   return '/assets/images/admin_logo.png'
 })
 
-// 상단 메뉴 선택
+/**
+ * 관리자 권한 체크
+ * - 로그인 상태 및 역할(ADMIN/MANAGER) 검증
+ */
+const isValidAdmin = computed(
+  () => authStore.isLoggedIn && ['ADMIN', 'MANAGER'].includes(authStore.role),
+)
+
+// ===== 메뉴 관리 함수 =====
+
+/**
+ * 메뉴 상태 초기화
+ * - 모든 메뉴 선택 해제
+ */
+const resetMenuState = () => {
+  selectedMainMenu.value = null
+  openDropdown.value = null
+}
+
+/**
+ * 상단 Control 메뉴 선택
+ */
 const selectTopMenu = (menu) => {
   selectedMainMenu.value = menu
   openDropdown.value = null
 }
 
-// 모달 열기
-async function openModal() {
-  try {
-    const response = await adminApi.getMyProfile()
-    userData.value = response.data?.data || response.data
-    isModalOpen.value = true
-  } catch {
-    alert('프로필 조회에 실패했습니다.')
-  }
+/**
+ * 서비스 그룹 드롭다운 토글
+ */
+const toggleDropdown = (index) => {
+  resetMenuState()
+  openDropdown.value = openDropdown.value === index ? null : index
 }
 
-// 로그아웃
-const handleLogout = async () => {
-  try {
-    await adminApi.logout()
-  } finally {
-    authStore.logout()
-    router.push('/admin/login')
-  }
+/**
+ * 서비스 그룹 하위 메뉴 선택
+ */
+const selectMenuItem = (serviceIndex, menu) => {
+  resetMenuState()
+  selectedMenuItems.value[serviceIndex] = menu
 }
 
-// 관리자 권한 체크
-const isValidAdmin = computed(
-  () => authStore.isLoggedIn && ['ADMIN', 'MANAGER'].includes(authStore.role),
-)
-const validateAdminAccess = () => {
-  if (!isValidAdmin.value) {
-    authStore.logout()
-    alert('관리자 권한이 필요합니다.')
-    router.push('/admin/login')
+/**
+ * 초기 메뉴 상태 설정
+ * - 현재 라우트 경로에 따라 메뉴 상태 초기화
+ */
+const initMenuState = () => {
+  const path = route.path
+
+  if (path.includes('/admin/dashboard')) {
+    selectedMainMenu.value = 'dashboard'
+  } else if (path.includes('/admin/manager-management')) {
+    selectedMainMenu.value = 'manager'
+  } else if (path.includes('/admin/service-group-management')) {
+    selectedMainMenu.value = 'serviceGroupManage'
+  } else {
+    selectedMainMenu.value = null
   }
+
+  serviceGroups.forEach((sg, i) => {
+    dropdownItems.forEach((menu) => {
+      const link = getMenuLink(menu, sg)
+      if (link.path && path.includes(link.path)) {
+        openDropdown.value = i
+        selectedMenuItems.value[i] = menu
+      }
+    })
+  })
 }
 
-// 서비스 그룹 목록
+// ===== 서비스 그룹 함수 =====
+
+/**
+ * 서비스 그룹 목록 조회
+ */
 const getServiceGroups = async () => {
   try {
     const res = await serviceApi.getServiceGroups()
     Object.assign(serviceGroups, res.data.data.resourceGroups)
-  } catch (error) {}
+  } catch (error) {
+    console.error('서비스 그룹 조회 실패:', error)
+  }
 }
 
-// 서비스 그룹 메뉴 링크
+/**
+ * 서비스 그룹 메뉴 링크 생성
+ * - 메뉴 항목에 따라 해당하는 경로 반환
+ */
 const getMenuLink = (menu, sg) => {
   const nameQuery = { serviceGroupName: sg.name }
+
   switch (menu) {
     case '서비스 관리':
       return { path: `/admin/service-management/${sg.id}`, query: nameQuery }
@@ -100,21 +155,61 @@ const getMenuLink = (menu, sg) => {
   }
 }
 
-// 드롭다운 토글
-const toggleDropdown = (index) => {
-  selectedMainMenu.value = null
-  openDropdown.value = openDropdown.value === index ? null : index
+// ===== 모달 관리 함수 =====
+
+/**
+ * 프로필 모달 열기
+ */
+async function openModal() {
+  try {
+    const response = await adminApi.getMyProfile()
+    userData.value = response.data?.data || response.data
+    isModalOpen.value = true
+  } catch {
+    alert('프로필 조회에 실패했습니다.')
+  }
 }
 
-// 하위 메뉴 선택
-const selectMenuItem = (serviceIndex, menu) => {
-  selectedMainMenu.value = null
-  selectedMenuItems.value[serviceIndex] = menu
+// ===== 인증 관리 함수 =====
+
+/**
+ * 관리자 접근 권한 검증
+ * - 로그아웃 중에는 스킵 (중복 검증 방지)
+ * - 권한 없으면 자동 리다이렉트
+ */
+const validateAdminAccess = () => {
+  if (isLoggingOut.value) {
+    return
+  }
+
+  if (!isValidAdmin.value) {
+    authStore.logout()
+    router.push('/admin/login')
+  }
 }
 
-// 알림
-const isDropdownOpen = ref(false)
-const notifications = ref([])
+/**
+ * 로그아웃 처리
+ * - 로그아웃 중 플래그 설정으로 validateAdminAccess 중복 실행 방지
+ * - 백엔드 API 호출 후 스토어 초기화
+ */
+const handleLogout = async () => {
+  isLoggingOut.value = true
+  try {
+    await adminApi.logout()
+  } catch (error) {
+    console.error('로그아웃 API 실패:', error)
+  } finally {
+    authStore.logout()
+    router.push('/admin/login')
+  }
+}
+
+// ===== 알림 관리 함수 =====
+
+/**
+ * 알림 드롭다운 토글
+ */
 const notiToggleDropdown = async () => {
   notificationStore.reset()
   if (!isDropdownOpen.value) {
@@ -124,35 +219,32 @@ const notiToggleDropdown = async () => {
   isDropdownOpen.value = !isDropdownOpen.value
 }
 
-// 초기 메뉴 상태
-const initMenuState = () => {
-  const path = route.path
-  if (path.includes('/admin/dashboard')) selectedMainMenu.value = 'dashboard'
-  else if (path.includes('/admin/manager-management')) selectedMainMenu.value = 'manager'
-  else if (path.includes('/admin/service-group-management'))
-    selectedMainMenu.value = 'serviceGroupManage'
-  else selectedMainMenu.value = null
-
-  serviceGroups.forEach((sg, i) => {
-    dropdownItems.forEach((menu) => {
-      const link = getMenuLink(menu, sg)
-      if (link.path && path.includes(link.path)) {
-        openDropdown.value = i
-        selectedMenuItems.value[i] = menu
-      }
-    })
-  })
-}
+// ===== 라이프사이클 =====
 
 onMounted(() => {
   getServiceGroups().then(() => initMenuState())
   validateAdminAccess()
 })
 
+// ===== 감시자 =====
+
+/**
+ * 권한 변경 감시
+ * - 로그아웃 중에는 검증 스킵
+ */
 watch(
   () => authStore.role,
-  () => validateAdminAccess(),
+  () => {
+    if (!isLoggingOut.value) {
+      validateAdminAccess()
+    }
+  },
 )
+
+/**
+ * 라우트 변경 감시
+ * - 메뉴 상태 초기화
+ */
 watch(
   () => route.path,
   () => initMenuState(),
@@ -171,7 +263,7 @@ watch(
         서비스 그룹 생성
       </router-link>
 
-      <!-- 상단 Control 메뉴 -->
+      <!-- Control 메뉴 -->
       <div class="sub-menu-section">
         <span class="sub-menu-label">Control</span>
         <div class="sub-menu-items-container">
@@ -180,8 +272,9 @@ watch(
             :class="{ 'selected-menu-item': selectedMainMenu === 'dashboard' }"
             to="/admin/dashboard"
             @click="selectTopMenu('dashboard')"
-            >전체 현황</router-link
           >
+            전체 현황
+          </router-link>
 
           <router-link
             v-if="authStore.role === 'ADMIN'"
@@ -189,16 +282,18 @@ watch(
             :class="{ 'selected-menu-item': selectedMainMenu === 'manager' }"
             to="/admin/manager-management"
             @click="selectTopMenu('manager')"
-            >관리자 관리</router-link
           >
+            관리자 관리
+          </router-link>
 
           <router-link
             class="sub-menu-item"
             :class="{ 'selected-menu-item': selectedMainMenu === 'serviceGroupManage' }"
             to="/admin/service-group-management"
             @click="selectTopMenu('serviceGroupManage')"
-            >서비스 그룹 관리</router-link
           >
+            서비스 그룹 관리
+          </router-link>
         </div>
       </div>
 
@@ -207,7 +302,7 @@ watch(
         <span class="sub-menu-label">Service Groups</span>
         <div class="sub-menu-items-container sub-menu-scroll">
           <div v-for="(item, index) in serviceGroups" :key="item.id">
-            <!-- 상위 메뉴: 이동 없음, 드롭다운만 토글 -->
+            <!-- 상위 메뉴 토글 -->
             <div
               class="sub-menu-item"
               :class="{ 'selected-menu-item': openDropdown === index }"
@@ -216,6 +311,7 @@ watch(
               {{ item.name }}
             </div>
 
+            <!-- 하위 메뉴 -->
             <div v-if="openDropdown === index">
               <router-link
                 v-for="child in dropdownItems"
@@ -279,18 +375,30 @@ watch(
 </template>
 
 <style scoped>
+/* 레이아웃 */
+.admin-layout {
+  @apply flex;
+}
+
 .sub-bar-contaienr {
   @apply bg-primary h-screen text-white overflow-hidden flex flex-col max-w-[280px] w-full pr-[20px];
 }
 
+.content-body {
+  @apply h-screen overflow-y-auto bg-gray-line flex-1 ml-[-20px] rounded-tl-[20px] rounded-bl-[20px] px-[30px] py-[22px];
+}
+
+/* 로고 */
 .logo-section {
   @apply w-[100px] mx-[14px] my-[15px];
 }
 
+/* 서비스 그룹 생성 버튼 */
 .service-group-create-button-container {
   @apply mx-[11px] max-w-[240px] w-full py-[8px] text-sm flex justify-center items-center border-2 border-white rounded-[3px] mt-[15px] cursor-pointer hover:bg-primary-hover;
 }
 
+/* 메뉴 섹션 */
 .sub-menu-section {
   @apply mt-[25px];
 }
@@ -299,6 +407,15 @@ watch(
   @apply mx-[16px] mb-[10px] block text-sm;
 }
 
+.sub-menu-items-container {
+  @apply flex flex-col;
+}
+
+.sub-menu-scroll {
+  @apply flex-1 overflow-y-auto max-h-[280px];
+}
+
+/* 메뉴 아이템 */
 .sub-menu-item {
   @apply max-w-[252px] pl-[30px] py-[10px] text-sm cursor-pointer block
     hover:border-l-4
@@ -310,6 +427,17 @@ watch(
   @apply border-l-4 border-white bg-[rgba(255,255,255,0.44)];
 }
 
+.service-group-menu-item {
+  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0] block
+    hover:text-white
+    hover:font-medium;
+}
+
+.selected-service-group-item {
+  @apply text-white font-medium;
+}
+
+/* 로그아웃 버튼 */
 .sub-menu-logout-button-container {
   @apply flex gap-3 items-center ml-[16px] mb-[20px] text-sm cursor-pointer hover:font-medium w-fit;
 }
@@ -318,32 +446,12 @@ watch(
   @apply w-[15px] h-[15px];
 }
 
-.sub-menu-scroll {
-  @apply flex-1 overflow-y-auto max-h-[280px];
-}
-
-.service-group-menu-item {
-  @apply bg-[rgba(105,105,105,0.52)] text-[13px] pl-[34px] py-2 cursor-pointer text-[#C0C0C0] block
-  hover:text-white
-  hover:font-medium;
-}
-
-.selected-service-group-item {
-  @apply text-white font-medium;
-}
-
-.admin-layout {
-  @apply flex;
-}
-
-.content-body {
-  @apply h-screen overflow-y-auto bg-gray-line flex-1 ml-[-20px] rounded-tl-[20px] rounded-bl-[20px] px-[30px] py-[22px];
-}
-
+/* 상단 바 */
 .content-top {
   @apply w-full flex justify-end;
 }
 
+/* 관리자 배지 */
 .admin-badge {
   @apply bg-white flex items-center rounded-[20px] px-[12px] py-[6px] text-xs text-[#7D7D7D] font-medium cursor-pointer relative;
 }
@@ -360,48 +468,8 @@ watch(
   @apply w-[17px] h-[18px];
 }
 
+/* 콘텐츠 슬롯 */
 .content-slot {
   @apply mt-[10px] w-full;
-}
-
-/* 관리자 추가 모달 스타일 */
-.add-modal-container {
-  @apply px-[30px] py-[20px] flex flex-col;
-}
-
-h3 {
-  @apply text-[18px] font-medium mb-[3px];
-}
-
-.add-modal-container p {
-  @apply text-[12px] text-gray-dark;
-}
-
-.input-field-container {
-  @apply mt-[35px] flex flex-col gap-6;
-}
-
-.input-field-item {
-  @apply flex flex-col gap-1;
-}
-
-label {
-  @apply text-[14px];
-}
-
-.input-field-item span {
-  @apply text-[#FF2222];
-}
-
-.add-modal-container input {
-  @apply bg-gray-line px-[14px] py-[10px] text-[14px] rounded-[3px];
-}
-
-.add-modal-button-container {
-  @apply flex gap-3 mt-[70px];
-}
-
-.add-modal-button-container button {
-  @apply py-[10px];
 }
 </style>

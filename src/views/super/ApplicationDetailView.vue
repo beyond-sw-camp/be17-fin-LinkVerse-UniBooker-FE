@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import CompanyDetail from '@/components/CompanyDetail.vue'
 import Button from '@/components/Button.vue'
 import companyApi from '@/services/super/super_api'
+import RejectModal from '@/components/RejectModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -11,17 +12,13 @@ const route = useRoute()
 const company = ref(null)
 const loading = ref(false)
 const error = ref(null)
-const rejectionReason = ref('')
+const showRejectModal = ref(false)
 
 // 상수
 const ERROR_MESSAGES = {
   FETCH_FAILED: '데이터를 불러오는 데 실패했습니다.',
   NETWORK_ERROR: '서버와의 연결에 실패했습니다.',
-  REJECTION_REQUIRED: '거절 사유를 입력해주세요.',
-  REJECTION_TOO_LONG: '거절 사유는 500자를 초과할 수 없습니다.',
 }
-
-const MAX_REJECTION_LENGTH = 500
 
 /**
  * 날짜 포맷팅 (YYYY.MM.DD)
@@ -95,36 +92,25 @@ const handleApprove = async () => {
 }
 
 /**
- * 거절 사유 유효성 검사
+ * 기업 거절 - 모달 표시
  */
-const validateRejectionReason = () => {
-  if (!rejectionReason.value.trim()) {
-    alert(ERROR_MESSAGES.REJECTION_REQUIRED)
-    return false
-  }
-
-  if (rejectionReason.value.length > MAX_REJECTION_LENGTH) {
-    alert(ERROR_MESSAGES.REJECTION_TOO_LONG)
-    return false
-  }
-
-  return true
+const handleReject = () => {
+  showRejectModal.value = true
 }
 
 /**
- * 기업 거절
+ * 거절 확인 - 모달에서 확인 버튼 클릭 시
  */
-const handleReject = async () => {
-  if (!validateRejectionReason()) return
-
+const confirmReject = async (reason) => {
   if (!confirm('이 기업 신청을 거절하시겠습니까?')) return
 
   try {
     const companyId = route.params.companyId
-    const response = await companyApi.rejectCompany(companyId, rejectionReason.value)
+    const response = await companyApi.rejectCompany(companyId, reason)
 
     if (response.isSuccess) {
       alert('기업 신청이 거절되었습니다.')
+      showRejectModal.value = false
       router.push('/super/applications')
     } else {
       alert(response.message || '거절에 실패했습니다.')
@@ -133,6 +119,13 @@ const handleReject = async () => {
     console.error('기업 거절 실패:', err)
     alert('거절 처리 중 오류가 발생했습니다.')
   }
+}
+
+/**
+ * 모달 닫기
+ */
+const closeRejectModal = () => {
+  showRejectModal.value = false
 }
 
 onMounted(() => {
@@ -155,27 +148,15 @@ onMounted(() => {
 
     <!-- 데이터 표시 -->
     <div v-else-if="company">
-      <CompanyDetail :company="company" @approve="handleApprove" @reject="handleReject">
-        <h3 class="section-title">추가 전달사항</h3>
-        <p class="inline-note">
-          승인/거절 시 해당 관리자에게 메일이 전송 됩니다. 관리자에게 보낼 메일에 추가적으로 전달할
-          사항이 있다면 입력해 주세요.
-        </p>
-        <textarea
-          v-model="rejectionReason"
-          class="rejection-textarea"
-          placeholder="승인/거절 사유를 입력해주세요 (최대 500자)"
-          :maxlength="MAX_REJECTION_LENGTH"
-          rows="6"
-        ></textarea>
-
-        <!-- ✅ 승인/거절 버튼 -->
-        <div class="button-container">
-          <Button @click="handleReject" theme="light" class="reject-button">거절</Button>
-          <Button @click="handleApprove" theme="primary">승인</Button>
-        </div>
-      </CompanyDetail>
+      <CompanyDetail :company="company" @approve="handleApprove" @reject="handleReject" />
     </div>
+    <!-- 거절 모달 -->
+    <RejectModal
+      :show="showRejectModal"
+      :companyName="company?.name"
+      @close="closeRejectModal"
+      @confirm="confirmReject"
+    />
   </div>
 </template>
 
@@ -187,36 +168,5 @@ onMounted(() => {
 
 .error-message {
   @apply text-red-600 mb-4;
-}
-
-/* ✅ 추가 전달사항 영역 스타일 */
-.additional-section {
-  @apply space-y-3;
-}
-
-.section-title {
-  @apply text-lg font-semibold text-gray-800;
-}
-
-.inline-note {
-  @apply text-xs text-gray-400 block;
-}
-
-.rejection-textarea {
-  @apply w-full px-4 py-3 rounded border border-gray-line bg-gray-200
-    focus:border-primary focus:ring-2 focus:ring-primary/20
-    placeholder-gray-400 transition-all resize-none;
-}
-
-.button-container {
-  @apply flex justify-center gap-3 mt-4;
-}
-
-.reject-button {
-  @apply bg-gray-200 text-gray-700 font-medium;
-}
-
-.reject-button:hover {
-  @apply bg-gray-300;
 }
 </style>
