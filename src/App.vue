@@ -27,11 +27,11 @@ const handleStorageChange = (event) => {
 
   // ===== 1. 로그아웃 감지 =====
   if (event.key === 'isLoggedIn') {
-    console.log('🔄 다른 탭에서 로그인 상태 변경 감지:', event.newValue)
+    console.log('다른 탭에서 로그인 상태 변경 감지:', event.newValue)
 
     if (event.newValue === null || event.newValue === 'false') {
       // 다른 탭에서 로그아웃 → 현재 탭도 로그아웃
-      console.log('🚪 다른 탭에서 로그아웃 감지 - 현재 탭도 로그아웃 처리')
+      console.log('다른 탭에서 로그아웃 감지 - 현재 탭도 로그아웃 처리')
 
       const tempSlug = authStore.logout()
 
@@ -54,8 +54,8 @@ const handleStorageChange = (event) => {
     const oldRole = event.oldValue
     const newRole = event.newValue
 
-    console.log('⚠️ 다른 탭에서 권한 변경 감지:', oldRole, '→', newRole)
-    console.log('🔒 단일 세션 정책: 현재 탭의 세션을 무효화합니다')
+    console.log('다른 탭에서 권한 변경 감지:', oldRole, '→', newRole)
+    console.log('단일 세션 정책: 현재 탭의 세션을 무효화합니다')
 
     // ===== 단일 세션 정책: 현재 탭은 로그아웃 처리 =====
 
@@ -91,10 +91,14 @@ const handleStorageChange = (event) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // 인증 상태 복원 (localStorage → Pinia store)
+  await authStore.checkAuth()
+  console.log('인증 상태 복원 완료:', authStore.isLoggedIn, authStore.role)
+
   // storage 이벤트 리스너 등록
   window.addEventListener('storage', handleStorageChange)
-  console.log('📡 탭 간 동기화 리스너 등록 완료')
+  console.log('탭 간 동기화 리스너 등록 완료')
 })
 
 onUnmounted(() => {
