@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: unibooker
+data:
+  JPA_DDL_OPTION: update
+  SPRING_DATASOURCE_URL: jdbc:mariadb://unibooker-mariadb-primary:3306/unibooker
+  CLOUDFRONT_URL: https://d2h9e9y86awp4t.cloudfront.net
+  MY_BUCKET: unibooker-s3
+  AWS_REGION: ap-northeast-2

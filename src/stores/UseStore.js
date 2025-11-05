@@ -51,14 +51,14 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('company', JSON.stringify(companyInfo))
     }
 
-    // ✅ 다른 탭에 로그인 알림 (자신의 탭 ID 포함)
+    // 다른 탭에 로그인 알림 (자신의 탭 ID 포함)
     if (authChannel) {
       authChannel.postMessage({
         type: 'LOGIN',
         role: userRole,
         companySlug: userCompanySlug,
         timestamp: Date.now(),
-        tabId: TAB_ID,  // ✅ 발신 탭 ID
+        tabId: TAB_ID,  // 발신 탭 ID
       })
     }
 
@@ -104,13 +104,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     localStorage.clear()
 
-    // ✅ 다른 탭에 로그아웃 알림 (자신의 탭 ID 포함)
+    // 다른 탭에 로그아웃 알림 (자신의 탭 ID 포함)
     if (notifyOtherTabs && authChannel) {
       authChannel.postMessage({
         type: 'LOGOUT',
         role: tempRole,
         timestamp: Date.now(),
-        tabId: TAB_ID,  // ✅ 발신 탭 ID
+        tabId: TAB_ID,  // 발신 탭 ID
       })
     }
 
@@ -189,20 +189,20 @@ export const useAuthStore = defineStore('auth', () => {
     authChannel.onmessage = (event) => {
       const { type, role: eventRole, tabId } = event.data
 
-      // ✅ 자신이 보낸 메시지는 무시
+      // 자신이 보낸 메시지는 무시
       if (tabId === TAB_ID) {
-        console.log('🔇 [BroadcastChannel] 자신이 보낸 메시지 무시')
+        console.log('[BroadcastChannel] 자신이 보낸 메시지 무시')
         return
       }
 
       if (type === 'LOGIN') {
         if (isLoggedIn.value) {
-          console.log('🔴 [BroadcastChannel] 다른 탭에서 로그인 감지 → 현재 탭 강제 로그아웃')
+          console.log('[BroadcastChannel] 다른 탭에서 로그인 감지 → 현재 탭 강제 로그아웃')
           forceLogout()
         }
       } else if (type === 'LOGOUT') {
         if (isLoggedIn.value && role.value === eventRole) {
-          console.log('🔴 [BroadcastChannel] 같은 권한 로그아웃 감지 → 현재 탭 강제 로그아웃')
+          console.log('[BroadcastChannel] 같은 권한 로그아웃 감지 → 현재 탭 강제 로그아웃')
           forceLogout()
         }
       }

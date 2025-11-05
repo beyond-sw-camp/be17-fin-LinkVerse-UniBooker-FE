@@ -88,7 +88,7 @@ const createService = async (formdata) => {
 
 const getServices = async (serviceGroupId) => {
   try {
-    const response = await axiosInstance.get(`api/resource/group/${serviceGroupId}`)
+    const response = await axiosInstance.get(`/api/resource/group/${serviceGroupId}`)
     return response.data.data.resources
   } catch (error) {
     console.log('서비스 목록 조회 실패:', error)
@@ -97,7 +97,12 @@ const getServices = async (serviceGroupId) => {
 
 // 서비스 단건 조회 (수정용)
 const getServiceInfo = async (serviceId) => {
-  return await axiosInstance.get(`http://localhost:8080/api/resource/${serviceId}`)
+  try {
+    const response = await axiosInstance.get(`/api/resource/${serviceId}`)
+    return response.data.data
+  } catch (error) {
+    console.log('서비스 상세 조회 실패:', error)
+  }
 }
 
 // 서비스 리소스 커스텀 필드 값 조회
@@ -117,7 +122,7 @@ const getExceptionTimeSlots = async (serviceId) => {
 
 // 서비스 수정
 const updateService = async (serviceId, formData) => {
-  return await axiosInstance.put(`http://localhost:8080/api/resource/${serviceId}`, formData)
+  return await axiosInstance.put(`/api/resource/${serviceId}`, formData)
 }
 
 const getServiceCustomFields = async (serviceGroupId) => {
@@ -131,6 +136,39 @@ const getServiceCustomFields = async (serviceGroupId) => {
       data = error.data
     })
   return data
+}
+
+const deactivateService = async (serviceId) => {
+  try {
+    const response = await axiosInstance.get(`/api/resource/inactive/${serviceId}`)
+    return response.data.success
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const activateService = async (serviceId) => {
+  try {
+    const response = await axiosInstance.get(`/api/resource/active/${serviceId}`)
+    return response.data.success
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const changeServiceStatus = async (serviceId, version, targetStatus) => {
+  const data = {
+    resourceId: serviceId,
+    version: version,
+    targetStatus: targetStatus,
+  }
+
+  try {
+    const response = await axiosInstance.patch(`/api/resource/status`, data)
+    console.log(response.data)
+  } catch (error) {
+    console.log('서비스 상태 변경 실패:', error)
+  }
 }
 
 export default {
@@ -150,4 +188,7 @@ export default {
   getDailyTimeSlots,
   getExceptionTimeSlots,
   updateService,
+  deactivateService,
+  activateService,
+  changeServiceStatus,
 }

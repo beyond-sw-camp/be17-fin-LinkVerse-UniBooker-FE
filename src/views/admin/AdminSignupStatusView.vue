@@ -42,6 +42,9 @@ const checkStatus = async () => {
     const response = await adminApi.getSignUpStatus(email.value)
     console.log('3. API 응답:', response.data)
     statusData.value = response.data.data
+    if (statusData.value) {
+      statusData.value.status = mapStatus(statusData.value.status)
+    }
     console.log('4. statusData 설정 완료:', statusData.value)
   } catch (err) {
     console.error('5. 에러 발생:', err)
@@ -70,6 +73,23 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/**
+ * 백엔드 Company 상태를 UI 상태로 매핑
+ * - ACTIVE → APPROVED (승인 완료)
+ * - SUSPENDED → SUSPENDED (서비스 정지)
+ * - PENDING → PENDING (승인 대기)
+ * - REJECTED → REJECTED (거절)
+ */
+const mapStatus = (status) => {
+  const statusMap = {
+    ACTIVE: 'APPROVED',
+    PENDING: 'PENDING',
+    SUSPENDED: 'SUSPENDED',
+    REJECTED: 'REJECTED',
+  }
+  return statusMap[status] || status
 }
 </script>
 
@@ -115,7 +135,7 @@ const formatDate = (dateString) => {
         <div v-if="statusData.status === 'PENDING'" class="admin-status-pending">
           <img
             class="admin-status-icon"
-            src="/assets/icons/free-icon-loading-arrow-10697084.png"
+            src="/public/assets/icons/free-icon-loading-arrow-10697084.png"
             alt="승인 대기 중"
           />
           <h2 class="admin-status-result-title">승인 대기중</h2>
@@ -147,7 +167,7 @@ const formatDate = (dateString) => {
         <div v-else-if="statusData.status === 'APPROVED'" class="admin-status-approved">
           <img
             class="admin-status-icon"
-            src="/assets/icons/free-icon-check-3699516.png"
+            src="/public/assets/icons/free-icon-check-3699516.png"
             alt="승인 완료"
           />
           <h2 class="admin-status-result-title">승인 완료!</h2>
@@ -182,7 +202,7 @@ const formatDate = (dateString) => {
         <div v-else-if="statusData.status === 'REJECTED'" class="admin-status-rejected">
           <img
             class="admin-status-icon"
-            src="/assets/icons/free-icon-cancel-190406.png"
+            src="/public/assets/icons/free-icon-cancel-190406.png"
             alt="승인 거절"
           />
           <h2 class="admin-status-result-title">승인 거절</h2>
@@ -194,6 +214,35 @@ const formatDate = (dateString) => {
             </p>
           </div>
           <Button @click="goToSignup" class="admin-status-retry-button"> 다시 신청하기 </Button>
+        </div>
+
+        <!-- SUSPENDED - 서비스 정지 -->
+        <div v-else-if="statusData.status === 'SUSPENDED'" class="admin-status-suspended">
+          <img
+            class="admin-status-icon"
+            src="/public/assets/icons/free-icon-loading-arrow-10697084.png"
+            alt="서비스 정지"
+          />
+          <h2 class="admin-status-result-title">서비스 정지</h2>
+          <p class="admin-status-result-message">
+            해당 서비스가 현재 정지된 상태입니다.<br />
+            관리자에게 문의해주세요.
+          </p>
+          <div class="admin-status-info">
+            <p>
+              <strong>기업명:</strong>
+              <span class="admin-status-info-text">{{ statusData.companyName }}</span>
+            </p>
+            <p>
+              <strong>도메인:</strong>
+              <span class="admin-status-info-text">{{ statusData.companySlug }}</span>
+            </p>
+            <p>
+              <strong>이메일:</strong>
+              <span class="admin-status-info-text">{{ statusData.email }}</span>
+            </p>
+          </div>
+          <Button @click="goToSignup" class="admin-status-contact-button"> 문의하기 </Button>
         </div>
 
         <!-- 다시 조회하기 -->
@@ -326,5 +375,14 @@ const formatDate = (dateString) => {
 
 .admin-status-rejected .admin-status-result-title {
   @apply text-red-600;
+}
+
+/* SUSPENDED 상태 타이틀 색상 */
+.admin-status-suspended .admin-status-result-title {
+  @apply text-yellow-600;
+}
+
+.admin-status-contact-button {
+  @apply w-full rounded-full;
 }
 </style>

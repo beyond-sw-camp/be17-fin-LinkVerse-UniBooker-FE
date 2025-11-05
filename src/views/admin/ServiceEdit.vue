@@ -97,7 +97,7 @@ const getServiceInfo = async () => {
     // 기존 서비스 기본 정보 조회
     const res = await serviceApi.getServiceInfo(serviceId)
     if (res?.data) {
-      const data = res.data.data
+      const data = res
       name.value = data.name
       category.value = data.category
       isAlwaysAvailable.value = data.isAlwaysAvailable
