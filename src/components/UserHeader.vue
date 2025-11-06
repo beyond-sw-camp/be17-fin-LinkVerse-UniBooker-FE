@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/UseStore'
 import userApi from '@/services/user/user_api'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { getCompanyLogoUrl } from '@/utils/imageUrl'
+import axiosInstance from '@/plugin/axiosInterceptor'
 
 const router = useRouter()
 const route = useRoute()
@@ -23,28 +24,39 @@ const isValidLogin = computed(() => {
   return authStore.isLoggedIn && authStore.role === 'USER'
 })
 
-// ===== 기업 정보 로드 (항상 API 호출) =====
+/**
+ * 기업 정보 로드 (axiosInstance 사용)
+ * - withCredentials 자동 적용 (쿠키 전송)
+ * - 에러 인터셉터 적용
+ * - 타임아웃 설정
+ */
 const loadCompanyInfo = async () => {
   try {
     if (!currentSlug.value) {
+      console.warn('⚠️ companySlug가 없습니다')
       companyLogo.value = '/assets/images/admin_logo.png'
       return
     }
 
     isLogoLoading.value = true
 
-    // ✅ 항상 현재 companySlug 기반으로 API 호출
-    const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/companies/slug/${currentSlug.value}`
-    const response = await fetch(apiUrl)
-    const result = await response.json()
+    // axiosInstance 사용 (withCredentials, 쿠키 자동 전송)
+    const response = await axiosInstance.get(`/api/companies/slug/${currentSlug.value}`, {
+      timeout: 5000,
+    })
 
-    if (result.isSuccess && result.data?.logoUrl) {
-      companyLogo.value = getCompanyLogoUrl(result.data.logoUrl)
+    if (response.data?.isSuccess && response.data.data?.logoUrl) {
+      companyLogo.value = getCompanyLogoUrl(response.data.data.logoUrl)
     } else {
+      console.warn('⚠️ logoUrl이 없습니다:', response.data)
       companyLogo.value = '/assets/images/admin_logo.png'
     }
   } catch (error) {
-    console.error('기업 정보 로드 실패:', error)
+    console.error('❌ 기업 정보 로드 실패:', {
+      status: error.response?.status,
+      message: error.message,
+      slug: currentSlug.value,
+    })
     companyLogo.value = '/assets/images/admin_logo.png'
   } finally {
     isLogoLoading.value = false
