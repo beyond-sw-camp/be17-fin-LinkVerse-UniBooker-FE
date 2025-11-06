@@ -167,23 +167,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // ===== 주기적 상태 검증 =====
-  const syncWithLocalStorage = () => {
-    const savedAuthState = localStorage.getItem('isLoggedIn')
-
-    if (isLoggedIn.value && savedAuthState !== 'true') {
-      forceLogout()
-    }
-  }
-
-  const validateCompanyContext = (currentSlug) => {
-    if (!isLoggedIn.value) {
-      return true
-    }
-
-    return true
-  }
-
   // ===== BroadcastChannel 메시지 핸들러 =====
   if (authChannel) {
     authChannel.onmessage = (event) => {
@@ -207,11 +190,6 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
     }
-  }
-
-  // ===== 주기적 상태 검증 타이머 시작 =====
-  if (typeof window !== 'undefined') {
-    setInterval(syncWithLocalStorage, 1000)
   }
 
   // ===== 강제 로그아웃 =====
@@ -258,7 +236,6 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     forceLogout,
     checkAuth,
-    validateCompanyContext,
     updateUser,
     updateCompany,
   }
