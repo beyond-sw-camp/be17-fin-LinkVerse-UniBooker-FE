@@ -13,8 +13,6 @@ spec:
       labels:
         app: frontend
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: k8s-worker1
       containers:
         - name: frontend
           image: linkverseunibooker/frontend:latest
