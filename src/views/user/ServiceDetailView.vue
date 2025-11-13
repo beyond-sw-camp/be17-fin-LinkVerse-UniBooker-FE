@@ -50,7 +50,7 @@ const selectedCol = ref(null)                                   // 선택한 좌
 const reservationForm = computed(() => ({
   date: selectedDate.value,
   time: selectedTime.value,
-  haedCount: selectedHeadCount.value,
+  headCount: selectedHeadCount.value,
   row: selectedRow.value,
   col: selectedCol.value,
   customFieldValues: userCustomFieldValuesForm,
