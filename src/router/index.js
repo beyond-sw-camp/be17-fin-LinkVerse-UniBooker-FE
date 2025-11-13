@@ -129,6 +129,12 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'ADMIN' },
     },
     {
+      path: '/admin/service-group/dashboard/:serviceGroupId',
+      name: 'adminServiceGroupDashboard',
+      component: () => import('@/views/admin/ServiceGroupDashboardView.vue'),
+      meta: { requiresAuth: true, role: 'ADMIN' },
+    },
+    {
       path: '/admin/service',
       name: 'serviceIntro',
       component: () => import('@/views/admin/AdminServiceIntroView.vue'),

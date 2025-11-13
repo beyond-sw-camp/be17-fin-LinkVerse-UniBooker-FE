@@ -149,7 +149,7 @@ const getMenuLink = (menu, sg) => {
         return { path: `/admin/event-reservation-status/${sg.id}`, query: nameQuery }
       }
     case '전체 분석':
-      return '#'
+      return { path: `/admin/service-group/dashboard/${sg.id}` }
     default:
       return '#'
   }
