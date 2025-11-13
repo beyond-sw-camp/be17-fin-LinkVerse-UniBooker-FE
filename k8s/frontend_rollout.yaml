@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: frontend-rollout
+  namespace: unibooker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: linkverseunibooker/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: tls-secret
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+      volumes:
+        - name: tls-secret
+          secret:
+            secretName: unibooker-tls
+  strategy:
+    blueGreen:
+      activeService: frontend-service-stable
+      autoPromotionEnabled: true
+      autoPromotionSeconds: 30
