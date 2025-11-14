@@ -11,7 +11,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['approve', 'reject', 'suspend', 'activate'])
+const emit = defineEmits(['approve', 'reject', 'suspend', 'activate', 'promote'])
 
 /**
  * 상태별 배지 클래스 반환
@@ -181,8 +181,9 @@ const goToServiceGroupList = () => {
         <button @click="emit('approve')" class="button-approve">승인</button>
       </div>
 
-      <!-- ACTIVE: 정지 버튼 -->
+      <!-- ACTIVE: 권한 이양 + 정지 버튼 -->
       <div v-else-if="company.status === 'ACTIVE'" class="button-group">
+        <button @click="emit('promote')" class="button-promote">권한 이양</button>
         <button @click="emit('suspend')" class="button-suspend">서비스 정지</button>
       </div>
 
@@ -257,5 +258,9 @@ td {
 
 .button-activate {
   @apply px-6 py-2 rounded bg-green-600 text-white hover:bg-green-700 transition-colors;
+}
+
+.button-promote {
+  @apply px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors;
 }
 </style>

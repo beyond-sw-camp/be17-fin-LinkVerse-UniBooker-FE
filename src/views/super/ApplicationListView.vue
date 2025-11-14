@@ -19,7 +19,7 @@ const fetchPendingCompanies = async () => {
   error.value = null
 
   try {
-    const response = await companyApi.getPendingCompanies()
+    const response = await companyApi.getPendingApplications()
 
     if (response.isSuccess) {
       companies.value = response.data

@@ -35,12 +35,6 @@ const passwordInfo = ref({
   confirmPassword: '',
 })
 
-// ===== 탈퇴용 데이터 =====
-const withdrawInfo = ref({
-  password: '',
-  reason: '',
-})
-
 // ===== 현재 표시할 로고 URL =====
 /**
  * 로고 표시 우선순위:
@@ -221,36 +215,6 @@ const handlePasswordSubmit = async () => {
   }
 }
 
-// ===== 탈퇴 처리 =====
-const enterWithdrawMode = () => {
-  withdrawInfo.value = { password: '', reason: '' }
-  mode.value = 'withdraw'
-}
-
-const handleWithdrawSubmit = async () => {
-  if (!withdrawInfo.value.password) {
-    alert('비밀번호를 입력해주세요.')
-    return
-  }
-
-  try {
-    const payload = {
-      password: withdrawInfo.value.password,
-      reason: withdrawInfo.value.reason,
-    }
-
-    await adminApi.managerInfoDelete(payload)
-
-    alert('탈퇴 완료되었습니다.')
-    emit('close')
-    authStore.logout()
-    router.replace('/admin/login')
-  } catch (err) {
-    console.error(err)
-    alert(err.response?.data?.message || '탈퇴에 실패했습니다.')
-  }
-}
-
 // ===== 전화번호 입력 시 하이픈 자동 추가 =====
 const formatPhoneNumber = (e) => {
   let input = e.target.value.replace(/\D/g, '')
@@ -311,7 +275,6 @@ const triggerFileInput = () => {
         </div>
 
         <div class="modal-button-container">
-          <Button @click="enterWithdrawMode" theme="gray" size="sm">서비스 탈퇴</Button>
           <Button size="sm" @click="mode = 'password'">비밀번호 변경</Button>
         </div>
       </template>
@@ -372,11 +335,6 @@ const triggerFileInput = () => {
 
       <!-- 비밀번호 변경 모드 (기존 유지) -->
       <template v-else-if="mode === 'password'">
-        <!-- ... -->
-      </template>
-
-      <!-- 탈퇴 모드 (기존 유지) -->
-      <template v-else-if="mode === 'withdraw'">
         <!-- ... -->
       </template>
     </div>
