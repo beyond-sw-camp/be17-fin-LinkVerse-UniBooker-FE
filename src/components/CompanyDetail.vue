@@ -253,7 +253,7 @@ td {
 }
 
 .button-suspend {
-  @apply px-6 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition-colors;
+  @apply px-1 py-2 w-[100px] rounded bg-red-600 text-white hover:bg-red-700 transition-colors;
 }
 
 .button-activate {
@@ -261,6 +261,6 @@ td {
 }
 
 .button-promote {
-  @apply px-6 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors;
+  @apply px-1 py-2 w-[100px] rounded bg-gray-300 text-white hover:bg-gray-400 transition-colors;
 }
 </style>

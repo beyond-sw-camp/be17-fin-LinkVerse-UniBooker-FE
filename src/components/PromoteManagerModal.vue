@@ -45,6 +45,12 @@ const handlePromote = () => {
     return
   }
 
+  // admin과 selectedManager 존재 확인
+  if (!props.admin || !selectedManager.value) {
+    alert('관리자 정보를 불러올 수 없습니다.')
+    return
+  }
+
   const confirmMessage =
     `권한을 이양하시겠습니까?\n\n` +
     `${props.admin.name}: ADMIN → MANAGER\n` +
@@ -101,18 +107,18 @@ const getRoleText = (role) => {
       <!-- 매니저 목록 -->
       <div v-else class="manager-list">
         <!-- 현재 관리자 (선택 불가) -->
-        <div class="manager-item disabled">
+        <div v-if="admin" class="manager-item disabled">
           <div class="radio-wrapper">
             <input type="radio" disabled class="radio-input" />
           </div>
           <div class="manager-info">
             <div class="manager-name-row">
-              <span class="manager-name">{{ admin.name }}</span>
+              <span class="manager-name">{{ admin?.name || '-' }}</span>
               <span :class="getRoleBadgeClass('ADMIN')">
                 {{ getRoleText('ADMIN') }}
               </span>
             </div>
-            <span class="manager-email">{{ admin.email }}</span>
+            <span class="manager-email">{{ admin?.email || '-' }}</span>
           </div>
         </div>
 
