@@ -103,6 +103,16 @@ const viewTrendSeries = ref([
   }
 ])
 
+const todayViewStats = ref({
+  totalToday: 148,             // 오늘 조회 수 총합
+  yesterdayTotal: 120,         // 어제 조회 수
+  changePercent: +23,          // 전일 대비 %
+  peakHour: '14시',            // 피크 시간대
+  hourlyViews: [2,4,5,3,8,12,20,18,14,10,8,6,4,5,9,12,15,13,10,8,6,4,3,2], // 미니 차트
+  lastHourChange: +5           // 직전 1시간 대비 변화량
+})
+
+
 // ===== 성별 연령 차트 (파이차트 + 바차트) =====
 const genderAgeChartOptions = ref({
   chart: { type: 'donut', height: 150 },
@@ -255,37 +265,45 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 방문자/트래픽 분석 -->
-        <div class="card visitor-card">
-          <div class="visitor-header">
-            <span class="visitor-label">방문자 / 트래픽 분석</span>
-            <div class="visitor-tabs">
-              <button class="tab-btn active">시간별</button>
-              <button class="tab-btn">월별</button>
+        <!-- 오늘 조회 수 -->
+        <div class="card view-count-card">
+          <h3 class="card-title">오늘 조회 수</h3>
+
+          <div class="view-stats">
+            <div class="view-number">
+              {{ todayViewStats.totalToday }}<span class="unit">명</span>
+            </div>
+
+            <div class="view-change">
+              <span>전일 대비</span>
+              <span :class="todayViewStats.changePercent >= 0 ? 'positive' : 'negative'">
+                {{ todayViewStats.changePercent }}%
+              </span>
             </div>
           </div>
-          <div class="visitor-stats">
-            <div class="stat-item">
-              <span class="stat-label">방문자 수 (요청)</span>
-              <div class="stat-value-row">
-                <span class="stat-value">145</span>
-                <span class="stat-unit">명</span>
-              </div>
-              <span class="stat-change positive">+23%</span>
+
+          <!-- 미니 라인 차트 -->
+          <svg viewBox="0 0 100 40" class="mini-line-chart">
+            <polyline
+              :points="todayViewStats.hourlyViews.map((v, i) => `${i * (100 / (todayViewStats.hourlyViews.length - 1))},${40 - (v / Math.max(...todayViewStats.hourlyViews)) * 40}`).join(' ')"
+              fill="none"
+              stroke="#5B8FF9"
+              stroke-width="2"
+            />
+          </svg>
+
+          <!-- 피크 시간대 / 직전 1시간 대비 -->
+          <div class="today-extra-info">
+            <div class="extra-row">
+              <span class="extra-label">피크 시간대</span>
+              <span class="extra-value">{{ todayViewStats.peakHour }}</span>
             </div>
-            <div class="visitor-mini-chart">
-              <svg viewBox="0 0 100 40" class="mini-line-chart">
-                <polyline
-                  points="0,30 20,25 40,20 60,28 80,15 100,18"
-                  fill="none"
-                  stroke="#5B8FF9"
-                  stroke-width="2"
-                />
-              </svg>
+            <div class="extra-row">
+              <span class="extra-label">직전 1시간 대비</span>
+              <span class="extra-value" :class="todayViewStats.lastHourChange >= 0 ? 'positive' : 'negative'">
+                {{ todayViewStats.lastHourChange >= 0 ? '+' : '' }}{{ todayViewStats.lastHourChange }}명
+              </span>
             </div>
-          </div>
-          <div class="visitor-info">
-            <span>방문자 수 (지난달 평균) 118명</span>
           </div>
         </div>
       </div>
@@ -301,28 +319,6 @@ onMounted(() => {
             :options="timeSlotChartOptions"
             :series="timeSlotSeries"
           />
-        </div>
-
-        <!-- 조회 수 -->
-        <div class="card view-count-card">
-          <h3 class="card-title">조회 수</h3>
-          <div class="view-stats">
-            <div class="view-number">{{ dashboardData.viewCount }}<span class="unit">명</span></div>
-            <div class="view-change">
-              <span>전월 대비</span>
-              <span class="negative">{{ dashboardData.viewChangePercent }}%</span>
-            </div>
-          </div>
-          <VueApexCharts
-            type="line"
-            height="100"
-            :options="viewTrendChartOptions"
-            :series="viewTrendSeries"
-          />
-          <div class="view-legend">
-            <span class="legend-line"></span>
-            <span class="legend-text">조회 수</span>
-          </div>
         </div>
 
         <!-- 시간 추이별 -->
@@ -529,7 +525,7 @@ onMounted(() => {
 }
 
 .time-slot-card {
-  @apply col-span-1;
+  @apply col-span-2;
 }
 
 .view-count-card {
@@ -550,6 +546,10 @@ onMounted(() => {
 
 .view-count-card .view-change {
   @apply flex items-center gap-2 text-sm;
+}
+
+.view-count-card .view-change .positive {
+  @apply text-green-600 font-medium;
 }
 
 .view-count-card .view-change .negative {
@@ -659,5 +659,34 @@ onMounted(() => {
 .time-trend-card .time-tab.active {
   @apply bg-gray-800 text-white border-gray-800;
 }
+
+.today-extra-info {
+  @apply mt-6 space-y-2 text-sm;
+}
+
+.extra-row {
+  @apply flex justify-between text-gray-700;
+}
+
+.extra-label {
+  @apply text-xs text-gray-500;
+}
+
+.extra-value {
+  @apply font-medium;
+}
+
+.extra-value.positive {
+  @apply text-green-600;
+}
+
+.extra-value.negative {
+  @apply text-red-600;
+}
+
+.mini-line-chart {
+  @apply w-full h-12 mt-4;
+}
+
 </style>
 
