@@ -1,25 +1,21 @@
 <script setup>
 import AdminLayout from '@/components/AdminLayout.vue'
-import { onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { onMounted, ref, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
+import dashboardApi from '@/services/dashboard/dashboard_api'
 
-// ===== 대시보드 데이터 =====
-const dashboardData = ref({
-  totalServices: 1234,
-  weeklyReservations: 6,
-  weeklyCancel: 6,
-  currentUsers: 12,
-  totalUsers: 235,
-  viewCount: 645,
-  viewChangePercent: -8.8
-})
+const route = useRoute()
 
-// ===== 서비스별 성과 데이터 =====
-const servicePerformance = ref([
-  { name: '회의실 A', percent: 87 },
-  { name: '회의실 B', percent: 63 },
-  { name: '회의실 C', percent: 55 },
+const headerItems = ref([
+  { label: '총 서비스 수', key: 'resourceCount' },
+  { label: '누적 예약 수', key: 'cumReservationCount' },
+  { label: '누적 취소 수', key: 'cumCancleCount' },
+  { label: '이용자 수', key: 'useCustomerCount', subKey: 'totalCustomerCount' }
 ])
+
+// 대시보드 데이터
+const dashboardData = ref({})
 
 // ===== 성별 사용자 차트 =====
 const genderChartOptions = ref({
@@ -61,6 +57,15 @@ const ageChartOptions = ref({
 })
 const ageSeries = ref([30, 68])
 
+// ===== 조회수 증감률 =====
+const calcChangePercent = (today, yesterday) => {
+  if (yesterday === 0) {
+    if (today === 0) return 0
+    return 100
+  }
+  return ((today - yesterday) / yesterday) * 100;
+}
+
 // ===== 시간대별 예약 현황 차트 =====
 const timeSlotChartOptions = ref({
   chart: { type: 'bar', height: 280, toolbar: { show: false } },
@@ -88,132 +93,82 @@ const timeSlotSeries = ref([
   }
 ])
 
-// ===== 조회 수 추이 차트 =====
-const viewTrendChartOptions = ref({
-  chart: { type: 'line', height: 120, toolbar: { show: false }, sparkline: { enabled: true } },
-  stroke: { curve: 'smooth', width: 2 },
-  colors: ['#52C41A'],
-  tooltip: { enabled: true },
-  markers: { size: 0 }
-})
-const viewTrendSeries = ref([
-  {
-    name: '조회 수',
-    data: [200, 250, 300, 280, 320, 290, 310, 280, 260, 300, 320, 280]
-  }
-])
-
-const todayViewStats = ref({
-  totalToday: 148,             // 오늘 조회 수 총합
-  yesterdayTotal: 120,         // 어제 조회 수
-  changePercent: +23,          // 전일 대비 %
-  peakHour: '14시',            // 피크 시간대
-  hourlyViews: [2,4,5,3,8,12,20,18,14,10,8,6,4,5,9,12,15,13,10,8,6,4,3,2], // 미니 차트
-  lastHourChange: +5           // 직전 1시간 대비 변화량
-})
-
-
-// ===== 성별 연령 차트 (파이차트 + 바차트) =====
-const genderAgeChartOptions = ref({
-  chart: { type: 'donut', height: 150 },
-  labels: ['남성', '여성'],
-  colors: ['#5B8FF9', '#FF6B9D'],
-  legend: { show: false },
-  dataLabels: { enabled: false },
-  plotOptions: {
-    pie: {
-      donut: {
-        size: '60%'
-      }
-    }
-  }
-})
-const genderAgeSeries = ref([58, 42])
-
-// 연령대별 막대 데이터
-const ageData = ref([
-  { age: '10대', male: 11, female: 6 },
-  { age: '20대', male: 34, female: 23 },
-  { age: '30대', male: 28, female: 32 },
-  { age: '40대', male: 17, female: 23 },
-  { age: '50대', male: 8, female: 12 },
-  { age: '60대', male: 2, female: 4 }
-])
-
 // ===== 시간 추이별 차트 =====
-const selectedTimePeriod = ref('시간별')
 const timeTrendChartOptions = ref({
   chart: { type: 'line', height: 250, toolbar: { show: false } },
   stroke: { curve: 'smooth', width: 3 },
   colors: ['#52C41A'],
-  xaxis: {
-    categories: ['08일', '09일', '10일', '11일', '12일', '13일', '14일']
-  },
+  xaxis: { categories: [] },
   yaxis: { min: 0, max: 400 },
   dataLabels: { enabled: false },
   grid: { borderColor: '#E5E7EB' },
   markers: { size: 4 }
 })
-const timeTrendSeries = ref([
-  {
-    name: '조회 수',
-    data: [200, 250, 300, 280, 320, 350, 330]
-  }
-])
+const timeTrendSeries = ref([{ name: '조회 수', data: [] }])
 
-// ===== 시간별/월별 탭 전환 =====
-const switchTimePeriod = (period) => {
-  selectedTimePeriod.value = period
-  if (period === '시간별') {
-    timeTrendChartOptions.value.xaxis.categories = ['08일', '09일', '10일', '11일', '12일', '13일', '14일']
-    timeTrendSeries.value = [{ name: '조회 수', data: [200, 250, 300, 280, 320, 350, 330] }]
-  } else {
-    timeTrendChartOptions.value.xaxis.categories = ['1월', '2월', '3월', '4월', '5월', '6월']
-    timeTrendSeries.value = [{ name: '조회 수', data: [2000, 2500, 2800, 3000, 3200, 3500] }]
-  }
+// 시간별 조회 수 데이터 설정
+const applyViewHourlyData = () => {
+  const list = dashboardData.value.hourlyViewCounts || []
+  console.log('시간별 조회 수 데이터 설정:::::', JSON.stringify(list))
+
+  timeTrendChartOptions.value.xaxis.categories = list.map(i => `${i.hour}시`)
+  timeTrendSeries.value.data = list.map(i => i.viewCount)
+
+  console.log('!!!!!!!!!!!!!!!!timeTrendChartOptions : ', timeTrendChartOptions.value)
+  console.log('!!!!!!!!!!!!!!!!timeTrendSeries : ', timeTrendSeries.value)
 }
 
+// 리소스 그룹별 대시보드 API 호출
+const getServiceGroupDashboardData = async () => {
+  const response = await dashboardApi.getAdminResourceGroupDashboardData(route.params.serviceGroupId)
+  dashboardData.value = response.data
+}
+
+// 다른 리소스 그룹 선택 했을 시 라우터 감시
+watch(
+  () => route.path,
+  () => getServiceGroupDashboardData()
+)
+
+// 시간별 조회수 데이터 감지
+watch(
+  () => dashboardData.value.hourlyViewCounts,
+  () => { applyViewHourlyData() }
+)
+
+// 화면 로드시 api 호출 및 데이터 설정
 onMounted(() => {
-  // API 호출 예정
+  getServiceGroupDashboardData()
 })
 </script>
 
 <template>
   <AdminLayout>
     <div class="dashboard-container">
-      <!-- KPI 카드 영역 -->
+      <!-- 1. 상단 섹션 -->
       <div class="kpi-cards">
-        <div class="kpi-card">
-          <p class="kpi-label">총 서비스 수</p>
-          <p class="kpi-value">{{ dashboardData.totalServices.toLocaleString() }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">누적 예약 수</p>
-          <p class="kpi-value">{{ dashboardData.weeklyReservations }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">누적 취소 수</p>
-          <p class="kpi-value">{{ dashboardData.weeklyCancel }}</p>
-        </div>
-        <div class="kpi-card">
-          <p class="kpi-label">이용자 수</p>
-          <p class="kpi-value">{{ dashboardData.currentUsers }} / {{ dashboardData.totalUsers }}</p>
+        <div v-for="item in headerItems" class="kpi-card" :key="item.key">
+          <p class="kpi-label">{{ item.label }}</p>
+          <!-- 서브 값이 있는 경우 -->
+          <p class="kpi-value" v-if="item.subKey">{{ dashboardData[item.key] }} / {{ dashboardData[item.subKey] }}</p>
+          <!-- 일반 값 -->
+          <p class="kpi-value" v-else>{{ dashboardData[item.key] }}</p>
         </div>
       </div>
 
-      <!-- 중간 섹션 -->
+      <!-- 2. 중간 섹션 -->
       <div class="middle-section">
         <!-- 서비스별 성과 -->
         <div class="card service-performance-card">
           <h3 class="card-title">서비스별 성과</h3>
           <div class="performance-list">
-            <div v-for="service in servicePerformance" :key="service.name" class="performance-item">
+            <div v-for="service in dashboardData.performanceByResources" :key="service.resourceName" class="performance-item">
               <div class="performance-header">
-                <span class="service-name">{{ service.name }}</span>
-                <span class="service-percent">{{ service.percent }}%</span>
+                <span class="service-name">{{ service.resourceName }}</span>
+                <span class="service-percent">{{ service.count }}%</span>
               </div>
               <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: service.percent + '%' }"></div>
+                <div class="progress-fill" :style="{ width: service.count + '%' }"></div>
               </div>
             </div>
           </div>
@@ -268,47 +223,19 @@ onMounted(() => {
         <!-- 오늘 조회 수 -->
         <div class="card view-count-card">
           <h3 class="card-title">오늘 조회 수</h3>
-
           <div class="view-stats">
-            <div class="view-number">
-              {{ todayViewStats.totalToday }}<span class="unit">명</span>
-            </div>
-
+            <div class="view-number">{{ dashboardData.todayViewCount }}<span class="unit">명</span></div>
             <div class="view-change">
               <span>전일 대비</span>
-              <span :class="todayViewStats.changePercent >= 0 ? 'positive' : 'negative'">
-                {{ todayViewStats.changePercent }}%
-              </span>
-            </div>
-          </div>
-
-          <!-- 미니 라인 차트 -->
-          <svg viewBox="0 0 100 40" class="mini-line-chart">
-            <polyline
-              :points="todayViewStats.hourlyViews.map((v, i) => `${i * (100 / (todayViewStats.hourlyViews.length - 1))},${40 - (v / Math.max(...todayViewStats.hourlyViews)) * 40}`).join(' ')"
-              fill="none"
-              stroke="#5B8FF9"
-              stroke-width="2"
-            />
-          </svg>
-
-          <!-- 피크 시간대 / 직전 1시간 대비 -->
-          <div class="today-extra-info">
-            <div class="extra-row">
-              <span class="extra-label">피크 시간대</span>
-              <span class="extra-value">{{ todayViewStats.peakHour }}</span>
-            </div>
-            <div class="extra-row">
-              <span class="extra-label">직전 1시간 대비</span>
-              <span class="extra-value" :class="todayViewStats.lastHourChange >= 0 ? 'positive' : 'negative'">
-                {{ todayViewStats.lastHourChange >= 0 ? '+' : '' }}{{ todayViewStats.lastHourChange }}명
+              <span :class="calcChangePercent(dashboardData.todayViewCount, dashboardData.yesterDayViewCount) >= 0 ? 'positive' : 'negative'">
+                {{ calcChangePercent(dashboardData.todayViewCount, dashboardData.yesterDayViewCount) }}%
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 하단 섹션 -->
+      <!-- 3. 하단 섹션 -->
       <div class="bottom-section">
         <!-- 시간대별 예약 현황 -->
         <div class="card time-slot-card">
@@ -325,28 +252,12 @@ onMounted(() => {
         <div class="card time-trend-card">
           <div class="time-trend-header">
             <h3 class="card-title">시간 추이별</h3>
-            <div class="time-tabs">
-              <button
-                class="time-tab"
-                :class="{ active: selectedTimePeriod === '시간별' }"
-                @click="switchTimePeriod('시간별')"
-              >
-                시간별
-              </button>
-              <button
-                class="time-tab"
-                :class="{ active: selectedTimePeriod === '월별' }"
-                @click="switchTimePeriod('월별')"
-              >
-                월별
-              </button>
-            </div>
           </div>
           <VueApexCharts
             type="line"
             height="250"
-            :options="timeTrendChartOptions"
-            :series="timeTrendSeries"
+            :options="timeTrendChartOptions.value"
+            :series="timeTrendSeries.value"
           />
         </div>
       </div>
@@ -384,19 +295,19 @@ onMounted(() => {
 }
 
 .middle-section {
-  @apply grid grid-cols-3 gap-4 mb-6;
+  @apply grid grid-cols-6 gap-4 mb-6;
 }
 
 .middle-section .card{
-  @apply h-[500px];
+  @apply h-[400px];
 }
 
 .service-performance-card {
-  @apply col-span-1;
+  @apply col-span-2;
 }
 
 .service-performance-card .performance-list {
-  @apply h-[400px] space-y-4 overflow-y-auto pr-2;
+  @apply h-[300px] space-y-4 overflow-y-auto pr-2;
   max-height: 100%;
 }
 
@@ -425,15 +336,15 @@ onMounted(() => {
 }
 
 .user-characteristics-card {
-  @apply col-span-1;
+  @apply col-span-3;
 }
 
 .user-characteristics-card .characteristics-content {
-  @apply space-y-6;
+  @apply flex flex-row justify-center items-center h-[80%];
 }
 
 .user-characteristics-card .chart-section {
-  @apply flex flex-col items-center;
+  @apply flex flex-col justify-center items-center w-1/2;
 }
 
 .user-characteristics-card .chart-legend {
