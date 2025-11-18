@@ -21,16 +21,13 @@ export function connectWebSocket() {
     })
 
     stompClient = Stomp.over(socket)
-    // stompClient.debug = null // 콘솔 디버그 끄기 (원하면 주석처리)
 
     stompClient.connect(
       {},
       (frame) => {
         console.log('✅ WebSocket 연결 성공:', frame)
 
-        // 알림 구독
         stompClient.subscribe('/user/queue/notifications', (message) => {
-          // const data = JSON.parse(message.body)
           console.log('🔔 알림 도착:', message)
 
           // Pinia store 사용

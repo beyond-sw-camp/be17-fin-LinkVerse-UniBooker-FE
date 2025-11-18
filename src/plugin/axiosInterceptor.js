@@ -14,7 +14,7 @@ import router from '@/router'
 // ===== Axios 인스턴스 생성 =====
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://www.unibooker.kro.kr',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -56,10 +56,24 @@ const addRefreshSubscriber = (callback) => {
 }
 
 // ===== 요청 인터셉터 =====
-
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Authorization 헤더는 제거 (쿠키로 자동 전송됨)
+    // ✅ 공개 API는 withCredentials 제거
+    const publicAPIs = [
+      '/api/companies/slug/',
+      '/api/companies/check-slug',
+      '/api/companies/check-business-number',
+      '/api/admin/signup',
+      '/api/auth/login',
+      '/api/users/signup',
+    ]
+
+    const isPublicAPI = publicAPIs.some(api => config.url.includes(api))
+
+    if (isPublicAPI) {
+      config.withCredentials = false  // 쿠키 전송 안 함
+    }
+
     return config
   },
   (error) => {

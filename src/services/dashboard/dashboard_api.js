@@ -5,7 +5,7 @@ import axiosInstance from '@/plugin/axiosInterceptor'
  */
 const getAdminDashboardData = async () => {
   try {
-    const response = await axiosInstance.get(`api/dashboard/admin`)
+    const response = await axiosInstance.get(`/api/dashboard/admin`)
     return response.data.data
   } catch (error) {
     console.error('❌ 관리자 대시보드 데이터 조회 실패:', error)
@@ -24,7 +24,7 @@ const getAdminDashboardData = async () => {
  */
 const getSuperDashboardData = async () => {
   try {
-    const response = await axiosInstance.get(`api/dashboard/super`)
+    const response = await axiosInstance.get(`/api/dashboard/super`)
     return response.data.data
   } catch (error) {
     console.error('❌ 대시보드 데이터 조회 실패:', error)

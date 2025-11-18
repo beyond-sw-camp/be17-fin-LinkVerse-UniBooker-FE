@@ -8,6 +8,7 @@
  */
 
 import axiosInstance from '@/plugin/axiosInterceptor'
+import axios from 'axios' 
 
 /**
  * Company Slug 중복 확인
@@ -70,7 +71,7 @@ const updateCompanyStatus = async (companyId, status) => {
  * Company Slug로 기업 정보 조회
  */
 const getCompanyBySlug = async (companySlug) => {
-  return await axiosInstance.get(`/api/companies/slug/${companySlug}`)
+  return await axios.get(`/api/companies/slug/${companySlug}`)
 }
 
 export default {
