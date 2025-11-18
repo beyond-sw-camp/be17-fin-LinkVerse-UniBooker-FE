@@ -5,6 +5,8 @@ import { onMounted, ref, watch } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import dashboardApi from '@/services/dashboard/dashboard_api'
 
+
+/** 기본 설정 */
 const route = useRoute()
 
 const headerItems = ref([
@@ -14,10 +16,12 @@ const headerItems = ref([
   { label: '이용자 수', key: 'useCustomerCount', subKey: 'totalCustomerCount' }
 ])
 
-// 대시보드 데이터
+/** 대시보드 데이터 */
 const dashboardData = ref({})
 
-// ===== 성별 사용자 차트 =====
+
+/** 
+ * 성별 사용자 차트 */
 const genderChartOptions = ref({
   chart: { type: 'donut', height: 200 },
   labels: ['여성', '남성'],
@@ -37,7 +41,8 @@ const genderChartOptions = ref({
 })
 const genderSeries = ref([68, 68])
 
-// ===== 연령대별 사용자 차트 =====
+/** 
+ * 연령대별 사용자 차트 */
 const ageChartOptions = ref({
   chart: { type: 'donut', height: 200 },
   labels: ['10대', '20대'],
@@ -55,9 +60,11 @@ const ageChartOptions = ref({
     }
   },
 })
+
 const ageSeries = ref([30, 68])
 
-// ===== 조회수 증감률 =====
+/** 
+ * 조회수 증감률 */
 const calcChangePercent = (today, yesterday) => {
   if (yesterday === 0) {
     if (today === 0) return 0
@@ -66,57 +73,103 @@ const calcChangePercent = (today, yesterday) => {
   return ((today - yesterday) / yesterday) * 100;
 }
 
-// ===== 시간대별 예약 현황 차트 =====
+
+/**
+* 시간대별 예약 현황 차트 */
 const timeSlotChartOptions = ref({
   chart: { type: 'bar', height: 280, toolbar: { show: false } },
   plotOptions: {
     bar: {
       horizontal: false,
-      columnWidth: '60%',
+      columnWidth: '10%',
       borderRadius: 4
     }
   },
   dataLabels: { enabled: false },
   stroke: { show: true, width: 2, colors: ['transparent'] },
   xaxis: {
-    categories: ['0시', '2시', '4시', '6시', '8시', '10시', '12시', '14시', '16시', '18시', '20시', '22시']
+    categories: []
   },
   yaxis: { title: { text: '예약 건수' } },
   fill: { opacity: 1 },
   colors: ['#5B8FF9'],
   grid: { borderColor: '#E5E7EB' }
 })
+
 const timeSlotSeries = ref([
-  {
-    name: '예약 건수',
-    data: [5, 8, 12, 15, 22, 28, 35, 30, 25, 20, 15, 10]
-  }
+  { name: '예약 건수', data: [] }
 ])
 
-// ===== 시간 추이별 차트 =====
+// 막대 너비 설정
+const calculateColumnWidth = (count) => {
+  if (count <= 3) return '10%'       // 아주 적음 (얇게)
+  if (count <= 6) return '20%'       // 적음
+  if (count <= 10) return '30%'      // 중간
+  if (count <= 15) return '40%'      // 많음
+  return '50%'                       // 매우 많음 (넓게)
+}
+
+// 시간별 예약 수 데이터 설정
+const applyReservaionHourlyDate = () => {
+  const list = dashboardData.value.houlryReservationCounts || []
+
+  const categories = list.map(i => `${i.hour}시`)
+  const values = list.map(i => i.count)
+  const columnWidth = calculateColumnWidth(categories.length)
+
+  timeSlotChartOptions.value = {
+    ...timeSlotChartOptions.value,
+    plotOptions: {
+      ...timeSlotChartOptions.value.plotOptions,
+      bar: {
+        ...timeSlotChartOptions.value.plotOptions.bar,
+        columnWidth: columnWidth
+      }
+    },
+    xaxis: {
+      ...timeSlotChartOptions.value.xaxis,
+      categories
+    }
+  }
+
+  timeSlotSeries.value = [
+    { name: '예약 건수', data: values }
+  ]
+}
+
+
+/** 
+ * 시간 추이별 차트 */
 const timeTrendChartOptions = ref({
   chart: { type: 'line', height: 250, toolbar: { show: false } },
   stroke: { curve: 'smooth', width: 3 },
   colors: ['#52C41A'],
   xaxis: { categories: [] },
-  yaxis: { min: 0, max: 400 },
+  yaxis: { min: 0, max: 100 },
   dataLabels: { enabled: false },
   grid: { borderColor: '#E5E7EB' },
   markers: { size: 4 }
 })
+
 const timeTrendSeries = ref([{ name: '조회 수', data: [] }])
 
 // 시간별 조회 수 데이터 설정
 const applyViewHourlyData = () => {
   const list = dashboardData.value.hourlyViewCounts || []
-  console.log('시간별 조회 수 데이터 설정:::::', JSON.stringify(list))
 
-  timeTrendChartOptions.value.xaxis.categories = list.map(i => `${i.hour}시`)
-  timeTrendSeries.value.data = list.map(i => i.viewCount)
+  timeTrendChartOptions.value = {
+    ...timeTrendChartOptions.value,
+    xaxis: {
+      ...timeTrendChartOptions.value.xaxis,
+      categories: list.map(i => `${i.hour}시`)
+    }
+  }
 
-  console.log('!!!!!!!!!!!!!!!!timeTrendChartOptions : ', timeTrendChartOptions.value)
-  console.log('!!!!!!!!!!!!!!!!timeTrendSeries : ', timeTrendSeries.value)
+  timeTrendSeries.value = [
+    { name: '조회 수', data: list.map(i => i.viewCount) }
+  ]
 }
+
 
 // 리소스 그룹별 대시보드 API 호출
 const getServiceGroupDashboardData = async () => {
@@ -134,6 +187,12 @@ watch(
 watch(
   () => dashboardData.value.hourlyViewCounts,
   () => { applyViewHourlyData() }
+)
+
+// 시간별 예약수 데이터 감지
+watch(
+  () => dashboardData.value.houlryReservationCounts,
+  () => { applyReservaionHourlyDate() }
 )
 
 // 화면 로드시 api 호출 및 데이터 설정
