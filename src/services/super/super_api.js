@@ -188,6 +188,16 @@ const updateAdminStatus = async (userId, status) => {
   return await updateManagerStatus(userId, status)
 }
 
+/**
+ * 매니저를 관리자로 승격 (기존 관리자는 매니저로 강등)
+ */
+const promoteManagerToAdmin = async (companyId, managerId) => {
+  const response = await axiosInstance.post(
+    `/api/super/companies/${companyId}/managers/${managerId}/promote`
+  )
+  return response.data
+}
+
 export default {
   // 인증
   login,
@@ -208,6 +218,7 @@ export default {
   // 관리자 관리 (새로운 API)
   getAllManagers,
   updateManagerStatus,
+  promoteManagerToAdmin,
   
   // 서비스 그룹 관리
   getCompanyResourceGroups,

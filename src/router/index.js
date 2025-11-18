@@ -329,50 +329,50 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // ===== 0. Company 정지 상태 체크 (일반 사용자 경로만) =====
-  if (to.path.startsWith('/c/') && to.name !== 'ServiceSuspended') {
-    const companySlug = to.params.companySlug
+// ===== 0. Company 정지 상태 체크 (로그인한 일반 사용자만) =====
+if (to.path.startsWith('/c/') && 
+    to.name !== 'ServiceSuspended' && 
+    to.name !== 'UserLogin' &&
+    to.name !== 'UserSignup') {
+  
+  const companySlug = to.params.companySlug
 
-    if (companySlug) {
-      try {
-        // Company 정보 조회
-        const response = await axiosInstance.get(`/api/companies/slug/${companySlug}`)
-        const company = response.data.data
+  // ✅ 로그인한 USER만 Company 상태 체크
+  if (companySlug && authStore.isLoggedIn && authStore.role === 'USER') {
+    try {
+      const response = await axiosInstance.get(`/api/companies/slug/${companySlug}`)
+      const company = response.data.data
 
-        // SUSPENDED 상태면 정지 페이지로 리다이렉트
-        if (company.status === 'SUSPENDED') {
-          console.log('🔴 Company SUSPENDED 감지:', companySlug)
-          return next({
-            name: 'ServiceSuspended',
-            params: { companySlug },
-          })
-        }
-      } catch (error) {
-        const errorCode = error.response?.data?.code
-        const errorStatus = error.response?.status
-
-        // ✅ COMPANY_SUSPENDED 에러 코드 체크 (40013)
-        if (errorCode === 40013) {
-          console.log('🔴 Company SUSPENDED 에러 감지:', companySlug)
-
-          // ✅ 로그인 상태면 로그아웃 처리
-          if (authStore.isLoggedIn) {
-            authStore.logout()
-            localStorage.clear()
-            alert('서비스가 일시 정지되어 로그아웃됩니다.')
-          }
-
-          return next({
-            name: 'ServiceSuspended',
-            params: { companySlug },
-          })
-        }
-
-        // 404 또는 기타 에러 → 로그만 기록하고 계속 진행
-        console.warn('⚠️ Company 상태 확인 실패:', errorStatus, error.message)
+      if (company.status === 'SUSPENDED') {
+        console.log('🔴 Company SUSPENDED 감지:', companySlug)
+        return next({
+          name: 'ServiceSuspended',
+          params: { companySlug },
+        })
       }
+    } catch (error) {
+      const errorCode = error.response?.data?.code
+
+      if (errorCode === 40013) {
+        console.log('🔴 Company SUSPENDED 에러 감지:', companySlug)
+        
+        if (authStore.isLoggedIn) {
+          authStore.logout()
+          localStorage.clear()
+          alert('서비스가 일시 정지되어 로그아웃됩니다.')
+        }
+
+        return next({
+          name: 'ServiceSuspended',
+          params: { companySlug },
+        })
+      }
+
+      // 기타 에러는 로그만
+      console.warn('⚠️ Company 상태 확인 실패:', error.message)
     }
   }
+}
 
   // ===== 역할 검증 헬퍼 함수 =====
 

@@ -16,25 +16,22 @@ export function connectWebSocket() {
 
     console.log('🛰️ WebSocket 연결 시도 중...')
 
-    const socket = new SockJS('http://localhost:8080/ws', null, {
+    const socket = new SockJS('https://www.unibooker.kro.kr/ws', null, {
       withCredentials: true, // ✅ 쿠키 자동 전송
     })
 
     stompClient = Stomp.over(socket)
-    // stompClient.debug = null // 콘솔 디버그 끄기 (원하면 주석처리)
 
     stompClient.connect(
       {},
       (frame) => {
         console.log('✅ WebSocket 연결 성공:', frame)
 
-        // 알림 구독
         stompClient.subscribe('/user/queue/notifications', (message) => {
-          // const data = JSON.parse(message.body)
           console.log('🔔 알림 도착:', message)
 
           // Pinia store 사용
-          const store = useNotificationStore() 
+          const store = useNotificationStore()
           store.notify()
         })
 

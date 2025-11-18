@@ -6,16 +6,16 @@ import axios from 'axios'
  */
 
 const getServiceGroups = async () => {
-  return await axiosInstance.get(`api/resource-group/company`)
+  return await axiosInstance.get(`/api/resource-group/company`)
 }
 
 const createServiceGroup = async (formdata) => {
-  return await axiosInstance.post(`api/resource-group`, formdata)
+  return await axiosInstance.post(`/api/resource-group`, formdata)
 }
 
 const getServiceGroupPresignedURL = async (formData) => {
   try {
-    const response = await axiosInstance.post('api/image-upload', formData, {
+    const response = await axiosInstance.post('/api/image-upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -54,7 +54,7 @@ const uploadImage = async (presigedUrl, file) => {
 const getServiceGroupFieldInfo = async (resourceGroupId) => {
   let data = {}
   await axiosInstance
-    .get(`api/resource-group/${resourceGroupId}/register`)
+    .get(`/api/resource-group/${resourceGroupId}/register`)
     .then((res) => {
       data = res.data.data
     })
@@ -65,17 +65,17 @@ const getServiceGroupFieldInfo = async (resourceGroupId) => {
 }
 
 const getServiceGroupInfo = async (resourceGroupId) => {
-  return await axiosInstance.get(`api/resource-group/${resourceGroupId}/edit`)
+  return await axiosInstance.get(`/api/resource-group/${resourceGroupId}/edit`)
 }
 
 const editServiceGroup = async (resourceGroupId, formdata) => {
   console.log(resourceGroupId, formdata)
 
-  return await axiosInstance.put(`api/resource-group/${resourceGroupId}`, formdata)
+  return await axiosInstance.put(`/api/resource-group/${resourceGroupId}`, formdata)
 }
 
 const deleteServiceGroup = async (resourceGroupId) => {
-  return await axiosInstance.delete(`api/resource-group/${resourceGroupId}`)
+  return await axiosInstance.delete(`/api/resource-group/${resourceGroupId}`)
 }
 
 /**
@@ -83,7 +83,7 @@ const deleteServiceGroup = async (resourceGroupId) => {
  */
 
 const createService = async (formdata) => {
-  return await axiosInstance.post(`api/resource`, formdata)
+  return await axiosInstance.post(`/api/resource`, formdata)
 }
 
 const getServices = async (serviceGroupId) => {
@@ -128,7 +128,7 @@ const updateService = async (serviceId, formData) => {
 const getServiceCustomFields = async (serviceGroupId) => {
   let data = {}
   await axiosInstance
-    .get(`api/custom-field/${serviceGroupId}?type=RESOURCE`)
+    .get(`/api/custom-field/${serviceGroupId}?type=RESOURCE`)
     .then((res) => {
       data = res.data.data
     })

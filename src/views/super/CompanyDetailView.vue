@@ -3,10 +3,17 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import superApi from '@/services/super/super_api'
 import CompanyDetail from '@/components/CompanyDetail.vue'
+import PromoteManagerModal from '@/components/PromoteManagerModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const company = ref(null)
+
+// ===== 권한 이양 모달 관련 =====
+const promoteModalOpen = ref(false)
+const managers = ref([])
+const admin = ref(null)
+const promoteLoading = ref(false)
 
 /**
  * 기업 상세 정보 조회
@@ -35,7 +42,7 @@ onMounted(() => {
  */
 const handleApprove = async () => {
   const confirmed = confirm(
-    `'${company.value.companyName}'을 승인하시겠습니까?\n승인 시 해당 관리자에게 메일이 전송됩니다.`
+    `'${company.value.companyName}'을 승인하시겠습니까?\n승인 시 해당 관리자에게 메일이 전송됩니다.`,
   )
   if (!confirmed) return
 
@@ -64,7 +71,7 @@ const handleReject = async () => {
   }
 
   const confirmed = confirm(
-    `'${company.value.companyName}'을 거절하시겠습니까?\n거절 시 해당 관리자에게 메일이 전송됩니다.`
+    `'${company.value.companyName}'을 거절하시겠습니까?\n거절 시 해당 관리자에게 메일이 전송됩니다.`,
   )
   if (!confirmed) return
 
@@ -88,7 +95,7 @@ const handleReject = async () => {
 const handleSuspend = async () => {
   const confirmed = confirm(
     `'${company.value.companyName}'을 정지하시겠습니까?\n` +
-      `정지하면 해당 기업의 서비스가 중단되고, 관리자/매니저가 로그인할 수 없게 됩니다.`
+      `정지하면 해당 기업의 서비스가 중단되고, 관리자/매니저가 로그인할 수 없게 됩니다.`,
   )
   if (!confirmed) return
 
@@ -125,6 +132,72 @@ const handleActivate = async () => {
     console.error('❌ 활성화 실패:', error)
     alert('상태 변경 중 오류가 발생했습니다.')
   }
+}
+
+/**
+ * 권한 이양 모달 열기
+ */
+const openPromoteModal = async () => {
+  try {
+    const response = await superApi.getCompanyManagers(company.value.companyId)
+
+    if (response.isSuccess) {
+      const data = response.data
+
+      // admin과 managers 분리
+      admin.value = data.admin
+      managers.value = data.managers
+
+      // ACTIVE 매니저가 없으면 경고
+      const activeManagers = managers.value.filter((m) => m.status === 'ACTIVE')
+      if (activeManagers.length === 0) {
+        alert('활성 상태의 매니저가 없습니다.\n권한 이양을 하려면 먼저 매니저 계정을 생성해주세요.')
+        return
+      }
+
+      promoteModalOpen.value = true
+    } else {
+      alert(response.message || '관리자 목록 조회에 실패했습니다.')
+    }
+  } catch (error) {
+    console.error('❌ 관리자 목록 조회 실패:', error)
+    alert('관리자 목록을 불러오는 중 오류가 발생했습니다.')
+  }
+}
+
+/**
+ * 권한 이양 처리
+ */
+const handlePromote = async (managerId) => {
+  promoteLoading.value = true
+
+  try {
+    const response = await superApi.promoteManagerToAdmin(company.value.companyId, managerId)
+
+    if (response.isSuccess) {
+      alert('권한 이양이 완료되었습니다.')
+      promoteModalOpen.value = false
+
+      // 기업 상세 정보 및 관리자 목록 갱신
+      await fetchCompanyDetail()
+    } else {
+      alert(response.message || '권한 이양에 실패했습니다.')
+    }
+  } catch (error) {
+    console.error('❌ 권한 이양 실패:', error)
+    alert('권한 이양 중 오류가 발생했습니다.')
+  } finally {
+    promoteLoading.value = false
+  }
+}
+
+/**
+ * 권한 이양 모달 닫기
+ */
+const closePromoteModal = () => {
+  promoteModalOpen.value = false
+  admin.value = null
+  managers.value = []
 }
 
 /**
@@ -194,6 +267,17 @@ const formatDateTime = (dateString) => {
         @reject="handleReject"
         @suspend="handleSuspend"
         @activate="handleActivate"
+        @promote="openPromoteModal"
+      />
+
+      <!-- 권한 이양 모달 -->
+      <PromoteManagerModal
+        :open="promoteModalOpen"
+        :admin="admin"
+        :managers="managers"
+        :loading="promoteLoading"
+        @close="closePromoteModal"
+        @promote="handlePromote"
       />
     </div>
   </div>
