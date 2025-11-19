@@ -90,9 +90,9 @@ const getAccountsByEmail = async (email) => {
  * @param {string} loginData.email - 이메일
  * @param {string} loginData.password - 비밀번호
  */
-const loginUser = async (loginData) => {
+const loginUser = async (loginData, config = {}) => {
   try {
-    const response = await axiosInstance.post('/api/users/login', loginData)
+    const response = await axiosInstance.post('/api/users/login', loginData, config)
     return response.data
   } catch (error) {
     console.error('로그인 실패:', error)

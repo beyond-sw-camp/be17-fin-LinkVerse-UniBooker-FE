@@ -93,6 +93,12 @@ axiosInstance.interceptors.response.use(
 
     // ===== 401 Unauthorized: 토큰 만료 또는 인증 실패 =====
     if (error.response?.status === 401) {
+      // 로그인 요청은 인터셉터 우회 (알림 표시하지 않음)
+      if (originalRequest._skipAuthInterceptor) {
+        console.log('🔇 로그인 요청 - 401 인터셉터 우회')
+        return Promise.reject(error)
+      }
+
       // Silent Auth 모드 (헤더 인증 검증용)
       // - 알림 표시하지 않음
       // - 리다이렉트하지 않음
