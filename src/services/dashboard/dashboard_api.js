@@ -48,7 +48,21 @@ const getSuperDashboardData = async () => {
   }
 }
 
+/** 
+ * 관리자 리소스 그룹별 대시보드
+ */
+const getAdminResourceGroupDashboardData = async (resourceGroupId) => {
+  try {
+    const response = await axiosInstance.get(`/api/dashboard/resource-group/${resourceGroupId}`)
+    console.log('👍 관리자 리소스 그룹별 대시보드 조회 성공: ', JSON.stringify(response.data))
+    return response.data
+  } catch (error) {
+    console.error('🥵 관리자 리소스 그룹별 대시보드 조회 실패: ', error)
+  }
+}
+
 export default {
   getAdminDashboardData,
   getSuperDashboardData,
+  getAdminResourceGroupDashboardData,
 }

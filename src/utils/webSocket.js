@@ -19,8 +19,6 @@ export function connectWebSocket() {
     // ✅ 환경변수에서 WebSocket URL 가져오기
     const wsUrl = import.meta.env.VITE_WS_URL || '/ws'
 
-    console.log('🔗 WebSocket URL:', wsUrl)
-
     const socket = new SockJS(wsUrl, null, {
       withCredentials: true,
     })
@@ -65,3 +63,6 @@ export function disconnectWebSocket() {
 window.addEventListener('beforeunload', () => {
   disconnectWebSocket()
 })
+
+window.connectWebSocket = connectWebSocket
+window.disconnectWebSocket = disconnectWebSocket

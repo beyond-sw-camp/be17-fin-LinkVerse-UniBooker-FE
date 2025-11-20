@@ -328,6 +328,18 @@ const disabledDates = computed(() => {
   return disabled
 })
 
+// --- 체크박스 값 배열 관리
+const onCheckboxChange = (index, option, checked) => {
+  const arr = userCustomFieldValuesForm[index].values
+
+  if (checked) {
+    if (!arr.includes(option)) arr.push(option)
+  } else {
+    const i = arr.indexOf(option)
+    if (i > -1) arr.splice(i, 1)
+  }
+}
+
 
 // =============== 화면 로드시 데이터 조회 ===============
 onMounted(() => {
@@ -451,10 +463,62 @@ onMounted(() => {
                   <Input v-if="item.dataType === 'TEXT'" type="text" placeholder="텍스트를 입력해주세요." v-model="userCustomFieldValuesForm[index].values[0]" />
                   <Input v-else-if="item.dataType ==='DATE'" type="date" v-model="userCustomFieldValuesForm[index].values[0]" />
                   <Input v-else-if="item.dataType ==='TIME'" type="time" v-model="userCustomFieldValuesForm[index].values[0]" />
-                  <Input v-else-if="item.dataType ==='NUMBER'" type="number" placeholder="숫자를 입력해주세요." v-model="userCustomFieldValuesForm[index].values[0]" />
-                  <Input v-else-if="item.dataType ==='RADIO'" type="radio" v-model="userCustomFieldValuesForm[index].values[0]" />
-                  <Input v-else-if="item.dataType ==='CHECKBOX'" type="checkbox" v-model="userCustomFieldValuesForm[index].values[0]" />
-              </div>
+                  <Input v-else-if="item.dataType ==='NUMBER'" type="number" placeholder="숫자를 입력해주세요." v-model="userCustomFieldValuesForm[index].values[0]" />                  
+                  <div v-else-if="item.dataType === 'RADIO'" class="desc">
+                    <!-- options 있을 때 -->
+                    <template v-if="item.options && item.options.length > 0">
+                      <Input
+                        v-for="option in item.options"
+                        :key="option"
+                        type="radio"
+                        :label="option"
+                        :value="option"
+                        :name="'radio-' + item.id"
+                        v-model="userCustomFieldValuesForm[index].values[0]"
+                      />
+                    </template>
+                    <!-- options 없을 때 -->
+                    <template v-else>
+                      <Input
+                        type="radio"
+                        label="예"
+                        value="true"
+                        :name="'radio-' + item.id"
+                        v-model="userCustomFieldValuesForm[index].values[0]"
+                      />
+                      <Input
+                        type="radio"
+                        label="아니오"
+                        value="false"
+                        :name="'radio-' + item.id"
+                        v-model="userCustomFieldValuesForm[index].values[0]"
+                      />
+                    </template>
+                  </div>
+                  <div v-else-if="item.dataType === 'CHECKBOX'">
+                    <!-- options 있을 때 -->
+                    <template v-if="item.options && item.options.length > 0">
+                      <Input
+                        v-for="option in item.options"
+                        :key="option"
+                        type="checkbox"
+                        :label="option"
+                        :value="option"
+                        :checked="userCustomFieldValuesForm[index].values.includes(option)"
+                        @update:modelValue="checked => onCheckboxChange(index, option, checked)"
+                      />
+                    </template>
+                    <!-- options 없을 때 -->
+                    <template v-else>
+                      <Input
+                        type="checkbox"
+                        :label="item.fieldName"
+                        :checked="userCustomFieldValuesForm[index].values[0] === true"
+                        @update:modelValue="checked => userCustomFieldValuesForm[index].values = [checked]"
+                      />
+                    </template>
+                  </div>
+                </div>
           </div>
         </div>
 
