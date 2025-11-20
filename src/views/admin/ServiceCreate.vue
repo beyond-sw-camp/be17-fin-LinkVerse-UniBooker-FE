@@ -87,7 +87,7 @@ const createService = async () => {
   }
 
   // 예약형 / 좌석형 필수값
-  if (serviceGroup.value.category === 'RESERVATION' || selectedCategory.value === 'SEAT') {
+  if (serviceGroup.value.category === 'RESERVATION' || serviceGroup.value.category === 'SEAT') {
     if (!timeInterval.value) {
       alert('시간 간격은 필수 입력입니다.')
       return
