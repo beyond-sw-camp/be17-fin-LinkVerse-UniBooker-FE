@@ -16,11 +16,11 @@ export function connectWebSocket() {
 
     console.log('🛰️ WebSocket 연결 시도 중...')
 
-    // const socket = new SockJS('https://www.unibooker.kro.kr/ws', null, {
-    //   withCredentials: true, // ✅ 쿠키 자동 전송
-    // })
-    const socket = new SockJS('http://localhost:8080/ws', null, {
-      withCredentials: true, // ✅ 쿠키 자동 전송
+    // ✅ 환경변수에서 WebSocket URL 가져오기
+    const wsUrl = import.meta.env.VITE_WS_URL || '/ws'
+
+    const socket = new SockJS(wsUrl, null, {
+      withCredentials: true,
     })
 
     stompClient = Stomp.over(socket)
@@ -33,8 +33,7 @@ export function connectWebSocket() {
         stompClient.subscribe('/user/queue/notifications', (message) => {
           console.log('🔔 알림 도착:', message)
 
-          // Pinia store 사용
-          const store = useNotificationStore()
+          const store = useNotificationStore() 
           store.notify()
         })
 

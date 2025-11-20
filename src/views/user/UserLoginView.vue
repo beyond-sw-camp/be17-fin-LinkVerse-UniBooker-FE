@@ -116,7 +116,9 @@ const handleLogin = async () => {
       companyId: companyInfo.value.id,
     }
 
-    const response = await userApi.loginUser(loginData)
+    const response = await userApi.loginUser(loginData, {
+      _skipAuthInterceptor: true,
+    })
 
     if (response.isSuccess && response.data) {
       const loginResult = response.data
