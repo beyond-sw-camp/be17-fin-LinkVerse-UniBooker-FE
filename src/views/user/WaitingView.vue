@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
       <!-- 상단 서비스 정보 카드 -->
       <div class="waiting-header">
         <img
-          :src="serviceInfo.thumbnail || '/assets/images/no-image.png'"
+          :src="serviceInfo.resourceImage || '/assets/images/no-image.png'"
           alt="서비스 이미지"
           class="waiting-header-img"
         />

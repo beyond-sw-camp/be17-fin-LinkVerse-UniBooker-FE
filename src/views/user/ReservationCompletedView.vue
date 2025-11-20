@@ -2,38 +2,56 @@
 import { onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ReservationApi from '@/services/reservation/reservation_api'
+import QueueApi from '@/services/reservation/queue_api'
 
 const route = useRoute()
 const router = useRouter()
 
 const reservationData = reactive({})
 
-const goToReservationDetail = () => {
-  router.push('')
-}
+const getDate = (item) => {
+  const formatDate = (dateString, includeTime = false) => {
+    const date = new Date(dateString)
+    const yyyy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, '0')
+    const dd = String(date.getDate()).padStart(2, '0')
 
-const goToHome = () => {
-  router.push('')
-}
+    if (includeTime) {
+      const hh = String(date.getHours()).padStart(2, '0')
+      const min = String(date.getMinutes()).padStart(2, '0')
+      return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
+    }
 
-const formatDate = (dateString, includeTime = false) => {
-  const date = new Date(dateString)
-  const yyyy = date.getFullYear()
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  const dd = String(date.getDate()).padStart(2, '0')
-
-  if (includeTime) {
-    const hh = String(date.getHours()).padStart(2, '0')
-    const min = String(date.getMinutes()).padStart(2, '0')
-    return `${yyyy}년 ${mm}월 ${dd}일 ${hh}:${min}`
+    return `${yyyy}년 ${mm}월 ${dd}일`
   }
 
-  return `${yyyy}년 ${mm}월 ${dd}일`
-}
-
-const getDate = (item) => {
   if (item.serviceCategory === 'EVENT') return formatDate(item.createdAt)
   else return `${formatDate(item.startDate, true)} ~ ${formatDate(item.endDate, true)}`
+}
+
+// 대기열 consume 호출
+const consumeQueueToken = async () => {
+  try {
+    const serviceId = route.params.serviceId || '1'
+
+    // waiting 페이지에서 저장했던 queueToken 읽기
+    const tokenKey = `queue_token_${serviceId}`
+    const queueToken = localStorage.getItem(tokenKey)
+
+    if (!queueToken) {
+      console.warn('대기열 토큰 없음 → consume 생략')
+      return
+    }
+
+    // consume API 호출
+    await QueueApi.consumeQueue(serviceId, queueToken)
+    console.log('queue consume 완료')
+
+    // localStorage 토큰 삭제
+    localStorage.removeItem(tokenKey)
+  } catch (err) {
+    console.error('consume 실패:', err)
+  }
 }
 
 // 예약 상세 조회
@@ -44,89 +62,98 @@ const getReservation = async () => {
 
 onMounted(() => {
   console.log('🌟예약 완료 페이지')
+
   getReservation()
+  consumeQueueToken() // 예약 완료 페이지 진입 시 consume 실행
 })
 </script>
 
 <template>
-    <div class="reservation-completed-container">
-      <!-- 카드 박스 -->
-      <div class="reservation-completed-card">
-        <!-- 아이콘 -->
-        <div class="reservation-completed-icon-wrapper">
-          <div class="reservation-completed-icon-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" class="reservation-completed-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        </div>
-  
-        <!-- 제목 -->
-        <h2 class="reservation-completed-title">예약/신청이 완료되었습니다</h2>
-  
-        <!-- 예약 정보 -->
-        <div class="reservation-completed-info">
-          <div>
-            <label class="reservation-completed-label">예약 번호</label>
-            <p>{{ reservationData.id }}</p>
-          </div>
-          <div>
-            <label class="reservation-completed-label">예약자</label>
-            <p>{{ reservationData.userName }}</p>
-          </div>
-          <div>
-            <label class="reservation-completed-label">예약 일자</label>
-            <p>{{ getDate(reservationData) }}</p>
-          </div>
-          <div>
-            <label class="reservation-completed-label">서비스명</label>
-            <p>{{ reservationData.resourceName }}</p>
-          </div>
-        </div>
-  
-        <!-- 버튼 영역 -->
-        <div class="reservation-completed-actions">
-          <Button theme="light" class="flex-1" @click="goToReservationDetail">예약 상세</Button>
-          <Button class="flex-1" @click="goToHome">확인</Button>
+  <div class="reservation-completed-container">
+    <!-- 카드 박스 -->
+    <div class="reservation-completed-card">
+      <!-- 아이콘 -->
+      <div class="reservation-completed-icon-wrapper">
+        <div class="reservation-completed-icon-circle">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="reservation-completed-icon"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="3"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
       </div>
+
+      <!-- 제목 -->
+      <h2 class="reservation-completed-title">예약/신청이 완료되었습니다</h2>
+
+      <!-- 예약 정보 -->
+      <div class="reservation-completed-info">
+        <div>
+          <label class="reservation-completed-label">예약 번호</label>
+          <p>{{ reservationData.id }}</p>
+        </div>
+        <div>
+          <label class="reservation-completed-label">예약자</label>
+          <p>{{ reservationData.userName }}</p>
+        </div>
+        <div>
+          <label class="reservation-completed-label">예약 일자</label>
+          <p>{{ getDate(reservationData) }}</p>
+        </div>
+        <div>
+          <label class="reservation-completed-label">서비스명</label>
+          <p>{{ reservationData.resourceName }}</p>
+        </div>
+      </div>
+
+      <!-- 버튼 영역 -->
+      <div class="reservation-completed-actions">
+        <Button theme="light" class="flex-1" @click="goToReservationDetail">예약 상세</Button>
+        <Button class="flex-1" @click="goToHome">확인</Button>
+      </div>
     </div>
-  </template>
+  </div>
+</template>
 
 <style scoped>
 .reservation-completed-container {
-    @apply flex justify-center items-center min-h-screen bg-white px-4;
+  @apply flex justify-center items-center min-h-screen bg-white px-4;
 }
 
 .reservation-completed-card {
-    @apply bg-white rounded-2xl shadow-md w-full max-w-[500px] h-[550px] p-8 sm:p-10 text-center overflow-y-auto;
+  @apply bg-white rounded-2xl shadow-md w-full max-w-[500px] h-[550px] p-8 sm:p-10 text-center overflow-y-auto;
 }
 
 .reservation-completed-icon-wrapper {
-    @apply flex justify-center mb-6;
+  @apply flex justify-center mb-6;
 }
 
 .reservation-completed-icon-circle {
-    @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full border-4 border-primary flex items-center justify-center;
+  @apply w-12 h-12 sm:w-14 sm:h-14 rounded-full border-4 border-primary flex items-center justify-center;
 }
 
 .reservation-completed-icon {
-    @apply w-6 h-6 sm:w-7 sm:h-7 text-primary;
+  @apply w-6 h-6 sm:w-7 sm:h-7 text-primary;
 }
 
 .reservation-completed-title {
-    @apply text-base sm:text-lg font-medium mb-8;
+  @apply text-base sm:text-lg font-medium mb-8;
 }
 
 .reservation-completed-info {
-    @apply text-left text-sm sm:text-base space-y-3 text-gray-800 mb-10 sm:mb-12 px-12;
+  @apply text-left text-sm sm:text-base space-y-3 text-gray-800 mb-10 sm:mb-12 px-12;
 }
 
 .reservation-completed-label {
-    @apply text-[#00008C] font-medium;
+  @apply text-[#00008C] font-medium;
 }
 
 .reservation-completed-actions {
-    @apply flex justify-center gap-3 mx-auto w-[80%];
+  @apply flex justify-center gap-3 mx-auto w-[80%];
 }
 </style>
