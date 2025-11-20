@@ -79,7 +79,7 @@ const openFilePicker = () => {
     <template v-else-if="props.type === 'radio'">
       <label class="components-label">
         <input
-          type="radio"
+          :type="props.type"
           :name="name"
           :class="inputClasses"
           :checked="modelValue === value"

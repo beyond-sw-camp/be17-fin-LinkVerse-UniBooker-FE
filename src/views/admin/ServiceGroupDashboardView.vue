@@ -70,7 +70,7 @@ const calcChangePercent = (today, yesterday) => {
     if (today === 0) return 0
     return 100
   }
-  return ((today - yesterday) / yesterday) * 100;
+  return Math.round(((today - yesterday) / yesterday) * 100 * 10) / 10;
 }
 
 
@@ -219,12 +219,12 @@ onMounted(() => {
       <div class="middle-section">
         <!-- 서비스별 성과 -->
         <div class="card service-performance-card">
-          <h3 class="card-title">서비스별 성과</h3>
+          <h3 class="card-title">서비스별 성과 (한달 기준)</h3>
           <div class="performance-list">
             <div v-for="service in dashboardData.performanceByResources" :key="service.resourceName" class="performance-item">
               <div class="performance-header">
                 <span class="service-name">{{ service.resourceName }}</span>
-                <span class="service-percent">{{ service.count }}%</span>
+                <span class="service-percent">{{ Math.round(service.count) }}%</span>
               </div>
               <div class="progress-bar">
                 <div class="progress-fill" :style="{ width: service.count + '%' }"></div>
@@ -315,8 +315,8 @@ onMounted(() => {
           <VueApexCharts
             type="line"
             height="250"
-            :options="timeTrendChartOptions.value"
-            :series="timeTrendSeries.value"
+            :options="timeTrendChartOptions"
+            :series="timeTrendSeries"
           />
         </div>
       </div>
