@@ -16,7 +16,10 @@ export function connectWebSocket() {
 
     console.log('🛰️ WebSocket 연결 시도 중...')
 
-    const socket = new SockJS('https://www.unibooker.kro.kr/ws', null, {
+    // const socket = new SockJS('https://www.unibooker.kro.kr/ws', null, {
+    //   withCredentials: true, // ✅ 쿠키 자동 전송
+    // })
+    const socket = new SockJS('http://localhost:8080/ws', null, {
       withCredentials: true, // ✅ 쿠키 자동 전송
     })
 
@@ -61,3 +64,6 @@ export function disconnectWebSocket() {
 window.addEventListener('beforeunload', () => {
   disconnectWebSocket()
 })
+
+window.connectWebSocket = connectWebSocket
+window.disconnectWebSocket = disconnectWebSocket
