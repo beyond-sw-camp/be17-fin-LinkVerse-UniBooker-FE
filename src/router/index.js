@@ -46,6 +46,12 @@ const router = createRouter({
       meta: { layout: 'user' },
     },
     {
+      path: '/c/:companySlug/services/:serviceGroupId/:serviceId/waiting',
+      name: 'WaitingView',
+      component: () => import('@/views/user/WaitingView.vue'),
+      meta: { layout: 'user' },
+    },
+    {
       path: '/c/:companySlug/services/:serviceGroupId/detail/:itemId',
       name: 'ServiceDetail',
       component: () => import('@/views/user/ServiceDetailView.vue'),

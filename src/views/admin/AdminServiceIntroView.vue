@@ -94,7 +94,9 @@ const scrollToSection = (sectionId) => {
         </div>
 
         <div class="service-page-feature-image">
-          <div class="service-page-placeholder"></div>
+          <div class="service-page-placeholder">
+            <img src="/public/assets/images/custom_reservation_setting.png" alt="커스텀 예약 설정 이미지" />
+          </div>
         </div>
       </div>
     </section>
@@ -103,7 +105,9 @@ const scrollToSection = (sectionId) => {
     <section class="service-page-feature service-page-feature-reverse">
       <div class="service-page-feature-container">
         <div class="service-page-feature-image">
-          <div class="service-page-placeholder service-page-placeholder-blue"></div>
+          <div class="service-page-placeholder service-page-placeholder-blue">
+            <img src="/public/assets/images/reservation_management.png" alt="예약 관리 이미지" />
+          </div>
         </div>
 
         <div class="service-page-feature-text-r">
@@ -127,34 +131,6 @@ const scrollToSection = (sectionId) => {
     <section class="service-page-feature">
       <div class="service-page-feature-container">
         <div class="service-page-feature-text-l">
-          <h2 :id="SECTION_IDS.SMART_CUSTOMER" class="service-page-feature-title">
-            스마트 고객 관리
-          </h2>
-          <p class="service-page-feature-description">
-            예약하는 순간부터 데이터가 쌓입니다.<br />
-            고객을 이해하고, 더 나은 서비스를 제공하세요.
-          </p>
-          <p class="service-page-feature-detail">
-            단순히 예약만 받는 것이 아닙니다.<br />
-            고객의 예약 패턴을 분석하고 관리하여<br />
-            더욱 효율적인 운영이 가능합니다.
-          </p>
-        </div>
-
-        <div class="service-page-feature-image">
-          <div class="service-page-placeholder"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 기능 섹션 4: 실시간 통계 & 분석 -->
-    <section class="service-page-feature service-page-feature-reverse">
-      <div class="service-page-feature-container">
-        <div class="service-page-feature-image">
-          <div class="service-page-placeholder service-page-placeholder-blue"></div>
-        </div>
-
-        <div class="service-page-feature-text-r">
           <h2 :id="SECTION_IDS.STATISTICS_ANALYTICS" class="service-page-feature-title">
             실시간 통계 & 분석
           </h2>
@@ -167,29 +143,11 @@ const scrollToSection = (sectionId) => {
             축적된 데이터로 더 효율적인 운영 전략을 수립하세요.
           </p>
         </div>
-      </div>
-    </section>
-
-    <!-- 기능 섹션 5: 유연한 권한 관리 -->
-    <section class="service-page-feature">
-      <div class="service-page-feature-container">
-        <div class="service-page-feature-text-l">
-          <h2 :id="SECTION_IDS.PERMISSION_MANAGEMENT" class="service-page-feature-title">
-            유연한 권한 관리
-          </h2>
-          <p class="service-page-feature-description">
-            누가 무엇을 할 수 있는지 명확하게<br />
-            보안과 효율, 두 마리 토끼를 잡으세요.
-          </p>
-          <p class="service-page-feature-detail">
-            여러 관리자가 함께 시스템을 운영할 때<br />
-            권한을 명확하게 나누면 보안도 강화되고<br />
-            업무도 효율적입니다.
-          </p>
-        </div>
 
         <div class="service-page-feature-image">
-          <div class="service-page-placeholder"></div>
+          <div class="service-page-placeholder">
+            <img src="/public/assets/images/customer_management.png" alt="고객 관리 이미지" />
+          </div>
         </div>
       </div>
     </section>
@@ -287,11 +245,11 @@ const scrollToSection = (sectionId) => {
 }
 
 .service-page-placeholder {
-  @apply w-full h-80 bg-white rounded-2xl shadow-md;
+  @apply w-full h-80 bg-white rounded-2xl shadow-md flex items-center;
 }
 
 .service-page-placeholder-blue {
-  @apply bg-[#B8D4FF];
+  @apply bg-[#e0ecff];
 }
 
 .service-page-feature-reverse .service-page-feature-container {

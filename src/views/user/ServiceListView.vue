@@ -4,6 +4,7 @@ import Dropdown from '@/components/Dropdown.vue'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import serviceApi from '@/services/user/service_api'
+import queueApi from '@/services/reservation/queue_api'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,12 +67,29 @@ const paginatedServices = computed(() => {
   return filteredServices.value.slice(start, end)
 })
 
-// 예약 버튼 클릭시 서비스 항목 상세 페이지
-const goToServiceDetail = (item) => {
+// 예약 버튼 클릭 → 대기열 진입 후 waiting 페이지 이동
+const goToServiceDetail = async (item) => {
   if (item.status !== 'IN_PROGRESS') return
-  const slug = route.params.companySlug || authStore.companySlug || 'default'
-  const serviceGroupId = route.params.serviceGroupId
-  router.push({ path: `/c/${slug}/services/${serviceGroupId}/detail/${item.id}` })
+
+  try {
+    // 1) 대기열 JOIN 먼저 수행
+    const joinRes = await queueApi.joinQueue(item.id)
+
+    const slug = route.params.companySlug
+    const serviceGroupId = route.params.serviceGroupId
+    const serviceId = item.id
+
+    // 2) waiting 페이지로 이동하면서 token 전달
+    router.push({
+      path: `/c/${slug}/services/${serviceGroupId}/${serviceId}/waiting`,
+      query: {
+        resourceId: serviceId,
+        token: joinRes.token,
+      },
+    })
+  } catch (err) {
+    console.error('대기열 진입 실패:', err)
+  }
 }
 
 // 화면 로드시 데이터 받아오기
@@ -275,6 +293,6 @@ onMounted(() => {
 }
 
 .no-service-message {
-  @apply flex justify-center items-center min-h-[300px] border border-gray-line rounded-[5px]
+  @apply flex justify-center items-center min-h-[300px] border border-gray-line rounded-[5px];
 }
 </style>
