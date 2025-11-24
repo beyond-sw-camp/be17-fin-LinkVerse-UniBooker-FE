@@ -96,19 +96,18 @@ const getServiceInfo = async () => {
 
     // 기존 서비스 기본 정보 조회
     const res = await serviceApi.getServiceInfo(serviceId)
-    if (res?.data) {
-      const data = res
-      name.value = data.name
-      category.value = data.category
-      isAlwaysAvailable.value = data.isAlwaysAvailable
-      description.value = data.description
-      thumbnail.value = data.resourceImage || ''
-      capacity.value = data.capacity ? Number(data.capacity) : null
-      startDate.value = data.startDate || ''
-      endDate.value = data.endDate || ''
-      timeInterval.value = data.timeInterval || 60
-      row.value = data.row || null
-      col.value = data.col || null
+    if (res) {
+      name.value = res.name
+      category.value = res.category
+      isAlwaysAvailable.value = res.isAlwaysAvailable
+      description.value = res.description
+      thumbnail.value = res.resourceImage || ''
+      capacity.value = res.capacity ? Number(res.capacity) : null
+      startDate.value = res.startDate || ''
+      endDate.value = res.endDate || ''
+      timeInterval.value = res.timeInterval || 60
+      row.value = res.row || null
+      col.value = res.col || null
     }
 
     // 커스텀 필드 값 조회
