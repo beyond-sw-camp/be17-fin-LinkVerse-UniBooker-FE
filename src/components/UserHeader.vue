@@ -76,7 +76,7 @@ watch(
 // ===== 네비게이션 핸들러 =====
 const goToHome = () => {
   if (isValidLogin.value) {
-    router.push(`/c/${currentSlug.value}/services`)
+    router.push(`/c/${currentSlug.value}`)
   } else {
     router.push(`/c/${currentSlug.value}`)
   }
